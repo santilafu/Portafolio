@@ -1,6 +1,10 @@
 
 // -----------------PERFIL--------------------
-### Crear mi perfil
+
+### Obtener perfil
+GET http://localhost:3000/api/perfil
+
+### Crear perfil
 POST http://localhost:3000/api/perfil
 Content-Type: application/json
 
@@ -27,80 +31,118 @@ Content-Type: application/json
   "foto_perfil": "perfil.jpg"
 }
 
-### -----------------PROYECTOS--------------------
+// -----------------PROYECTOS--------------------
 
 ### Obtener todos los proyectos
 GET http://localhost:3000/api/proyectos
 
-### Crear un nuevo proyecto
+### Portafolio Full-Stack
 POST http://localhost:3000/api/proyectos
 Content-Type: application/json
 
 {
   "perfil_id": 1,
-  "titulo": "API REST para Portafolio",
-  "descripcion": "Backend desarrollado con Node.js, Express y MySQL para gestionar dinamicamente el contenido de mi portafolio personal.",
-  "url_repo": "https://github.com/santilafu/mi-portafolio",
+  "titulo": "Portafolio Full-Stack",
+  "descripcion": "Portafolio personal con backend Node.js/Express y API REST completa (CRUD) conectada a MySQL. Frontend con tema oscuro, animaciones y Tailwind CSS. Incluye seguridad con Helmet, rate-limiting y dotenv.",
+  "url_repo": "https://github.com/santilafu/Portafolio",
   "url_demo": ""
 }
 
-### Actualizar un proyecto
-PUT http://localhost:3000/api/proyectos/1
+### MoodTrack
+POST http://localhost:3000/api/proyectos
 Content-Type: application/json
 
 {
-  "titulo": "API REST para Portafolio (Actualizado)",
-  "descripcion": "Backend mejorado con funciones CRUD completas para gestionar datos.",
-  "url_repo": "https://github.com/santilafu/mi-portafolio",
+  "perfil_id": 1,
+  "titulo": "MoodTrack - Registro de Emociones",
+  "descripcion": "Aplicacion web con Spring Boot y Thymeleaf para registrar emociones diarias, ver historial y estadisticas graficas. Base de datos H2 en memoria. Proyecto de 1er curso DAM.",
+  "url_repo": "https://github.com/santilafu/App-Moodtrack",
   "url_demo": ""
 }
 
-### Borrar un proyecto
-DELETE http://localhost:3000/api/proyectos/1
+### Gestion Bancaria Segura
+POST http://localhost:3000/api/proyectos
+Content-Type: application/json
 
-### -----------------HABILIDADES--------------------
+{
+  "perfil_id": 1,
+  "titulo": "Gestion Bancaria Segura",
+  "descripcion": "App de escritorio Java Swing con cifrado AES-128, firmas digitales DSA y SHA-256. Gestiona cuentas bancarias con depositos, transferencias y control de acceso criptografico. Proyecto de 2o DAM.",
+  "url_repo": "https://github.com/santilafu/GestionBancaria",
+  "url_demo": ""
+}
+
+// -----------------HABILIDADES--------------------
 
 ### Obtener todas las habilidades
 GET http://localhost:3000/api/habilidades
 
-### Anadir la habilidad de Java
+### Java
 POST http://localhost:3000/api/habilidades
 Content-Type: application/json
 
-{
-  "perfil_id": 1,
-  "nombre": "Java",
-  "nivel": "Intermedio"
-}
+{ "perfil_id": 1, "nombre": "Java", "nivel": "Intermedio" }
 
-### Anadir la habilidad de MySQL
+### MySQL
 POST http://localhost:3000/api/habilidades
 Content-Type: application/json
 
-{
-  "perfil_id": 1,
-  "nombre": "MySQL",
-  "nivel": "Intermedio"
-}
+{ "perfil_id": 1, "nombre": "MySQL", "nivel": "Intermedio" }
 
-### Actualizar la habilidad
-PUT http://localhost:3000/api/habilidades/1
+### HTML
+POST http://localhost:3000/api/habilidades
 Content-Type: application/json
 
-{
-  "nombre": "Java",
-  "nivel": "Avanzado"
-}
+{ "perfil_id": 1, "nombre": "HTML", "nivel": "Intermedio" }
 
-### Borrar la habilidad
-DELETE http://localhost:3000/api/habilidades/2
+### CSS
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
 
-### ------- EXPERIENCIA -------------
+{ "perfil_id": 1, "nombre": "CSS", "nivel": "Intermedio" }
+
+### Git
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
+
+{ "perfil_id": 1, "nombre": "Git", "nivel": "Intermedio" }
+
+### Kotlin
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
+
+{ "perfil_id": 1, "nombre": "Kotlin", "nivel": "Basico" }
+
+### Node.js
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
+
+{ "perfil_id": 1, "nombre": "Node.js", "nivel": "Basico" }
+
+### Python
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
+
+{ "perfil_id": 1, "nombre": "Python", "nivel": "Basico" }
+
+### Spring
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
+
+{ "perfil_id": 1, "nombre": "Spring", "nivel": "Basico" }
+
+### C#
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
+
+{ "perfil_id": 1, "nombre": "C#", "nivel": "Basico" }
+
+// ------- EXPERIENCIA -------------
 
 ### Obtener toda la experiencia
 GET http://localhost:3000/api/experiencia
 
-### Anadir experiencia actual
+### Practicas DAM
 POST http://localhost:3000/api/experiencia
 Content-Type: application/json
 

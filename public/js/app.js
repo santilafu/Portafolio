@@ -10,6 +10,9 @@ const TECH_MAIN = [
     { nombre: 'CSS3',       icono: 'devicon-css3-plain colored',       color: 'from-blue-400/20 to-blue-600/20', border: 'border-blue-400/30' },
     { nombre: 'Git',        icono: 'devicon-git-plain colored',        color: 'from-orange-600/20 to-red-600/20', border: 'border-orange-600/30' },
     { nombre: 'IntelliJ',   icono: 'devicon-intellij-plain colored',   color: 'from-pink-500/20 to-blue-500/20', border: 'border-pink-500/30' },
+    { nombre: 'Claude',     icono: 'fa-solid fa-brain',                color: 'from-amber-500/20 to-orange-500/20', border: 'border-amber-500/30', iconColor: 'text-amber-400' },
+    { nombre: 'Gemini',     icono: 'fa-solid fa-wand-magic-sparkles',  color: 'from-blue-400/20 to-cyan-400/20', border: 'border-blue-400/30', iconColor: 'text-blue-400' },
+    { nombre: 'Copilot',    icono: 'fa-brands fa-github',              color: 'from-gray-300/20 to-gray-500/20', border: 'border-gray-400/30', iconColor: 'text-gray-300' },
 ];
 
 const TECH_OTHER = [
@@ -61,12 +64,13 @@ function renderTechStack() {
 
 function crearTechCard(tech, iconSize, index) {
     const floatClass = FLOAT_CLASSES[index % 3];
+    const colorClass = tech.iconColor || '';
     const card = document.createElement('div');
     card.className = `skill-card tech-enter flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br ${tech.color} border ${tech.border} cursor-default`;
     card.dataset.index = index;
     card.innerHTML = `
         <div class="${floatClass}">
-            <i class="${tech.icono} ${iconSize}"></i>
+            <i class="${tech.icono} ${iconSize} ${colorClass}"></i>
         </div>
         <span class="text-xs font-medium text-gray-300">${tech.nombre}</span>
     `;

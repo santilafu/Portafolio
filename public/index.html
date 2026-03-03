@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santiago Lafuente | Desarrollador Multiplataforma</title>
+    <meta name="description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y mas.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Loader */
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #8b5cf6; border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Fade-in animaciones */
+        .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+        .fade-up:nth-child(2) { transition-delay: 0.1s; }
+        .fade-up:nth-child(3) { transition-delay: 0.2s; }
+
+        /* Efecto typing */
+        .typing-cursor::after { content: '|'; animation: blink 1s step-end infinite; color: #a78bfa; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Glow hover tarjetas */
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15); }
+
+        /* Skill icon hover */
+        .skill-card { transition: all 0.3s ease; }
+        .skill-card:hover { transform: translateY(-4px) scale(1.05); }
+
+        /* Gradient text */
+        .gradient-text { background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+        /* Timeline */
+        .timeline-line { background: linear-gradient(to bottom, #3b82f6, #8b5cf6, #ec4899); }
+        .timeline-dot { background: linear-gradient(135deg, #3b82f6, #8b5cf6); box-shadow: 0 0 16px rgba(139, 92, 246, 0.5); }
+
+        /* Navbar scroll */
+        .nav-scrolled { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+
+        /* Badge disponible */
+        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
+        .badge-pulse { animation: pulse-glow 2s infinite; }
+    </style>
+</head>
+<body class="bg-slate-950 text-gray-200 font-sans">
+
+<!-- NAVBAR -->
+<nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-300">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="#inicio" class="text-xl font-bold gradient-text">S.L.H.</a>
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
+            <a href="#proyectos" class="hover:text-white transition-colors">Proyectos</a>
+            <a href="#habilidades" class="hover:text-white transition-colors">Habilidades</a>
+            <a href="#experiencia" class="hover:text-white transition-colors">Experiencia</a>
+            <a href="#contacto" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:opacity-90 transition-opacity">Contactar</a>
+        </div>
+        <!-- Mobile hamburger -->
+        <button id="menu-toggle" class="md:hidden text-gray-400 hover:text-white text-xl">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+    <!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+        <div class="flex flex-col gap-3 text-sm font-medium text-gray-400 bg-slate-900/90 rounded-xl p-4">
+            <a href="#proyectos" class="hover:text-white transition-colors py-1">Proyectos</a>
+            <a href="#habilidades" class="hover:text-white transition-colors py-1">Habilidades</a>
+            <a href="#experiencia" class="hover:text-white transition-colors py-1">Experiencia</a>
+            <a href="#contacto" class="text-center py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full">Contactar</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<header id="inicio" class="relative overflow-hidden pt-24">
+    <!-- Background gradient mesh -->
+    <div class="absolute inset-0 opacity-30">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-blue-600 rounded-full blur-[120px]"></div>
+        <div class="absolute top-40 right-20 w-96 h-96 bg-purple-600 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 left-1/2 w-80 h-80 bg-pink-600 rounded-full blur-[120px]"></div>
+    </div>
+
+    <div class="relative max-w-6xl mx-auto px-6 py-16 md:py-24 flex flex-col md:flex-row items-center gap-10 md:gap-16">
+        <!-- Foto -->
+        <div class="flex-shrink-0 relative group">
+            <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <img id="foto_perfil"
+                 src="/img/perfil.jpg"
+                 alt="Foto de Santiago Lafuente"
+                 class="relative w-44 h-44 md:w-56 md:h-56 object-cover rounded-full border-4 border-slate-900 hover:scale-105 transition-transform duration-500">
+        </div>
+
+        <!-- Info -->
+        <div class="text-center md:text-left flex-1 space-y-5">
+            <div class="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 rounded-full text-xs font-semibold badge-pulse">
+                <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                Disponible para practicas / empleo
+            </div>
+            <h1 id="nombre" class="text-4xl md:text-6xl font-extrabold tracking-tight text-white">Santiago Lafuente</h1>
+            <h2 id="titular" class="text-xl md:text-2xl font-light text-gray-400 typing-cursor">Desarrollador Multiplataforma</h2>
+            <p id="sobre_mi" class="text-gray-400 leading-relaxed max-w-2xl text-lg">Cargando...</p>
+
+            <div class="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
+                <div id="enlaces" class="flex gap-4 text-2xl"></div>
+                <a href="#contacto" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm">
+                    <i class="fa-solid fa-paper-plane"></i> Contactame
+                </a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main class="max-w-6xl mx-auto px-6 space-y-24 py-16">
+
+    <!-- TECH STACK ICONOS -->
+    <section class="fade-up">
+        <div class="text-center mb-10">
+            <p class="text-sm uppercase tracking-widest text-purple-400 font-semibold mb-2">Tech Stack</p>
+            <h3 class="text-3xl font-bold text-white">Tecnologias con las que he trabajado</h3>
+        </div>
+        <div id="tech-stack-main" class="mb-6">
+            <p class="text-sm text-gray-500 font-medium mb-3 text-center">Uso frecuente</p>
+            <div id="tech-main" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-3xl mx-auto"></div>
+        </div>
+        <div id="tech-stack-other">
+            <p class="text-sm text-gray-500 font-medium mb-3 text-center">Conocimientos basicos</p>
+            <div id="tech-other" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3 max-w-4xl mx-auto"></div>
+        </div>
+    </section>
+
+    <!-- PROYECTOS -->
+    <section id="proyectos" class="fade-up scroll-mt-24">
+        <div class="text-center mb-10">
+            <p class="text-sm uppercase tracking-widest text-blue-400 font-semibold mb-2">Portfolio</p>
+            <h3 class="text-3xl font-bold text-white">Proyectos Destacados</h3>
+        </div>
+        <div id="lista-proyectos" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="flex items-center gap-3 text-gray-500 justify-center col-span-1 lg:col-span-2 py-10">
+                <div class="loader"></div>
+                <span>Cargando proyectos...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- HABILIDADES (desde BD) -->
+    <section id="habilidades" class="fade-up scroll-mt-24">
+        <div class="text-center mb-10">
+            <p class="text-sm uppercase tracking-widest text-purple-400 font-semibold mb-2">Skills</p>
+            <h3 class="text-3xl font-bold text-white">Habilidades</h3>
+        </div>
+        <div id="lista-habilidades" class="flex flex-wrap justify-center gap-3">
+            <div class="flex items-center gap-3 text-gray-500 justify-center w-full py-6">
+                <div class="loader"></div>
+                <span>Cargando habilidades...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXPERIENCIA -->
+    <section id="experiencia" class="fade-up scroll-mt-24">
+        <div class="text-center mb-10">
+            <p class="text-sm uppercase tracking-widest text-pink-400 font-semibold mb-2">Trayectoria</p>
+            <h3 class="text-3xl font-bold text-white">Experiencia</h3>
+        </div>
+        <div id="lista-experiencia" class="max-w-3xl mx-auto">
+            <div class="flex items-center gap-3 text-gray-500 justify-center w-full py-6">
+                <div class="loader"></div>
+                <span>Cargando experiencia...</span>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- CONTACTO -->
+<section id="contacto" class="relative overflow-hidden mt-16 scroll-mt-24">
+    <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10"></div>
+    <div class="relative max-w-6xl mx-auto px-6 py-20">
+        <div class="text-center space-y-8">
+            <p class="text-sm uppercase tracking-widest text-blue-400 font-semibold">Contacto</p>
+            <h3 class="text-4xl font-bold text-white">Trabajemos juntos</h3>
+            <p class="text-gray-400 max-w-lg mx-auto text-lg">Estoy buscando oportunidades para crecer como desarrollador. Si buscas a alguien con ganas de aprender y aportar, hablemos.</p>
+
+            <!-- Email destacado con boton copiar -->
+            <div id="email-display" class="inline-flex items-center gap-3 px-6 py-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
+                <i class="fa-solid fa-envelope text-purple-400 text-xl"></i>
+                <span id="email-text" class="text-lg font-mono text-white">cargando...</span>
+                <button id="btn-copiar-email" title="Copiar email" class="ml-2 px-3 py-1.5 bg-purple-600/20 border border-purple-500/30 text-purple-300 rounded-lg hover:bg-purple-600/40 hover:text-white transition-all text-sm">
+                    <i class="fa-regular fa-copy"></i>
+                </button>
+            </div>
+            <p id="copy-feedback" class="text-green-400 text-sm hidden">Email copiado al portapapeles</p>
+
+            <!-- Enlaces sociales -->
+            <div id="footer-enlaces" class="flex justify-center gap-8 text-3xl pt-4"></div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-slate-800/50">
+    <div class="max-w-6xl mx-auto px-6 py-6 text-center">
+        <p class="text-gray-600 text-sm">&copy; 2025 Santiago Lafuente Hernandez</p>
+    </div>
+</footer>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

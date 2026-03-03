@@ -1,0 +1,114 @@
+
+// -----------------PERFIL--------------------
+### Crear mi perfil
+POST http://localhost:3000/api/perfil
+Content-Type: application/json
+
+{
+  "nombre": "Santiago Lafuente Hernandez",
+  "titular": "Desarrollador Multiplataforma",
+  "sobre_mi": "Apasionado por el backend, las bases de datos y la creacion de APIs robustas.",
+  "email": "santi10dy@gmail.com",
+  "enlace_github": "https://github.com/santilafu",
+  "enlace_linkedin": "www.linkedin.com/in/santiago-lafuente-hernandez-796783226"
+}
+
+### *** EJECUTA ESTO para arreglar la foto ***
+PUT http://localhost:3000/api/perfil/1
+Content-Type: application/json
+
+{
+  "nombre": "Santiago Lafuente Hernandez",
+  "titular": "Desarrollador Multiplataforma",
+  "sobre_mi": "Apasionado por el backend, las bases de datos y la creacion de APIs robustas. Siempre buscando aprender nuevas tecnologias y mejorar mis habilidades.",
+  "email": "santi10dy@gmail.com",
+  "enlace_github": "https://github.com/santilafu",
+  "enlace_linkedin": "www.linkedin.com/in/santiago-lafuente-hernandez-796783226",
+  "foto_perfil": "perfil.jpg"
+}
+
+### -----------------PROYECTOS--------------------
+
+### Obtener todos los proyectos
+GET http://localhost:3000/api/proyectos
+
+### Crear un nuevo proyecto
+POST http://localhost:3000/api/proyectos
+Content-Type: application/json
+
+{
+  "perfil_id": 1,
+  "titulo": "API REST para Portafolio",
+  "descripcion": "Backend desarrollado con Node.js, Express y MySQL para gestionar dinamicamente el contenido de mi portafolio personal.",
+  "url_repo": "https://github.com/santilafu/mi-portafolio",
+  "url_demo": ""
+}
+
+### Actualizar un proyecto
+PUT http://localhost:3000/api/proyectos/1
+Content-Type: application/json
+
+{
+  "titulo": "API REST para Portafolio (Actualizado)",
+  "descripcion": "Backend mejorado con funciones CRUD completas para gestionar datos.",
+  "url_repo": "https://github.com/santilafu/mi-portafolio",
+  "url_demo": ""
+}
+
+### Borrar un proyecto
+DELETE http://localhost:3000/api/proyectos/1
+
+### -----------------HABILIDADES--------------------
+
+### Obtener todas las habilidades
+GET http://localhost:3000/api/habilidades
+
+### Anadir la habilidad de Java
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
+
+{
+  "perfil_id": 1,
+  "nombre": "Java",
+  "nivel": "Intermedio"
+}
+
+### Anadir la habilidad de MySQL
+POST http://localhost:3000/api/habilidades
+Content-Type: application/json
+
+{
+  "perfil_id": 1,
+  "nombre": "MySQL",
+  "nivel": "Intermedio"
+}
+
+### Actualizar la habilidad
+PUT http://localhost:3000/api/habilidades/1
+Content-Type: application/json
+
+{
+  "nombre": "Java",
+  "nivel": "Avanzado"
+}
+
+### Borrar la habilidad
+DELETE http://localhost:3000/api/habilidades/2
+
+### ------- EXPERIENCIA -------------
+
+### Obtener toda la experiencia
+GET http://localhost:3000/api/experiencia
+
+### Anadir experiencia actual
+POST http://localhost:3000/api/experiencia
+Content-Type: application/json
+
+{
+  "perfil_id": 1,
+  "empresa": "En busqueda activa",
+  "puesto": "Estudiante en Practicas DAM",
+  "fecha_inicio": "2024-10-20",
+  "fecha_fin": null,
+  "descripcion": "Buscando una empresa para realizar las practicas del ciclo de Desarrollo de Aplicaciones Multiplataforma, con ganas de aportar y aprender en un entorno real."
+}

@@ -20,31 +20,6 @@ const API_URL = '/api';
 // TECH STACK
 // ============================================================
 
-const TECH_MAIN = [
-    { nombre: 'Java',       icono: 'devicon-java-plain colored',       color: 'from-red-500/20 to-orange-500/20',  border: 'border-red-500/30' },
-    { nombre: 'MySQL',      icono: 'devicon-mysql-plain colored',      color: 'from-blue-500/20 to-cyan-500/20',   border: 'border-blue-500/30' },
-    { nombre: 'HTML5',      icono: 'devicon-html5-plain colored',      color: 'from-orange-500/20 to-red-500/20',  border: 'border-orange-500/30' },
-    { nombre: 'CSS3',       icono: 'devicon-css3-plain colored',       color: 'from-blue-400/20 to-blue-600/20',   border: 'border-blue-400/30' },
-    { nombre: 'Git',        icono: 'devicon-git-plain colored',        color: 'from-orange-600/20 to-red-600/20',  border: 'border-orange-600/30' },
-    { nombre: 'IntelliJ',   icono: 'devicon-intellij-plain colored',   color: 'from-pink-500/20 to-blue-500/20',   border: 'border-pink-500/30' },
-    { nombre: 'Claude',     icono: 'fa-solid fa-brain',                color: 'from-amber-500/20 to-orange-500/20', border: 'border-amber-500/30', iconColor: 'text-amber-400' },
-    { nombre: 'Gemini',     icono: 'fa-solid fa-wand-magic-sparkles',  color: 'from-blue-400/20 to-cyan-400/20',   border: 'border-blue-400/30',  iconColor: 'text-blue-400' },
-    { nombre: 'Copilot',    icono: 'fa-brands fa-github',              color: 'from-gray-300/20 to-gray-500/20',   border: 'border-gray-400/30',  iconColor: 'text-gray-300' },
-];
-
-const TECH_OTHER = [
-    { nombre: 'Kotlin',     icono: 'devicon-kotlin-plain colored',     color: 'from-purple-500/20 to-violet-500/20', border: 'border-purple-500/30' },
-    { nombre: 'Python',     icono: 'devicon-python-plain colored',     color: 'from-yellow-500/20 to-blue-500/20',   border: 'border-yellow-500/30' },
-    { nombre: 'JavaScript', icono: 'devicon-javascript-plain colored', color: 'from-yellow-400/20 to-yellow-600/20', border: 'border-yellow-400/30' },
-    { nombre: 'Node.js',    icono: 'devicon-nodejs-plain colored',     color: 'from-green-500/20 to-green-700/20',   border: 'border-green-500/30' },
-    { nombre: 'Spring',     icono: 'devicon-spring-plain colored',     color: 'from-green-400/20 to-green-600/20',   border: 'border-green-400/30' },
-    { nombre: 'C#',         icono: 'devicon-csharp-plain colored',     color: 'from-purple-600/20 to-violet-600/20', border: 'border-purple-600/30' },
-    { nombre: 'C++',        icono: 'devicon-cplusplus-plain colored',  color: 'from-blue-600/20 to-indigo-600/20',   border: 'border-blue-600/30' },
-    { nombre: 'Unity',      icono: 'devicon-unity-plain',              color: 'from-gray-400/20 to-gray-600/20',     border: 'border-gray-400/30' },
-    { nombre: 'Linux',      icono: 'devicon-linux-plain',              color: 'from-yellow-500/20 to-gray-500/20',   border: 'border-yellow-500/30' },
-    { nombre: 'VS Code',    icono: 'devicon-vscode-plain colored',     color: 'from-blue-500/20 to-cyan-400/20',     border: 'border-blue-500/30' },
-];
-
 const SKILL_ICONS = {
     'java': 'devicon-java-plain colored', 'mysql': 'devicon-mysql-plain colored',
     'kotlin': 'devicon-kotlin-plain colored', 'python': 'devicon-python-plain colored',
@@ -58,17 +33,31 @@ const SKILL_ICONS = {
 
 const FLOAT_CLASSES = ['float-1', 'float-2', 'float-3'];
 
-function renderTechStack() {
+// Carga el tech stack desde la API y renderiza las tarjetas.
+// Los datos ya no están hardcodeados — vienen de la tabla tech_stack en Aiven.
+async function renderTechStack() {
     const mainContainer  = document.getElementById('tech-main');
     const otherContainer = document.getElementById('tech-other');
-    let idx = 0;
-    TECH_MAIN.forEach(tech  => mainContainer.appendChild(crearTechCard(tech, 'text-3xl md:text-4xl', idx++)));
-    TECH_OTHER.forEach(tech => otherContainer.appendChild(crearTechCard(tech, 'text-2xl md:text-3xl', idx++)));
+
+    try {
+        const r    = await fetch(`${API_URL}/tech-stack`);
+        const list = await r.json();
+
+        const main  = list.filter(t => t.grupo === 'main');
+        const other = list.filter(t => t.grupo === 'other');
+
+        let idx = 0;
+        main.forEach(tech  => mainContainer.appendChild(crearTechCard(tech, 'text-3xl md:text-4xl', idx++)));
+        other.forEach(tech => otherContainer.appendChild(crearTechCard(tech, 'text-2xl md:text-3xl', idx++)));
+    } catch (e) {
+        console.warn('No se pudo cargar el tech stack desde la API', e);
+    }
 }
 
 function crearTechCard(tech, iconSize, index) {
     const floatClass = FLOAT_CLASSES[index % 3];
-    const colorClass = tech.iconColor || '';
+    // La API devuelve icon_color (snake_case); el campo antiguo hardcodeado era iconColor (camelCase)
+    const colorClass = tech.icon_color || tech.iconColor || '';
     const card = document.createElement('div');
     card.className = `skill-card tech-enter flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br ${tech.color} border ${tech.border} cursor-default`;
     card.dataset.index = index;

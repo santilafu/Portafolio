@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Portafolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { background: #0f172a; }
+        .tab-btn.active { background: #6366f1; color: #fff; }
+        .tab-btn { transition: background .2s; }
+        input, textarea, select {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #f1f5f9;
+            border-radius: 6px;
+            padding: 6px 10px;
+            width: 100%;
+            outline: none;
+        }
+        input:focus, textarea:focus, select:focus { border-color: #6366f1; }
+        .card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 14px; }
+        .btn-primary { background: #6366f1; color: #fff; border-radius: 6px; padding: 6px 14px; cursor: pointer; border: none; }
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-danger { background: #ef4444; color: #fff; border-radius: 6px; padding: 4px 10px; cursor: pointer; border: none; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-edit { background: #0ea5e9; color: #fff; border-radius: 6px; padding: 4px 10px; cursor: pointer; border: none; }
+        .btn-edit:hover { background: #0284c7; }
+        .msg { padding: 8px 12px; border-radius: 6px; margin-top: 8px; font-size: 13px; }
+        .msg-ok  { background: #14532d; color: #86efac; }
+        .msg-err { background: #7f1d1d; color: #fca5a5; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-200">
+
+<!-- ══════════════════════════════════════════════
+     PANTALLA DE LOGIN
+     Se muestra primero. Si la contraseña es correcta
+     (responde 200 en un endpoint protegido), pasa al panel.
+══════════════════════════════════════════════ -->
+<div id="login-screen" class="flex items-center justify-center min-h-screen">
+    <div class="card w-full max-w-sm space-y-4">
+        <h1 class="text-xl font-bold text-center text-indigo-400">
+            <i class="fa-solid fa-lock mr-2"></i>Panel Admin
+        </h1>
+        <input id="pass-input" type="password" placeholder="Contraseña de administrador"
+               class="mt-2" autocomplete="current-password">
+        <button onclick="login()" class="btn-primary w-full mt-2">Entrar</button>
+        <div id="login-msg"></div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PANEL PRINCIPAL (oculto hasta hacer login)
+══════════════════════════════════════════════ -->
+<div id="admin-panel" class="hidden max-w-4xl mx-auto p-4">
+
+    <!-- Cabecera -->
+    <div class="flex items-center justify-between mb-6 pt-4">
+        <h1 class="text-2xl font-bold text-indigo-400">
+            <i class="fa-solid fa-screwdriver-wrench mr-2"></i>Panel Admin
+        </h1>
+        <div class="flex gap-3 items-center">
+            <a href="/" class="text-slate-400 hover:text-white text-sm">
+                <i class="fa-solid fa-arrow-left mr-1"></i>Portafolio
+            </a>
+            <button onclick="cerrarSesion()" class="btn-danger text-sm">
+                <i class="fa-solid fa-right-from-bracket mr-1"></i>Salir
+            </button>
+        </div>
+    </div>
+
+    <!-- Tabs de secciones -->
+    <div class="flex flex-wrap gap-2 mb-6">
+        <button class="tab-btn active px-4 py-2 rounded-lg text-sm font-medium" onclick="mostrarTab('perfil', this)">Perfil</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('proyectos', this)">Proyectos</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('habilidades', this)">Habilidades</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('experiencia', this)">Experiencia</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('techstack', this)">Tech Stack</button>
+    </div>
+
+    <!-- ─── TAB: PERFIL ─── -->
+    <div id="tab-perfil" class="tab-content space-y-4">
+        <div class="card space-y-3" id="perfil-form-container">
+            <h2 class="font-semibold text-indigo-300">Datos del perfil</h2>
+            <input id="p-nombre"   type="text" placeholder="Nombre completo">
+            <input id="p-titular"  type="text" placeholder="Titular (ej: Desarrollador Multiplataforma)">
+            <textarea id="p-sobre" rows="3"    placeholder="Sobre mí..."></textarea>
+            <input id="p-email"    type="email" placeholder="Email">
+            <input id="p-github"   type="text" placeholder="URL GitHub">
+            <input id="p-linkedin" type="text" placeholder="URL LinkedIn">
+            <input id="p-foto"     type="text" placeholder="Nombre del archivo de foto (ej: perfil.jpg)">
+            <input id="p-id"       type="hidden">
+            <button onclick="guardarPerfil()" class="btn-primary">Guardar cambios</button>
+            <div id="perfil-msg"></div>
+        </div>
+    </div>
+
+    <!-- ─── TAB: PROYECTOS ─── -->
+    <div id="tab-proyectos" class="tab-content hidden space-y-4">
+        <div class="card space-y-3">
+            <h2 class="font-semibold text-indigo-300">Añadir proyecto</h2>
+            <input id="proy-titulo" type="text" placeholder="Título del proyecto">
+            <textarea id="proy-desc" rows="3" placeholder="Descripción..."></textarea>
+            <input id="proy-repo" type="text" placeholder="URL repositorio (GitHub...)">
+            <input id="proy-demo" type="text" placeholder="URL demo (opcional)">
+            <button onclick="addProyecto()" class="btn-primary">Añadir proyecto</button>
+            <div id="proy-add-msg"></div>
+        </div>
+        <div id="lista-proyectos" class="space-y-2"></div>
+    </div>
+
+    <!-- ─── TAB: HABILIDADES ─── -->
+    <div id="tab-habilidades" class="tab-content hidden space-y-4">
+        <div class="card space-y-3">
+            <h2 class="font-semibold text-indigo-300">Añadir habilidad</h2>
+            <input id="hab-nombre" type="text" placeholder="Nombre (ej: Java)">
+            <select id="hab-nivel">
+                <option value="Basico">Básico</option>
+                <option value="Intermedio" selected>Intermedio</option>
+                <option value="Avanzado">Avanzado</option>
+            </select>
+            <button onclick="addHabilidad()" class="btn-primary">Añadir habilidad</button>
+            <div id="hab-add-msg"></div>
+        </div>
+        <div id="lista-habilidades" class="space-y-2"></div>
+    </div>
+
+    <!-- ─── TAB: EXPERIENCIA ─── -->
+    <div id="tab-experiencia" class="tab-content hidden space-y-4">
+        <div class="card space-y-3">
+            <h2 class="font-semibold text-indigo-300">Añadir experiencia</h2>
+            <input id="exp-empresa"  type="text" placeholder="Empresa">
+            <input id="exp-puesto"   type="text" placeholder="Puesto / Rol">
+            <div class="flex gap-2">
+                <div class="flex-1">
+                    <label class="text-xs text-slate-400">Fecha inicio</label>
+                    <input id="exp-inicio" type="date">
+                </div>
+                <div class="flex-1">
+                    <label class="text-xs text-slate-400">Fecha fin (vacío = en curso)</label>
+                    <input id="exp-fin" type="date">
+                </div>
+            </div>
+            <textarea id="exp-desc" rows="2" placeholder="Descripción de tareas..."></textarea>
+            <button onclick="addExperiencia()" class="btn-primary">Añadir experiencia</button>
+            <div id="exp-add-msg"></div>
+        </div>
+        <div id="lista-experiencia" class="space-y-2"></div>
+    </div>
+
+    <!-- ─── TAB: TECH STACK ─── -->
+    <div id="tab-techstack" class="tab-content hidden space-y-4">
+        <div class="card space-y-3">
+            <h2 class="font-semibold text-indigo-300">Añadir tecnología</h2>
+            <input id="ts-nombre"  type="text" placeholder="Nombre (ej: React)">
+            <input id="ts-icono"   type="text" placeholder="Clase del icono (ej: devicon-react-plain colored)">
+            <input id="ts-color"   type="text" placeholder="Gradiente Tailwind (ej: from-cyan-500/20 to-blue-500/20)">
+            <input id="ts-border"  type="text" placeholder="Borde Tailwind (ej: border-cyan-500/30)">
+            <input id="ts-iconcolor" type="text" placeholder="Color icono (ej: text-cyan-400) — opcional">
+            <select id="ts-grupo">
+                <option value="main">Principal (main)</option>
+                <option value="other" selected>Otras (other)</option>
+            </select>
+            <input id="ts-orden" type="number" placeholder="Orden (número)" min="0">
+            <button onclick="addTech()" class="btn-primary">Añadir tecnología</button>
+            <div id="ts-add-msg"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+                <h3 class="text-sm font-semibold text-indigo-300 mb-2">Principales</h3>
+                <div id="lista-tech-main" class="space-y-2"></div>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-indigo-300 mb-2">Otras</h3>
+                <div id="lista-tech-other" class="space-y-2"></div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /admin-panel -->
+
+<script>
+// ============================================================
+// ADMIN.JS — lógica del panel de administración
+// ============================================================
+
+const API = '/api';
+let adminPass = '';    // contraseña guardada en memoria (solo mientras la pestaña está abierta)
+let perfilId  = null;  // id del perfil actual (para PUT)
+
+// Cabeceras que van en todas las peticiones de escritura
+function headers() {
+    return {
+        'Content-Type': 'application/json',
+        'x-admin-password': adminPass
+    };
+}
+
+// Helper: muestra un mensaje de éxito o error en un elemento
+function mostrarMsg(id, texto, ok = true) {
+    const el = document.getElementById(id);
+    el.textContent = texto;
+    el.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err');
+    setTimeout(() => { el.textContent = ''; el.className = 'msg'; }, 3000);
+}
+
+// ── LOGIN ────────────────────────────────────────────────────
+async function login() {
+    const pass = document.getElementById('pass-input').value.trim();
+    if (!pass) return;
+
+    // Verificamos haciendo una petición protegida de prueba
+    const r = await fetch(`${API}/perfil`, { headers: { 'x-admin-password': pass } });
+    // Si el endpoint GET /api/perfil no está protegido, usamos uno PUT con body vacío para verificar auth
+    // Solución simple: intentamos PUT /api/perfil/0 (devuelve 401 si mal pass, 404 si pasa auth)
+    const r2 = await fetch(`${API}/perfil/0`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': pass },
+        body: JSON.stringify({ nombre: '_', email: '_' })
+    });
+
+    if (r2.status === 401) {
+        document.getElementById('login-msg').innerHTML =
+            '<p class="msg msg-err">Contraseña incorrecta</p>';
+        return;
+    }
+
+    // Contraseña correcta (r2 puede ser 404 — perfil id=0 no existe, pero pasó auth)
+    adminPass = pass;
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('admin-panel').classList.remove('hidden');
+    cargarTodo();
+}
+
+// Cerrar sesión: limpia la contraseña y vuelve al login
+function cerrarSesion() {
+    adminPass = '';
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('admin-panel').classList.add('hidden');
+    document.getElementById('pass-input').value = '';
+}
+
+// Permite enviar con Enter en el campo de contraseña
+document.getElementById('pass-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+});
+
+// ── NAVEGACIÓN POR TABS ──────────────────────────────────────
+function mostrarTab(nombre, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.classList.add('bg-slate-700');
+    });
+    document.getElementById(`tab-${nombre}`).classList.remove('hidden');
+    btn.classList.add('active');
+    btn.classList.remove('bg-slate-700');
+}
+
+// ── CARGA INICIAL ────────────────────────────────────────────
+function cargarTodo() {
+    cargarPerfil();
+    cargarProyectos();
+    cargarHabilidades();
+    cargarExperiencia();
+    cargarTechStack();
+}
+
+// ── PERFIL ───────────────────────────────────────────────────
+async function cargarPerfil() {
+    const r = await fetch(`${API}/perfil`);
+    const data = await r.json();
+    if (!data.length) return;
+    const p = data[0];
+    perfilId = p.id;
+    document.getElementById('p-id').value      = p.id;
+    document.getElementById('p-nombre').value  = p.nombre   || '';
+    document.getElementById('p-titular').value = p.titular  || '';
+    document.getElementById('p-sobre').value   = p.sobre_mi || '';
+    document.getElementById('p-email').value   = p.email    || '';
+    document.getElementById('p-github').value  = p.enlace_github   || '';
+    document.getElementById('p-linkedin').value= p.enlace_linkedin || '';
+    document.getElementById('p-foto').value    = p.foto_perfil     || '';
+}
+
+async function guardarPerfil() {
+    const id = document.getElementById('p-id').value;
+    if (!id) { mostrarMsg('perfil-msg', 'No se encontró un perfil', false); return; }
+
+    const body = {
+        nombre:          document.getElementById('p-nombre').value,
+        titular:         document.getElementById('p-titular').value,
+        sobre_mi:        document.getElementById('p-sobre').value,
+        email:           document.getElementById('p-email').value,
+        enlace_github:   document.getElementById('p-github').value,
+        enlace_linkedin: document.getElementById('p-linkedin').value,
+        foto_perfil:     document.getElementById('p-foto').value,
+    };
+
+    const r = await fetch(`${API}/perfil/${id}`, {
+        method: 'PUT', headers: headers(), body: JSON.stringify(body)
+    });
+    const data = await r.json();
+    mostrarMsg('perfil-msg', r.ok ? '✅ Perfil actualizado' : `❌ ${data.error}`, r.ok);
+}
+
+// ── PROYECTOS ────────────────────────────────────────────────
+async function cargarProyectos() {
+    const r = await fetch(`${API}/proyectos`);
+    const lista = await r.json();
+    const contenedor = document.getElementById('lista-proyectos');
+    contenedor.innerHTML = '';
+    lista.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'card flex items-start justify-between gap-3';
+        div.innerHTML = `
+            <div class="flex-1 min-w-0">
+                <p class="font-medium text-sm truncate">${p.titulo}</p>
+                <p class="text-xs text-slate-400 truncate">${p.descripcion || '—'}</p>
+                ${p.url_repo ? `<a href="${p.url_repo}" target="_blank" class="text-xs text-indigo-400 hover:underline">${p.url_repo}</a>` : ''}
+            </div>
+            <button class="btn-danger flex-shrink-0" onclick="eliminar('proyectos', ${p.id}, this)">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        contenedor.appendChild(div);
+    });
+}
+
+async function addProyecto() {
+    if (!perfilId) { mostrarMsg('proy-add-msg', 'Carga el perfil primero', false); return; }
+    const body = {
+        perfil_id:   perfilId,
+        titulo:      document.getElementById('proy-titulo').value,
+        descripcion: document.getElementById('proy-desc').value,
+        url_repo:    document.getElementById('proy-repo').value,
+        url_demo:    document.getElementById('proy-demo').value,
+    };
+    if (!body.titulo) { mostrarMsg('proy-add-msg', 'El título es obligatorio', false); return; }
+    const r = await fetch(`${API}/proyectos`, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+    const data = await r.json();
+    mostrarMsg('proy-add-msg', r.ok ? '✅ Proyecto añadido' : `❌ ${data.error}`, r.ok);
+    if (r.ok) {
+        ['proy-titulo','proy-desc','proy-repo','proy-demo'].forEach(id => document.getElementById(id).value = '');
+        cargarProyectos();
+    }
+}
+
+// ── HABILIDADES ──────────────────────────────────────────────
+async function cargarHabilidades() {
+    const r = await fetch(`${API}/habilidades`);
+    const lista = await r.json();
+    const contenedor = document.getElementById('lista-habilidades');
+    contenedor.innerHTML = '';
+    lista.forEach(h => {
+        const div = document.createElement('div');
+        div.className = 'card flex items-center justify-between';
+        div.innerHTML = `
+            <span class="text-sm">${h.nombre} <span class="text-slate-400 text-xs">(${h.nivel})</span></span>
+            <button class="btn-danger" onclick="eliminar('habilidades', ${h.id}, this)">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        contenedor.appendChild(div);
+    });
+}
+
+async function addHabilidad() {
+    if (!perfilId) { mostrarMsg('hab-add-msg', 'Carga el perfil primero', false); return; }
+    const body = {
+        perfil_id: perfilId,
+        nombre:    document.getElementById('hab-nombre').value,
+        nivel:     document.getElementById('hab-nivel').value,
+    };
+    if (!body.nombre) { mostrarMsg('hab-add-msg', 'El nombre es obligatorio', false); return; }
+    const r = await fetch(`${API}/habilidades`, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+    const data = await r.json();
+    mostrarMsg('hab-add-msg', r.ok ? '✅ Habilidad añadida' : `❌ ${data.error}`, r.ok);
+    if (r.ok) { document.getElementById('hab-nombre').value = ''; cargarHabilidades(); }
+}
+
+// ── EXPERIENCIA ──────────────────────────────────────────────
+async function cargarExperiencia() {
+    const r = await fetch(`${API}/experiencia`);
+    const lista = await r.json();
+    const contenedor = document.getElementById('lista-experiencia');
+    contenedor.innerHTML = '';
+    lista.forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'card flex items-start justify-between gap-3';
+        div.innerHTML = `
+            <div class="flex-1 min-w-0">
+                <p class="font-medium text-sm">${e.puesto}</p>
+                <p class="text-xs text-slate-400">${e.empresa} · ${e.fecha_inicio?.substring(0,7)} – ${e.fecha_fin?.substring(0,7) || 'Actualidad'}</p>
+            </div>
+            <button class="btn-danger flex-shrink-0" onclick="eliminar('experiencia', ${e.id}, this)">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        contenedor.appendChild(div);
+    });
+}
+
+async function addExperiencia() {
+    if (!perfilId) { mostrarMsg('exp-add-msg', 'Carga el perfil primero', false); return; }
+    const body = {
+        perfil_id:    perfilId,
+        empresa:      document.getElementById('exp-empresa').value,
+        puesto:       document.getElementById('exp-puesto').value,
+        fecha_inicio: document.getElementById('exp-inicio').value,
+        fecha_fin:    document.getElementById('exp-fin').value || null,
+        descripcion:  document.getElementById('exp-desc').value,
+    };
+    if (!body.empresa || !body.puesto || !body.fecha_inicio) {
+        mostrarMsg('exp-add-msg', 'Empresa, puesto y fecha inicio son obligatorios', false);
+        return;
+    }
+    const r = await fetch(`${API}/experiencia`, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+    const data = await r.json();
+    mostrarMsg('exp-add-msg', r.ok ? '✅ Experiencia añadida' : `❌ ${data.error}`, r.ok);
+    if (r.ok) {
+        ['exp-empresa','exp-puesto','exp-inicio','exp-fin','exp-desc'].forEach(id => document.getElementById(id).value = '');
+        cargarExperiencia();
+    }
+}
+
+// ── TECH STACK ───────────────────────────────────────────────
+async function cargarTechStack() {
+    const r = await fetch(`${API}/tech-stack`);
+    const lista = await r.json();
+    const main  = lista.filter(t => t.grupo === 'main');
+    const other = lista.filter(t => t.grupo === 'other');
+    renderTechLista(main,  'lista-tech-main');
+    renderTechLista(other, 'lista-tech-other');
+}
+
+function renderTechLista(lista, contenedorId) {
+    const contenedor = document.getElementById(contenedorId);
+    contenedor.innerHTML = '';
+    lista.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'card flex items-center justify-between gap-2';
+        div.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+                <i class="${t.icono} ${t.icon_color || ''} text-lg flex-shrink-0"></i>
+                <div class="min-w-0">
+                    <p class="text-sm font-medium truncate">${t.nombre}</p>
+                    <p class="text-xs text-slate-500 truncate">orden: ${t.orden}</p>
+                </div>
+            </div>
+            <button class="btn-danger flex-shrink-0" onclick="eliminar('tech-stack', ${t.id}, this)">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        contenedor.appendChild(div);
+    });
+}
+
+async function addTech() {
+    const body = {
+        nombre:     document.getElementById('ts-nombre').value,
+        icono:      document.getElementById('ts-icono').value,
+        color:      document.getElementById('ts-color').value,
+        border:     document.getElementById('ts-border').value,
+        icon_color: document.getElementById('ts-iconcolor').value,
+        grupo:      document.getElementById('ts-grupo').value,
+        orden:      parseInt(document.getElementById('ts-orden').value) || 0,
+    };
+    if (!body.nombre || !body.icono) { mostrarMsg('ts-add-msg', 'Nombre e icono son obligatorios', false); return; }
+    const r = await fetch(`${API}/tech-stack`, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+    const data = await r.json();
+    mostrarMsg('ts-add-msg', r.ok ? '✅ Tecnología añadida' : `❌ ${data.error}`, r.ok);
+    if (r.ok) {
+        ['ts-nombre','ts-icono','ts-color','ts-border','ts-iconcolor','ts-orden'].forEach(id => document.getElementById(id).value = '');
+        cargarTechStack();
+    }
+}
+
+// ── ELIMINAR GENÉRICO ────────────────────────────────────────
+async function eliminar(recurso, id, btn) {
+    if (!confirm(`¿Eliminar este registro?`)) return;
+    btn.disabled = true;
+    const r = await fetch(`${API}/${recurso}/${id}`, { method: 'DELETE', headers: headers() });
+    if (r.ok) {
+        btn.closest('.card').remove();
+    } else {
+        const data = await r.json();
+        alert(`❌ ${data.error}`);
+        btn.disabled = false;
+    }
+}
+</script>
+</body>
+</html>

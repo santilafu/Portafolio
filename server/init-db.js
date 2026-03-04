@@ -88,6 +88,24 @@ async function crearTablas() {
         `);
         console.log('✅ Tabla experiencia creada');
 
+        // ── TABLA TECH_STACK ─────────────────────────────────────
+        // Tecnologías del portfolio mostradas como tarjetas visuales.
+        // 'grupo' separa entre tecnologías principales (main) y otras (other).
+        // 'orden' permite reordenarlas desde el panel de administración.
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS tech_stack (
+                id         INT AUTO_INCREMENT PRIMARY KEY,
+                nombre     VARCHAR(100) NOT NULL,           -- nombre de la tecnología (ej: "Java")
+                icono      VARCHAR(255) NOT NULL,           -- clase CSS del icono (devicon o fa)
+                color      VARCHAR(255) DEFAULT '',         -- clases Tailwind para el gradiente
+                border     VARCHAR(255) DEFAULT '',         -- clase Tailwind para el borde
+                icon_color VARCHAR(100) DEFAULT '',         -- clase Tailwind para el color del icono
+                grupo      ENUM('main','other') NOT NULL DEFAULT 'other', -- sección donde aparece
+                orden      INT DEFAULT 0                    -- posición dentro del grupo
+            )
+        `);
+        console.log('✅ Tabla tech_stack creada');
+
         console.log('\n🎉 Todas las tablas creadas correctamente en Aiven');
 
     } catch (error) {

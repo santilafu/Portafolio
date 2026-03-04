@@ -130,6 +130,19 @@ MySQL gestionado en la nube con conexion SSL obligatoria. Las credenciales se co
 
 
 
+## Panel de administración
+
+Accesible en `/admin`. Protegido con contraseña (variable de entorno `ADMIN_PASSWORD`).
+
+Permite gestionar sin tocar código:
+- **Perfil** — editar nombre, titular, sobre mí, foto y enlaces
+- **Proyectos** — añadir y eliminar proyectos
+- **Habilidades** — añadir y eliminar habilidades
+- **Experiencia** — añadir y eliminar experiencia laboral
+- **Tech Stack** — añadir y eliminar tecnologías (los iconos se cargan desde la BD)
+
+---
+
 ## API Endpoints
 
 | Metodo | Ruta | Descripcion |
@@ -149,6 +162,13 @@ MySQL gestionado en la nube con conexion SSL obligatoria. Las credenciales se co
 | POST | `/api/experiencia` | Crear experiencia |
 | PUT | `/api/experiencia/:id` | Actualizar experiencia |
 | DELETE | `/api/experiencia/:id` | Eliminar experiencia |
+| GET | `/api/tech-stack` | Listar tech stack |
+| POST | `/api/tech-stack` | Crear tecnologia |
+| PUT | `/api/tech-stack/:id` | Actualizar tecnologia |
+| DELETE | `/api/tech-stack/:id` | Eliminar tecnologia |
+| GET | `/api/visitas` | Incrementa y devuelve contador |
+| GET | `/api/visitas-total` | Lee el contador sin incrementar |
+| GET | `/api/ping` | Health check |
 
 ---
 
@@ -162,6 +182,7 @@ MySQL gestionado en la nube con conexion SSL obligatoria. Las credenciales se co
 | SSL | Conexion cifrada con la BD en Aiven |
 | dotenv | Credenciales fuera del codigo fuente |
 | CORS | Origen configurable desde `.env` |
+| ADMIN_PASSWORD | Panel admin protegido por cabecera HTTP |
 
 ---
 
@@ -169,10 +190,11 @@ MySQL gestionado en la nube con conexion SSL obligatoria. Las credenciales se co
 
 | Capa | Tecnologias |
 |------|-------------|
-| Backend | Node.js, Express, mysql2, Helmet, dotenv, express-rate-limit |
+| Backend | Node.js, Express, mysql2, Helmet, dotenv, express-rate-limit, compression, Resend |
 | Frontend | HTML5, Tailwind CSS, JavaScript vanilla, Font Awesome, Devicon |
-| Base de datos | MySQL (Aiven — cloud managed) |
+| Base de datos | MySQL (Aiven — cloud managed, 5 tablas) |
 | Despliegue | Render (backend), Aiven (BD) |
+| Optimizaciones | Compresion gzip, Cache-Control, panel admin, tech stack en BD |
 
 ---
 

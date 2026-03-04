@@ -22,11 +22,12 @@
 // Cargamos las variables de entorno antes que cualquier otra cosa
 require('dotenv').config({ override: true });
 
-const express = require('express');
-const cors    = require('cors');
-const helmet  = require('helmet');
-const rateLimit = require('express-rate-limit');
-const path    = require('path');
+const express     = require('express');
+const cors        = require('cors');
+const helmet      = require('helmet');
+const rateLimit   = require('express-rate-limit');
+const compression = require('compression');
+const path        = require('path');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -36,6 +37,10 @@ const PORT = process.env.PORT || 3000;
 // X-Forwarded-For para identificar la IP real del cliente.
 // Sin esto, express-rate-limit lanza un error en producción.
 app.set('trust proxy', 1);
+
+// compression: comprime las respuestas HTTP (gzip/deflate).
+// Reduce el tamaño transferido hasta un 70% en respuestas JSON y HTML.
+app.use(compression());
 
 // ============================================================
 // MIDDLEWARES DE SEGURIDAD
@@ -100,6 +105,37 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+// Panel de administración
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
+});
+
+// ============================================================
+// ADMIN AUTH MIDDLEWARE
+// Protege todas las rutas de escritura (POST, PUT, DELETE).
+// El panel admin envía la contraseña en la cabecera x-admin-password.
+// La contraseña se configura en la variable de entorno ADMIN_PASSWORD.
+// ============================================================
+
+function adminAuth(req, res, next) {
+    const pass = req.headers['x-admin-password'];
+    if (!pass || pass !== process.env.ADMIN_PASSWORD) {
+        return res.status(401).json({ error: 'No autorizado' });
+    }
+    next();
+}
+
+// ============================================================
+// CACHE HELPER
+// Añade cabeceras de caché a las respuestas GET para que el
+// navegador no repita la misma petición en cada carga.
+// max-age=60: el navegador cachea la respuesta 60 segundos.
+// ============================================================
+
+function setCache(res) {
+    res.set('Cache-Control', 'public, max-age=60');
+}
+
 // ============================================================
 // PERFIL
 // Tabla: perfil — datos personales del desarrollador
@@ -113,6 +149,7 @@ app.get('/', (req, res) => {
 app.get('/api/perfil', async (req, res) => {
     try {
         // db.query devuelve un array: [filas, campos]. Solo nos interesan las filas.
+        setCache(res);
         const [filas] = await db.query('SELECT * FROM perfil');
         res.json(filas);
     } catch (error) {
@@ -126,7 +163,7 @@ app.get('/api/perfil', async (req, res) => {
  * Crea un nuevo perfil con los datos del body (JSON).
  * nombre y email son obligatorios; si faltan devolvemos 400 (Bad Request).
  */
-app.post('/api/perfil', async (req, res) => {
+app.post('/api/perfil', adminAuth, async (req, res) => {
     try {
         const { nombre, titular, sobre_mi, email, enlace_github, enlace_linkedin } = req.body;
 
@@ -153,7 +190,7 @@ app.post('/api/perfil', async (req, res) => {
  * Acepta tanto foto_perfil como foto_url en el body (compatibilidad).
  * Si no existe el perfil, devolvemos 404 (Not Found).
  */
-app.put('/api/perfil/:id', async (req, res) => {
+app.put('/api/perfil/:id', adminAuth, async (req, res) => {
     try {
         const idPerfil = req.params.id; // id que viene en la URL
 
@@ -193,6 +230,7 @@ app.put('/api/perfil/:id', async (req, res) => {
  */
 app.get('/api/proyectos', async (req, res) => {
     try {
+        setCache(res);
         const [proyectos] = await db.query('SELECT * FROM proyectos');
         res.json(proyectos);
     } catch (error) {
@@ -206,7 +244,7 @@ app.get('/api/proyectos', async (req, res) => {
  * Crea un nuevo proyecto vinculado a un perfil.
  * perfil_id y titulo son obligatorios.
  */
-app.post('/api/proyectos', async (req, res) => {
+app.post('/api/proyectos', adminAuth, async (req, res) => {
     try {
         const { perfil_id, titulo, descripcion, url_repo, url_demo } = req.body;
 
@@ -228,7 +266,7 @@ app.post('/api/proyectos', async (req, res) => {
  * PUT /api/proyectos/:id
  * Actualiza los datos de un proyecto existente.
  */
-app.put('/api/proyectos/:id', async (req, res) => {
+app.put('/api/proyectos/:id', adminAuth, async (req, res) => {
     try {
         const idProyecto = req.params.id;
         const { titulo, descripcion, url_repo, url_demo } = req.body;
@@ -256,7 +294,7 @@ app.put('/api/proyectos/:id', async (req, res) => {
  * Elimina un proyecto por su id.
  * Si no existe, devolvemos 404.
  */
-app.delete('/api/proyectos/:id', async (req, res) => {
+app.delete('/api/proyectos/:id', adminAuth, async (req, res) => {
     try {
         const idProyecto = req.params.id;
         const [resultado] = await db.query('DELETE FROM proyectos WHERE id = ?', [idProyecto]);
@@ -283,6 +321,7 @@ app.delete('/api/proyectos/:id', async (req, res) => {
  */
 app.get('/api/habilidades', async (req, res) => {
     try {
+        setCache(res);
         const [habilidades] = await db.query('SELECT * FROM habilidades');
         res.json(habilidades);
     } catch (error) {
@@ -296,7 +335,7 @@ app.get('/api/habilidades', async (req, res) => {
  * Añade una nueva habilidad vinculada a un perfil.
  * perfil_id y nombre son obligatorios.
  */
-app.post('/api/habilidades', async (req, res) => {
+app.post('/api/habilidades', adminAuth, async (req, res) => {
     try {
         const { perfil_id, nombre, nivel } = req.body;
 
@@ -318,7 +357,7 @@ app.post('/api/habilidades', async (req, res) => {
  * PUT /api/habilidades/:id
  * Actualiza el nombre o nivel de una habilidad.
  */
-app.put('/api/habilidades/:id', async (req, res) => {
+app.put('/api/habilidades/:id', adminAuth, async (req, res) => {
     try {
         const idHabilidad = req.params.id;
         const { nombre, nivel } = req.body;
@@ -345,7 +384,7 @@ app.put('/api/habilidades/:id', async (req, res) => {
  * DELETE /api/habilidades/:id
  * Elimina una habilidad por su id.
  */
-app.delete('/api/habilidades/:id', async (req, res) => {
+app.delete('/api/habilidades/:id', adminAuth, async (req, res) => {
     try {
         const idHabilidad = req.params.id;
         const [resultado] = await db.query('DELETE FROM habilidades WHERE id = ?', [idHabilidad]);
@@ -373,6 +412,7 @@ app.delete('/api/habilidades/:id', async (req, res) => {
  */
 app.get('/api/experiencia', async (req, res) => {
     try {
+        setCache(res);
         const [experiencia] = await db.query('SELECT * FROM experiencia ORDER BY fecha_inicio DESC');
         res.json(experiencia);
     } catch (error) {
@@ -387,7 +427,7 @@ app.get('/api/experiencia', async (req, res) => {
  * perfil_id, empresa, puesto y fecha_inicio son obligatorios.
  * fecha_fin puede ser null si el trabajo sigue en curso.
  */
-app.post('/api/experiencia', async (req, res) => {
+app.post('/api/experiencia', adminAuth, async (req, res) => {
     try {
         const { perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion } = req.body;
 
@@ -409,7 +449,7 @@ app.post('/api/experiencia', async (req, res) => {
  * PUT /api/experiencia/:id
  * Actualiza un registro de experiencia existente.
  */
-app.put('/api/experiencia/:id', async (req, res) => {
+app.put('/api/experiencia/:id', adminAuth, async (req, res) => {
     try {
         const idExperiencia = req.params.id;
         const { empresa, puesto, fecha_inicio, fecha_fin, descripcion } = req.body;
@@ -436,7 +476,7 @@ app.put('/api/experiencia/:id', async (req, res) => {
  * DELETE /api/experiencia/:id
  * Elimina un registro de experiencia por su id.
  */
-app.delete('/api/experiencia/:id', async (req, res) => {
+app.delete('/api/experiencia/:id', adminAuth, async (req, res) => {
     try {
         const idExperiencia = req.params.id;
         const [resultado] = await db.query('DELETE FROM experiencia WHERE id = ?', [idExperiencia]);
@@ -580,6 +620,59 @@ app.get('/api/visitas', async (req, res) => {
 // definido. Solo llega aquí si todos los middlewares y rutas
 // se han registrado correctamente.
 // ============================================================
+// ============================================================
+// TECH STACK
+// Tabla: tech_stack — iconos de tecnologías del portafolio.
+// Antes estaban hardcodeados en app.js; ahora se gestionan desde la BD.
+// ============================================================
+
+app.get('/api/tech-stack', async (req, res) => {
+    try {
+        setCache(res);
+        const [filas] = await db.query('SELECT * FROM tech_stack ORDER BY grupo, orden');
+        res.json(filas);
+    } catch (error) {
+        console.error('Error al obtener tech stack:', error);
+        res.status(500).json({ error: 'Error al consultar el tech stack' });
+    }
+});
+
+app.post('/api/tech-stack', adminAuth, async (req, res) => {
+    try {
+        const { nombre, icono, color, border, icon_color, grupo, orden } = req.body;
+        if (!nombre || !icono) return res.status(400).json({ error: 'nombre e icono son obligatorios' });
+        const [r] = await db.query(
+            'INSERT INTO tech_stack (nombre, icono, color, border, icon_color, grupo, orden) VALUES (?,?,?,?,?,?,?)',
+            [nombre, icono, color || '', border || '', icon_color || '', grupo || 'other', orden || 0]
+        );
+        res.status(201).json({ id: r.insertId });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al crear tech stack' });
+    }
+});
+
+app.put('/api/tech-stack/:id', adminAuth, async (req, res) => {
+    try {
+        const { nombre, icono, color, border, icon_color, grupo, orden } = req.body;
+        await db.query(
+            'UPDATE tech_stack SET nombre=?, icono=?, color=?, border=?, icon_color=?, grupo=?, orden=? WHERE id=?',
+            [nombre, icono, color, border, icon_color, grupo, orden, req.params.id]
+        );
+        res.json({ ok: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al actualizar tech stack' });
+    }
+});
+
+app.delete('/api/tech-stack/:id', adminAuth, async (req, res) => {
+    try {
+        await db.query('DELETE FROM tech_stack WHERE id = ?', [req.params.id]);
+        res.json({ ok: true });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al eliminar tech stack' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 

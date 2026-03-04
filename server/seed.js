@@ -67,6 +67,33 @@ const datosHabilidades = [
     { nombre: 'C#',      nivel: 'Basico' }
 ];
 
+// Tecnologías principales (sección destacada)
+const datosTechMain = [
+    { nombre: 'Java',      icono: 'devicon-java-plain colored',       color: 'from-red-500/20 to-orange-500/20',   border: 'border-red-500/30',     icon_color: '',              grupo: 'main', orden: 1 },
+    { nombre: 'MySQL',     icono: 'devicon-mysql-plain colored',      color: 'from-blue-500/20 to-cyan-500/20',    border: 'border-blue-500/30',    icon_color: '',              grupo: 'main', orden: 2 },
+    { nombre: 'HTML5',     icono: 'devicon-html5-plain colored',      color: 'from-orange-500/20 to-red-500/20',   border: 'border-orange-500/30',  icon_color: '',              grupo: 'main', orden: 3 },
+    { nombre: 'CSS3',      icono: 'devicon-css3-plain colored',       color: 'from-blue-400/20 to-blue-600/20',    border: 'border-blue-400/30',    icon_color: '',              grupo: 'main', orden: 4 },
+    { nombre: 'Git',       icono: 'devicon-git-plain colored',        color: 'from-orange-600/20 to-red-600/20',   border: 'border-orange-600/30',  icon_color: '',              grupo: 'main', orden: 5 },
+    { nombre: 'IntelliJ',  icono: 'devicon-intellij-plain colored',   color: 'from-pink-500/20 to-blue-500/20',    border: 'border-pink-500/30',    icon_color: '',              grupo: 'main', orden: 6 },
+    { nombre: 'Claude',    icono: 'fa-solid fa-brain',                color: 'from-amber-500/20 to-orange-500/20', border: 'border-amber-500/30',   icon_color: 'text-amber-400', grupo: 'main', orden: 7 },
+    { nombre: 'Gemini',    icono: 'fa-solid fa-wand-magic-sparkles',  color: 'from-blue-400/20 to-cyan-400/20',    border: 'border-blue-400/30',    icon_color: 'text-blue-400', grupo: 'main', orden: 8 },
+    { nombre: 'Copilot',   icono: 'fa-brands fa-github',              color: 'from-gray-300/20 to-gray-500/20',    border: 'border-gray-400/30',    icon_color: 'text-gray-300', grupo: 'main', orden: 9 },
+];
+
+// Otras tecnologías conocidas
+const datosTechOther = [
+    { nombre: 'Kotlin',     icono: 'devicon-kotlin-plain colored',     color: 'from-purple-500/20 to-violet-500/20', border: 'border-purple-500/30',  icon_color: '', grupo: 'other', orden: 1 },
+    { nombre: 'Python',     icono: 'devicon-python-plain colored',     color: 'from-yellow-500/20 to-blue-500/20',   border: 'border-yellow-500/30',  icon_color: '', grupo: 'other', orden: 2 },
+    { nombre: 'JavaScript', icono: 'devicon-javascript-plain colored', color: 'from-yellow-400/20 to-yellow-600/20', border: 'border-yellow-400/30',  icon_color: '', grupo: 'other', orden: 3 },
+    { nombre: 'Node.js',    icono: 'devicon-nodejs-plain colored',     color: 'from-green-500/20 to-green-700/20',   border: 'border-green-500/30',   icon_color: '', grupo: 'other', orden: 4 },
+    { nombre: 'Spring',     icono: 'devicon-spring-plain colored',     color: 'from-green-400/20 to-green-600/20',   border: 'border-green-400/30',   icon_color: '', grupo: 'other', orden: 5 },
+    { nombre: 'C#',         icono: 'devicon-csharp-plain colored',     color: 'from-purple-600/20 to-violet-600/20', border: 'border-purple-600/30',  icon_color: '', grupo: 'other', orden: 6 },
+    { nombre: 'C++',        icono: 'devicon-cplusplus-plain colored',  color: 'from-blue-600/20 to-indigo-600/20',   border: 'border-blue-600/30',    icon_color: '', grupo: 'other', orden: 7 },
+    { nombre: 'Unity',      icono: 'devicon-unity-plain',              color: 'from-gray-400/20 to-gray-600/20',     border: 'border-gray-400/30',    icon_color: '', grupo: 'other', orden: 8 },
+    { nombre: 'Linux',      icono: 'devicon-linux-plain',              color: 'from-yellow-500/20 to-gray-500/20',   border: 'border-yellow-500/30',  icon_color: '', grupo: 'other', orden: 9 },
+    { nombre: 'VS Code',    icono: 'devicon-vscode-plain colored',     color: 'from-blue-500/20 to-cyan-400/20',     border: 'border-blue-500/30',    icon_color: '', grupo: 'other', orden: 10 },
+];
+
 // fecha_fin null significa que sigue en curso
 const datosExperiencia = [
     {
@@ -172,6 +199,24 @@ async function poblarBaseDatos() {
                     [perfilId, exp.empresa, exp.puesto, exp.fecha_inicio, exp.fecha_fin, exp.descripcion]
                 );
                 console.log(`✅ Experiencia insertada: ${exp.puesto} en ${exp.empresa}`);
+            }
+        }
+
+        // ── TECH STACK ───────────────────────────────────────────
+        // La tabla tech_stack no tiene perfil_id (es global del portfolio)
+        const [techExistente] = await conexion.query('SELECT id FROM tech_stack LIMIT 1');
+
+        if (techExistente.length > 0) {
+            console.log('ℹ️  Tech stack ya existente, se omite la inserción');
+        } else {
+            const todasLasTechs = [...datosTechMain, ...datosTechOther];
+            for (const tech of todasLasTechs) {
+                await conexion.query(
+                    `INSERT INTO tech_stack (nombre, icono, color, border, icon_color, grupo, orden)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    [tech.nombre, tech.icono, tech.color, tech.border, tech.icon_color, tech.grupo, tech.orden]
+                );
+                console.log(`✅ Tech insertada: ${tech.nombre} (${tech.grupo})`);
             }
         }
 

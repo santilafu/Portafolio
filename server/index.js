@@ -541,6 +541,19 @@ async function inicializarVisitas() {
 }
 
 /**
+ * GET /api/visitas-total
+ * Solo lee el contador sin incrementarlo. Usado por el easter egg.
+ */
+app.get('/api/visitas-total', async (req, res) => {
+    try {
+        const [[fila]] = await db.query('SELECT total FROM visitas WHERE id = 1');
+        res.json({ total: fila.total });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al leer visitas' });
+    }
+});
+
+/**
  * GET /api/visitas
  * Incrementa el contador en 1 y devuelve el total actualizado.
  * El auto-ping usa /api/ping (no este endpoint) para no inflar el contador.

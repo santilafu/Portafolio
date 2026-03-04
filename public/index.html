@@ -174,6 +174,20 @@
 
 <body class="bg-slate-950 text-gray-200 font-sans">
 
+<!-- Panel de stats secreto (se activa con 5 clics en el logo S.L.H.) -->
+<div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] bg-slate-900 border border-purple-500/40 rounded-2xl p-5 shadow-2xl shadow-purple-900/30 min-w-[200px]">
+    <div class="flex items-center justify-between mb-3">
+        <span class="text-xs uppercase tracking-widest text-purple-400 font-semibold">Stats secretos</span>
+        <button onclick="document.getElementById('stats-panel').classList.add('hidden')" class="text-gray-500 hover:text-white text-lg leading-none">×</button>
+    </div>
+    <div class="space-y-2 text-sm">
+        <div class="flex items-center justify-between gap-6">
+            <span class="text-gray-400">Visitas totales</span>
+            <span id="stats-visitas" class="text-white font-bold">...</span>
+        </div>
+    </div>
+</div>
+
 <!-- Barra de progreso de lectura (se llena al hacer scroll) -->
 <div id="scroll-progress"></div>
 

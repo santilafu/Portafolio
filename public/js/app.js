@@ -610,6 +610,43 @@ function mostrarFeedback(el, texto, colorClass) {
 }
 
 // ============================================================
+// EASTER EGG — panel de stats secreto
+// 5 clics seguidos en el logo S.L.H. abre el panel con las stats.
+// El contador se resetea si pasan más de 2 segundos entre clics.
+// ============================================================
+
+function iniciarEasterEgg() {
+    const logo  = document.querySelector('a.gradient-text');
+    const panel = document.getElementById('stats-panel');
+    if (!logo || !panel) return;
+
+    let clics = 0;
+    let timer = null;
+
+    logo.addEventListener('click', async (e) => {
+        e.preventDefault(); // evitamos navegar a #inicio mientras hacemos clics
+        clics++;
+
+        // Resetear contador si pasan más de 2 segundos sin clic
+        clearTimeout(timer);
+        timer = setTimeout(() => { clics = 0; }, 2000);
+
+        if (clics >= 5) {
+            clics = 0;
+            // Pedimos el total actual (sin incrementar — endpoint GET directo a BD)
+            try {
+                const res  = await fetch('/api/visitas-total');
+                const data = await res.json();
+                document.getElementById('stats-visitas').textContent = data.total;
+            } catch {
+                document.getElementById('stats-visitas').textContent = '—';
+            }
+            panel.classList.remove('hidden');
+        }
+    });
+}
+
+// ============================================================
 // VISITAS
 // ============================================================
 
@@ -689,4 +726,5 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarActiveNav();
     iniciarFormContacto();
     iniciarThemeToggle();
+    iniciarEasterEgg();
 });

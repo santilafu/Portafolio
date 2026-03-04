@@ -128,6 +128,8 @@ MySQL gestionado en la nube con conexion SSL obligatoria. Las credenciales se co
 
 ---
 
+
+
 ## API Endpoints
 
 | Metodo | Ruta | Descripcion |

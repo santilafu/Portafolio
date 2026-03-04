@@ -2,46 +2,34 @@
 <!--
     index.html
     ----------
-    Página principal del portafolio. Es un SPA (Single Page Application) ligera:
-    todo el contenido está en un único HTML y el JS lo rellena dinámicamente
-    consultando nuestra API REST (server/index.js).
+    Página principal del portafolio. SPA ligera donde Express sirve
+    tanto el HTML como la API REST.
 
-    Estructura de secciones:
-      <head>   → metadatos, librerías externas, estilos CSS propios
-      <nav>    → barra de navegación fija con scroll
-      <header> → hero (presentación principal)
-      <main>   → tech stack, proyectos, habilidades, experiencia
-      <section>→ contacto
-      <footer> → pie de página
-      <script> → carga app.js que hace los fetch a la API
+    Novedades v2:
+      - Barra de progreso de lectura (scroll progress)
+      - Cursor personalizado con glow púrpura
+      - Toast de bienvenida (primera visita)
+      - Sección GitHub stats en tiempo real
+      - Botón de descarga de CV
+      - Formulario de contacto real (nodemailer)
+      - Toggle modo claro / oscuro
+      - Sección activa en navbar al hacer scroll
 -->
 <html lang="es" class="scroll-smooth">
 <head>
-    <!-- Codificación de caracteres: UTF-8 soporta acentos, ñ, emojis, etc. -->
     <meta charset="UTF-8">
-    <!-- Viewport: hace que la página se adapte al tamaño de pantalla (responsive) -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Santiago Lafuente | Desarrollador Multiplataforma</title>
-
-    <!-- Meta description: texto que muestran los buscadores bajo el título en los resultados -->
     <meta name="description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y mas.">
 
-    <!-- Tailwind CSS: framework de estilos por clases. Lo cargamos desde CDN para no instalar nada. -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Font Awesome: librería de iconos vectoriales (fa-solid, fa-brands, etc.) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <!-- Devicon: iconos de tecnologías (devicon-java-plain, devicon-mysql-plain, etc.) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css">
-
-    <!-- Google Fonts: tipografía Inter (la misma que usa Linear, Vercel...) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-    <!-- Configuración de Tailwind: extendemos el tema para usar Inter como fuente principal -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
@@ -51,52 +39,70 @@
     </script>
 
     <style>
-        /* ── LOADER ──────────────────────────────────────────────
-           Spinner circular animado que se muestra mientras el fetch
-           trae los datos de la API. Usa border-top con color para
-           crear el efecto de "arco girando". */
+        /* ── SCROLL PROGRESS BAR ─────────────────────────────────
+           Barra fina en el top de la página que crece según el scroll.
+           z-[60] para estar por encima de la navbar (z-50). */
+        #scroll-progress {
+            position: fixed; top: 0; left: 0; height: 3px; width: 0%;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
+            z-index: 60;
+            transition: width 0.1s linear;
+        }
+
+        /* ── CURSOR PERSONALIZADO ────────────────────────────────
+           Ocultamos el cursor nativo y mostramos uno propio.
+           Solo en dispositivos con ratón (pointer: fine). */
+        @media (pointer: fine) {
+            * { cursor: none !important; }
+        }
+        .cursor-dot {
+            width: 8px; height: 8px;
+            background: #a78bfa;
+            border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.3s, transform 0.1s;
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.8);
+        }
+        .cursor-ring {
+            width: 30px; height: 30px;
+            border: 1.5px solid rgba(167, 139, 250, 0.5);
+            border-radius: 50%;
+            position: fixed; pointer-events: none; z-index: 9998;
+            transform: translate(-50%, -50%);
+            transition: width 0.2s, height 0.2s, border-color 0.2s;
+        }
+        /* Efecto al pasar por encima de links y botones */
+        .cursor-dot.cursor-hover { transform: translate(-50%, -50%) scale(0); }
+        .cursor-ring.cursor-hover { width: 48px; height: 48px; border-color: rgba(167, 139, 250, 0.8); background: rgba(167, 139, 250, 0.05); }
+
+        /* ── LOADER ──────────────────────────────────────────────*/
         .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #8b5cf6; border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ── FADE-UP ─────────────────────────────────────────────
-           Las secciones empiezan invisibles (opacity: 0) y desplazadas
-           hacia abajo (translateY 40px). Cuando el IntersectionObserver
-           detecta que son visibles en pantalla, se les añade la clase
-           .visible que activa la transición al estado normal. */
+        /* ── FADE-UP ─────────────────────────────────────────────*/
         .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
         .fade-up.visible { opacity: 1; transform: translateY(0); }
-        /* Los hijos 2 y 3 aparecen con un pequeño retraso escalonado */
         .fade-up:nth-child(2) { transition-delay: 0.1s; }
         .fade-up:nth-child(3) { transition-delay: 0.2s; }
 
-        /* ── TYPING CURSOR ───────────────────────────────────────
-           Añade un cursor parpadeante al titular mientras se escribe
-           el efecto de máquina de escribir. El ::after crea el símbolo |
-           y blink lo hace parpadear. */
+        /* ── TYPING CURSOR ───────────────────────────────────────*/
         .typing-cursor::after { content: '|'; animation: blink 1s step-end infinite; color: #a78bfa; }
         @keyframes blink { 50% { opacity: 0; } }
 
-        /* ── CARD HOVER ──────────────────────────────────────────
-           Las tarjetas de proyectos suben 6px y ganan sombra morada
-           al pasar el ratón. */
+        /* ── CARD HOVER ──────────────────────────────────────────*/
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15); }
 
-        /* ── SKILL CARD ──────────────────────────────────────────
-           Los iconos del tech stack suben y se escalan al hacer hover. */
+        /* ── SKILL CARD ──────────────────────────────────────────*/
         .skill-card { transition: all 0.3s ease; }
         .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(139, 92, 246, 0.2); }
 
-        /* ── TECH ENTER ──────────────────────────────────────────
-           Estado inicial de los iconos del tech stack: invisibles y
-           pequeños. La clase .show lanza la animación de entrada con
-           un efecto de rebote (cubic-bezier 0.34, 1.56...). */
+        /* ── TECH ENTER ──────────────────────────────────────────*/
         .tech-enter { opacity: 0; transform: scale(0.3) translateY(20px); }
         .tech-enter.show { opacity: 1; transform: scale(1) translateY(0); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
-        /* ── FLOATING ────────────────────────────────────────────
-           Cada icono flota a distinta velocidad (3s, 3.5s, 4s) para
-           que el movimiento no sea uniforme y se vea más natural. */
+        /* ── FLOATING ────────────────────────────────────────────*/
         @keyframes float-1 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
         @keyframes float-2 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes float-3 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
@@ -104,68 +110,117 @@
         .float-2 { animation: float-2 3.5s ease-in-out infinite; }
         .float-3 { animation: float-3 4s ease-in-out infinite; }
 
-        /* ── PARALLAX ────────────────────────────────────────────
-           El contenedor tiene perspectiva 3D (perspective: 800px).
-           Al mover el ratón, app.js aplica rotateX/rotateY al layer
-           para dar sensación de profundidad. */
+        /* ── PARALLAX ────────────────────────────────────────────*/
         .parallax-container { perspective: 800px; }
         .parallax-layer { transition: transform 0.15s ease-out; transform-style: preserve-3d; }
 
-        /* ── GRADIENT TEXT ───────────────────────────────────────
-           Aplica un degradado como color del texto usando
-           background-clip: text (técnica CSS moderna). */
+        /* ── GRADIENT TEXT ───────────────────────────────────────*/
         .gradient-text { background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
-        /* ── TIMELINE ────────────────────────────────────────────
-           La línea vertical de la sección experiencia usa un degradado
-           de azul a morado a rosa. Los puntos tienen glow morado. */
+        /* ── TIMELINE ────────────────────────────────────────────*/
         .timeline-line { background: linear-gradient(to bottom, #3b82f6, #8b5cf6, #ec4899); }
         .timeline-dot { background: linear-gradient(135deg, #3b82f6, #8b5cf6); box-shadow: 0 0 16px rgba(139, 92, 246, 0.5); }
 
-        /* ── NAVBAR SCROLL ───────────────────────────────────────
-           Cuando el usuario hace scroll, app.js añade esta clase al nav.
-           backdrop-filter: blur() da el efecto de cristal esmerilado. */
+        /* ── NAVBAR ──────────────────────────────────────────────*/
         .nav-scrolled { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        /* Link activo en la navbar según sección visible */
+        .nav-link.active { color: white; }
+        .nav-link.active::after { content: ''; display: block; height: 2px; background: linear-gradient(to right, #3b82f6, #a78bfa); border-radius: 2px; margin-top: 2px; }
 
-        /* ── BADGE PULSE ─────────────────────────────────────────
-           El badge verde "Disponible" pulsa con una sombra expandiéndose,
-           como un latido, para llamar la atención. */
+        /* ── BADGE PULSE ─────────────────────────────────────────*/
         @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
         .badge-pulse { animation: pulse-glow 2s infinite; }
+
+        /* ── TOAST ───────────────────────────────────────────────
+           Notificación que aparece abajo a la derecha la primera vez
+           que alguien visita la web. */
+        #toast {
+            position: fixed; bottom: 1.5rem; right: 1.5rem;
+            z-index: 9000; transform: translateY(120%);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #toast.show { transform: translateY(0); }
+
+        /* ── MODO CLARO ──────────────────────────────────────────
+           Variables CSS que se sobreescriben al activar light mode.
+           Tailwind dark: no se aplica bien con CDN sin rebuildar,
+           así que usamos data-theme para los estilos propios. */
+        [data-theme="light"] body { background-color: #f1f5f9 !important; color: #1e293b !important; }
+        [data-theme="light"] nav  { background: rgba(241, 245, 249, 0.95) !important; }
+        [data-theme="light"] .nav-scrolled { background: rgba(241, 245, 249, 0.98) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important; }
+        [data-theme="light"] .bg-slate-950 { background-color: #f1f5f9 !important; }
+        [data-theme="light"] .bg-slate-900\/80, [data-theme="light"] .bg-slate-900\/90 { background-color: rgba(255,255,255,0.9) !important; }
+        [data-theme="light"] .border-slate-800, [data-theme="light"] .border-slate-700 { border-color: #cbd5e1 !important; }
+        [data-theme="light"] .text-gray-200 { color: #1e293b !important; }
+        [data-theme="light"] .text-gray-400 { color: #475569 !important; }
+        [data-theme="light"] .text-gray-500 { color: #64748b !important; }
+        [data-theme="light"] .text-gray-600 { color: #475569 !important; }
+        [data-theme="light"] .text-white    { color: #0f172a !important; }
+
+        /* ── FORM CONTACTO ───────────────────────────────────────*/
+        .form-input {
+            width: 100%; padding: 0.75rem 1rem;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid #334155; border-radius: 0.75rem;
+            color: white; outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-input::placeholder { color: #64748b; }
+        .form-input:focus { border-color: #8b5cf6; }
+        [data-theme="light"] .form-input { background: rgba(255,255,255,0.8); color: #1e293b; border-color: #cbd5e1; }
+        [data-theme="light"] .form-input::placeholder { color: #94a3b8; }
     </style>
 </head>
 
-<!-- bg-slate-950: fondo casi negro. text-gray-200: texto gris claro por defecto. -->
 <body class="bg-slate-950 text-gray-200 font-sans">
+
+<!-- Barra de progreso de lectura (se llena al hacer scroll) -->
+<div id="scroll-progress"></div>
+
+<!-- Cursor personalizado (solo visible con ratón, no en móvil) -->
+<div class="cursor-dot" id="cursor-dot"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- Toast de bienvenida (primera visita) -->
+<div id="toast">
+    <div class="flex items-center gap-3 px-5 py-4 bg-slate-800 border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-900/20 max-w-xs">
+        <span class="text-2xl">👋</span>
+        <div>
+            <p class="text-white text-sm font-semibold">¡Bienvenido!</p>
+            <p class="text-gray-400 text-xs mt-0.5">Gracias por visitar mi portafolio</p>
+        </div>
+        <button onclick="cerrarToast()" class="ml-2 text-gray-500 hover:text-white transition-colors text-lg leading-none">×</button>
+    </div>
+</div>
 
 <!-- ============================================================
      NAVBAR
-     Barra de navegación fija (fixed top-0) con z-50 para que siempre
-     esté por encima del resto del contenido.
-     En móvil se ocultan los links y aparece el botón hamburguesa.
-     app.js gestiona el scroll (añade nav-scrolled) y el menú móvil.
 ============================================================ -->
 <nav id="navbar" class="fixed top-0 w-full z-50 transition-all duration-300">
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <!-- Logo / iniciales — enlaza al inicio de la página -->
         <a href="#inicio" class="text-xl font-bold gradient-text">S.L.H.</a>
 
-        <!-- Links de escritorio: ocultos en móvil (hidden md:flex) -->
         <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
-            <a href="#proyectos"   class="hover:text-white transition-colors">Proyectos</a>
-            <a href="#habilidades" class="hover:text-white transition-colors">Habilidades</a>
-            <a href="#experiencia" class="hover:text-white transition-colors">Experiencia</a>
-            <!-- Botón CTA (Call To Action) destacado -->
-            <a href="#contacto" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:opacity-90 transition-opacity">Contactar</a>
+            <a href="#proyectos"   class="nav-link hover:text-white transition-colors" data-section="proyectos">Proyectos</a>
+            <a href="#habilidades" class="nav-link hover:text-white transition-colors" data-section="habilidades">Habilidades</a>
+            <a href="#experiencia" class="nav-link hover:text-white transition-colors" data-section="experiencia">Experiencia</a>
+            <a href="#contacto"    class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:opacity-90 transition-opacity">Contactar</a>
+            <!-- Toggle modo claro/oscuro -->
+            <button id="theme-toggle" title="Cambiar tema" class="text-gray-400 hover:text-white transition-colors text-lg">
+                <i class="fa-solid fa-moon"></i>
+            </button>
         </div>
 
-        <!-- Botón hamburguesa: solo visible en móvil (md:hidden) -->
-        <button id="menu-toggle" class="md:hidden text-gray-400 hover:text-white text-xl">
-            <i class="fa-solid fa-bars"></i>
-        </button>
+        <div class="flex items-center gap-3 md:hidden">
+            <button id="theme-toggle-mobile" class="text-gray-400 hover:text-white text-lg">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+            <button id="menu-toggle" class="text-gray-400 hover:text-white text-xl">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
     </div>
 
-    <!-- Menú desplegable móvil: empieza oculto (hidden), app.js alterna la clase -->
     <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
         <div class="flex flex-col gap-3 text-sm font-medium text-gray-400 bg-slate-900/90 rounded-xl p-4">
             <a href="#proyectos"   class="hover:text-white transition-colors py-1">Proyectos</a>
@@ -177,18 +232,9 @@
 </nav>
 
 <!-- ============================================================
-     HERO (sección de presentación)
-     Es lo primero que ve el usuario. Tiene:
-       - Fondo con esferas difuminadas (blur) para efecto ambient
-       - Foto de perfil con borde gradiente animado
-       - Nombre, titular (con efecto typing) y descripción
-       - Enlace al email, GitHub y LinkedIn
-     Los datos (nombre, sobre_mi, foto...) se cargan desde la API
-     en app.js (función cargarPerfil).
+     HERO
 ============================================================ -->
 <header id="inicio" class="relative overflow-hidden pt-24">
-
-    <!-- Esferas de color difuminadas en el fondo — efecto decorativo puro -->
     <div class="absolute inset-0 opacity-30">
         <div class="absolute top-20 left-10 w-72 h-72 bg-blue-600 rounded-full blur-[120px]"></div>
         <div class="absolute top-40 right-20 w-96 h-96 bg-purple-600 rounded-full blur-[120px]"></div>
@@ -196,42 +242,41 @@
     </div>
 
     <div class="relative max-w-6xl mx-auto px-6 py-16 md:py-24 flex flex-col md:flex-row items-center gap-10 md:gap-16">
-
-        <!-- Foto de perfil con borde gradiente -->
         <div class="flex-shrink-0 relative group">
-            <!-- El div absoluto con blur crea el halo de color alrededor de la foto -->
             <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <!-- src inicial: imagen local. app.js la sobreescribe con el valor de la BD -->
-            <img id="foto_perfil"
-                 src="/img/perfil.jpg"
-                 alt="Foto de Santiago Lafuente"
+            <img id="foto_perfil" src="/img/perfil.jpg" alt="Foto de Santiago Lafuente"
                  class="relative w-44 h-44 md:w-56 md:h-56 object-cover rounded-full border-4 border-slate-900 hover:scale-105 transition-transform duration-500">
         </div>
 
-        <!-- Texto de presentación -->
         <div class="text-center md:text-left flex-1 space-y-5">
-
-            <!-- Badge de disponibilidad con animación pulse-glow -->
             <div class="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 rounded-full text-xs font-semibold badge-pulse">
                 <span class="w-2 h-2 bg-green-400 rounded-full"></span>
                 Disponible para practicas / empleo
             </div>
-
-            <!-- id="nombre": app.js pone aquí el nombre que viene de la API -->
             <h1 id="nombre" class="text-4xl md:text-6xl font-extrabold tracking-tight text-white">Santiago Lafuente</h1>
-
-            <!-- id="titular": app.js aplica aquí el efecto typing letra a letra -->
             <h2 id="titular" class="text-xl md:text-2xl font-light text-gray-400 typing-cursor">Desarrollador Multiplataforma</h2>
-
-            <!-- id="sobre_mi": se rellena con el texto de la BD al cargar la página -->
             <p id="sobre_mi" class="text-gray-400 leading-relaxed max-w-2xl text-lg">Cargando...</p>
 
-            <div class="flex flex-wrap justify-center md:justify-start gap-4 pt-2">
-                <!-- id="enlaces": app.js inyecta aquí los iconos de GitHub, LinkedIn, email -->
-                <div id="enlaces" class="flex gap-4 text-2xl"></div>
+            <div class="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
+                <div id="enlaces" class="flex gap-4 text-2xl items-center"></div>
+                <!-- Botón de descarga de CV -->
+                <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download
+                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 border border-slate-600 text-gray-300 rounded-full font-medium hover:border-purple-500 hover:text-white transition-all text-sm">
+                    <i class="fa-solid fa-file-arrow-down text-purple-400"></i> Descargar CV
+                </a>
                 <a href="#contacto" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm">
                     <i class="fa-solid fa-paper-plane"></i> Contactame
                 </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- GitHub Stats bar — se rellena desde app.js con la API pública de GitHub -->
+    <div class="relative max-w-6xl mx-auto px-6 pb-10">
+        <div id="github-stats" class="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-500">
+            <div class="flex items-center gap-3 text-gray-500 text-sm">
+                <div class="loader" style="width:16px;height:16px;border-width:2px;"></div>
+                <span>Cargando stats de GitHub...</span>
             </div>
         </div>
     </div>
@@ -239,66 +284,43 @@
 
 <!-- ============================================================
      CONTENIDO PRINCIPAL
-     Cada sección tiene la clase fade-up para la animación de entrada.
-     scroll-mt-24 compensa la navbar fija al hacer scroll a un ancla.
 ============================================================ -->
 <main class="max-w-6xl mx-auto px-6 space-y-24 py-16">
 
-    <!-- TECH STACK
-         Iconos de tecnologías divididos en dos grupos:
-           - TECH_MAIN (uso frecuente): Java, MySQL, HTML, CSS, Git, IntelliJ, Claude, Gemini, Copilot
-           - TECH_OTHER (conocimientos básicos): Kotlin, Python, JS, Node.js, Spring, etc.
-         Los renderiza app.js con la función renderTechStack().
-         El parallax 3D se activa al mover el ratón (iniciarParallax).
-         La entrada escalonada se dispara cuando es visible (animarTechEntrada). -->
+    <!-- TECH STACK -->
     <section class="fade-up">
         <div class="text-center mb-10">
             <p class="text-sm uppercase tracking-widest text-purple-400 font-semibold mb-2">Tech Stack</p>
             <h3 class="text-3xl font-bold text-white">Tecnologias con las que he trabajado</h3>
         </div>
-        <!-- parallax-container: punto de referencia para el efecto 3D con el ratón -->
         <div id="tech-parallax" class="parallax-container">
             <div class="parallax-layer">
-                <!-- Grupo 1: herramientas de uso frecuente -->
                 <div id="tech-stack-main" class="mb-8">
-                    <p class="text-sm text-gray-500 font-medium mb-4 text-center">
-                        <i class="fa-solid fa-star text-yellow-500 mr-1"></i> Uso frecuente
-                    </p>
-                    <!-- app.js rellena este div con las tarjetas de iconos -->
+                    <p class="text-sm text-gray-500 font-medium mb-4 text-center"><i class="fa-solid fa-star text-yellow-500 mr-1"></i> Uso frecuente</p>
                     <div id="tech-main" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-3xl mx-auto"></div>
                 </div>
-                <!-- Grupo 2: conocimientos básicos -->
                 <div id="tech-stack-other">
-                    <p class="text-sm text-gray-500 font-medium mb-4 text-center">
-                        <i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos basicos
-                    </p>
+                    <p class="text-sm text-gray-500 font-medium mb-4 text-center"><i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos basicos</p>
                     <div id="tech-other" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3 max-w-4xl mx-auto"></div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- PROYECTOS
-         Se rellena con fetch a /api/proyectos en app.js (cargarProyectos).
-         Mientras carga muestra el spinner (.loader). -->
+    <!-- PROYECTOS -->
     <section id="proyectos" class="fade-up scroll-mt-24">
         <div class="text-center mb-10">
             <p class="text-sm uppercase tracking-widest text-blue-400 font-semibold mb-2">Portfolio</p>
             <h3 class="text-3xl font-bold text-white">Proyectos Destacados</h3>
         </div>
-        <!-- app.js vacía este div y lo rellena con tarjetas de proyectos -->
         <div id="lista-proyectos" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Spinner inicial mientras llega la respuesta del API -->
             <div class="flex items-center gap-3 text-gray-500 justify-center col-span-1 lg:col-span-2 py-10">
-                <div class="loader"></div>
-                <span>Cargando proyectos...</span>
+                <div class="loader"></div><span>Cargando proyectos...</span>
             </div>
         </div>
     </section>
 
-    <!-- HABILIDADES
-         Se rellena con fetch a /api/habilidades en app.js (cargarHabilidades).
-         Cada habilidad se muestra como un badge con icono y nivel (Básico/Intermedio/Avanzado). -->
+    <!-- HABILIDADES -->
     <section id="habilidades" class="fade-up scroll-mt-24">
         <div class="text-center mb-10">
             <p class="text-sm uppercase tracking-widest text-purple-400 font-semibold mb-2">Skills</p>
@@ -306,16 +328,12 @@
         </div>
         <div id="lista-habilidades" class="flex flex-wrap justify-center gap-3">
             <div class="flex items-center gap-3 text-gray-500 justify-center w-full py-6">
-                <div class="loader"></div>
-                <span>Cargando habilidades...</span>
+                <div class="loader"></div><span>Cargando habilidades...</span>
             </div>
         </div>
     </section>
 
-    <!-- EXPERIENCIA
-         Se rellena con fetch a /api/experiencia en app.js (cargarExperiencia).
-         Se muestra en formato timeline vertical con línea degradada.
-         app.js añade también una entrada manual de "Proyectos Personales". -->
+    <!-- EXPERIENCIA -->
     <section id="experiencia" class="fade-up scroll-mt-24">
         <div class="text-center mb-10">
             <p class="text-sm uppercase tracking-widest text-pink-400 font-semibold mb-2">Trayectoria</p>
@@ -323,8 +341,7 @@
         </div>
         <div id="lista-experiencia" class="max-w-3xl mx-auto">
             <div class="flex items-center gap-3 text-gray-500 justify-center w-full py-6">
-                <div class="loader"></div>
-                <span>Cargando experiencia...</span>
+                <div class="loader"></div><span>Cargando experiencia...</span>
             </div>
         </div>
     </section>
@@ -333,44 +350,48 @@
 
 <!-- ============================================================
      CONTACTO
-     El email se carga desde la API (cargarPerfil en app.js).
-     El botón de copiar usa la Clipboard API del navegador.
-     Los enlaces sociales se inyectan desde app.js (buildEnlacesFooter).
+     Sección con formulario real (POST /api/contacto → Gmail)
+     + email con botón copiar + enlaces sociales
 ============================================================ -->
 <section id="contacto" class="relative overflow-hidden mt-16 scroll-mt-24">
-    <!-- Fondo degradado decorativo -->
     <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10"></div>
-
     <div class="relative max-w-6xl mx-auto px-6 py-20">
-        <div class="text-center space-y-8">
+        <div class="text-center space-y-4 mb-12">
             <p class="text-sm uppercase tracking-widest text-blue-400 font-semibold">Contacto</p>
             <h3 class="text-4xl font-bold text-white">Trabajemos juntos</h3>
             <p class="text-gray-400 max-w-lg mx-auto text-lg">Estoy buscando oportunidades para crecer como desarrollador. Si buscas a alguien con ganas de aprender y aportar, hablemos.</p>
+        </div>
 
+        <!-- Formulario de contacto -->
+        <form id="form-contacto" class="max-w-lg mx-auto space-y-4 mb-12">
+            <input  type="text"  id="contacto-nombre"  placeholder="Tu nombre"   class="form-input" required>
+            <input  type="email" id="contacto-email"   placeholder="Tu email"    class="form-input" required>
+            <textarea            id="contacto-mensaje" placeholder="Tu mensaje"  class="form-input resize-none" rows="4" required></textarea>
+            <button type="submit" id="btn-enviar"
+                class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-all text-sm flex items-center justify-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> Enviar mensaje
+            </button>
+            <!-- Feedback del envío: éxito o error -->
+            <p id="form-feedback" class="text-center text-sm hidden"></p>
+        </form>
+
+        <div class="text-center space-y-6">
             <!-- Email con botón copiar -->
             <div id="email-display" class="inline-flex items-center gap-3 px-6 py-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
                 <i class="fa-solid fa-envelope text-purple-400 text-xl"></i>
-                <!-- id="email-text": app.js pone aquí el email de la BD -->
                 <span id="email-text" class="text-lg font-mono text-white">cargando...</span>
-                <!-- Botón copiar: app.js añade el evento click en iniciarCopiarEmail() -->
                 <button id="btn-copiar-email" title="Copiar email"
                     class="ml-2 px-3 py-1.5 bg-purple-600/20 border border-purple-500/30 text-purple-300 rounded-lg hover:bg-purple-600/40 hover:text-white transition-all text-sm">
                     <i class="fa-regular fa-copy"></i>
                 </button>
             </div>
-            <!-- Mensaje de confirmación, oculto por defecto, se muestra 2s tras copiar -->
             <p id="copy-feedback" class="text-green-400 text-sm hidden">Email copiado al portapapeles</p>
-
-            <!-- id="footer-enlaces": app.js inyecta aquí GitHub, LinkedIn, email con iconos grandes -->
             <div id="footer-enlaces" class="flex justify-center gap-8 text-3xl pt-4"></div>
         </div>
     </div>
 </section>
 
-<!-- ============================================================
-     FOOTER
-     Badge de "en desarrollo" y copyright.
-============================================================ -->
+<!-- FOOTER -->
 <footer class="border-t border-slate-800/50">
     <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-3">
         <div class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-semibold">
@@ -381,11 +402,6 @@
     </div>
 </footer>
 
-<!--
-    app.js: toda la lógica del frontend.
-    Lo cargamos al final del body para que el HTML ya esté cargado
-    cuando el script intente acceder a los elementos del DOM.
--->
 <script src="/js/app.js"></script>
 </body>
 </html>

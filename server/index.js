@@ -83,6 +83,9 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Importamos el módulo de conexión a la base de datos
 const db = require('./db');
 
+// nodemailer: librería para enviar emails desde Node.js
+const nodemailer = require('nodemailer');
+
 // Ruta raíz: devuelve el index.html del frontend
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
@@ -455,6 +458,64 @@ app.delete('/api/experiencia/:id', async (req, res) => {
  */
 app.get('/api/ping', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// ============================================================
+// CONTACTO
+// Recibe el formulario del frontend y envía un email al dueño
+// del portafolio usando nodemailer con Gmail como servidor SMTP.
+//
+// Para que funcione necesitas:
+//  1. Activar verificación en 2 pasos en tu cuenta Google
+//  2. Generar una "Contraseña de aplicación" en Seguridad → Contraseñas de app
+//  3. Añadir GMAIL_USER y GMAIL_PASS al .env y a las variables de Render
+// ============================================================
+
+/**
+ * Configuramos el transporter de nodemailer con Gmail.
+ * Se crea una vez y se reutiliza en cada petición (eficiente).
+ * Si las credenciales no están en el .env, nodemailer lo indicará al enviar.
+ */
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
+    }
+});
+
+/**
+ * POST /api/contacto
+ * Recibe { nombre, email, mensaje } y envía un email al dueño del portafolio.
+ * Validamos que los tres campos estén presentes antes de intentar enviar.
+ */
+app.post('/api/contacto', async (req, res) => {
+    try {
+        const { nombre, email, mensaje } = req.body;
+
+        if (!nombre || !email || !mensaje) {
+            return res.status(400).json({ error: 'Todos los campos son obligatorios' });
+        }
+
+        await transporter.sendMail({
+            from: `"Portafolio" <${process.env.GMAIL_USER}>`, // remitente (tu cuenta Gmail)
+            to: process.env.GMAIL_USER,                        // destinatario (tú mismo)
+            replyTo: email,                                    // al responder, va al visitante
+            subject: `📩 Mensaje de ${nombre} — Portafolio`,
+            html: `
+                <h2>Nuevo mensaje desde tu portafolio</h2>
+                <p><strong>Nombre:</strong> ${nombre}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Mensaje:</strong></p>
+                <p>${mensaje.replace(/\n/g, '<br>')}</p>
+            `
+        });
+
+        res.json({ mensaje: '¡Mensaje enviado correctamente!' });
+    } catch (error) {
+        console.error('Error al enviar email:', error);
+        res.status(500).json({ error: 'Error al enviar el mensaje. Inténtalo de nuevo.' });
+    }
 });
 
 // ============================================================

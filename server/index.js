@@ -31,6 +31,12 @@ const path    = require('path');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
+// Render (y cualquier plataforma cloud) pone un proxy delante del servidor.
+// Con trust proxy: 1 le decimos a Express que confíe en la cabecera
+// X-Forwarded-For para identificar la IP real del cliente.
+// Sin esto, express-rate-limit lanza un error en producción.
+app.set('trust proxy', 1);
+
 // ============================================================
 // MIDDLEWARES DE SEGURIDAD
 // Los middlewares son funciones que se ejecutan antes de llegar

@@ -441,6 +441,23 @@ app.delete('/api/experiencia/:id', async (req, res) => {
 });
 
 // ============================================================
+// PING (health check)
+// Endpoint simple que devuelve 200 OK. Lo usan el auto-ping
+// interno y servicios externos para comprobar que el servidor
+// está vivo.
+// ============================================================
+
+/**
+ * GET /api/ping
+ * Devuelve 200 OK con un timestamp. Útil para:
+ *  - Comprobar que el servidor está arriba
+ *  - Ser llamado por el auto-ping para evitar el apagado en Render free tier
+ */
+app.get('/api/ping', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// ============================================================
 // ARRANQUE DEL SERVIDOR
 // app.listen() pone el servidor a escuchar peticiones en el puerto
 // definido. Solo llega aquí si todos los middlewares y rutas
@@ -448,4 +465,27 @@ app.delete('/api/experiencia/:id', async (req, res) => {
 // ============================================================
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
+
+    // ── Auto-ping para Render free tier ──────────────────────
+    // Render apaga los servicios gratuitos tras 15 min sin tráfico.
+    // Cada 10 minutos hacemos una petición a nuestro propio /api/ping
+    // para mantener el servidor despierto.
+    //
+    // RENDER_EXTERNAL_URL es una variable que Render inyecta
+    // automáticamente con la URL pública del servicio.
+    // En local no existe, por eso el if lo comprueba antes.
+    const appUrl = process.env.RENDER_EXTERNAL_URL;
+    if (appUrl) {
+        const DIEZ_MINUTOS = 10 * 60 * 1000;
+        setInterval(async () => {
+            try {
+                // Node 18+ incluye fetch nativo, no necesitamos axios ni node-fetch
+                const res = await fetch(`${appUrl}/api/ping`);
+                console.log(`[auto-ping] ${new Date().toLocaleTimeString()} → ${res.status}`);
+            } catch (err) {
+                console.error('[auto-ping] Error:', err.message);
+            }
+        }, DIEZ_MINUTOS);
+        console.log(`[auto-ping] Activo → ping cada 10 min a ${appUrl}/api/ping`);
+    }
 });

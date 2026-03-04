@@ -458,6 +458,44 @@ app.get('/api/ping', (req, res) => {
 });
 
 // ============================================================
+// VISITAS
+// Contador de visitas persistente en la BD.
+// La tabla tiene una sola fila (id=1) con el total acumulado.
+// Se crea automáticamente al arrancar si no existe.
+// ============================================================
+
+/**
+ * Crea la tabla visitas si no existe e inicializa el contador a 0.
+ * Se llama una vez al arrancar el servidor.
+ */
+async function inicializarVisitas() {
+    await db.query(`
+        CREATE TABLE IF NOT EXISTS visitas (
+            id    INT PRIMARY KEY DEFAULT 1,
+            total INT NOT NULL DEFAULT 0
+        )
+    `);
+    // INSERT IGNORE: solo inserta si la fila id=1 no existe todavía
+    await db.query('INSERT IGNORE INTO visitas (id, total) VALUES (1, 0)');
+}
+
+/**
+ * GET /api/visitas
+ * Incrementa el contador en 1 y devuelve el total actualizado.
+ * El auto-ping usa /api/ping (no este endpoint) para no inflar el contador.
+ */
+app.get('/api/visitas', async (req, res) => {
+    try {
+        await db.query('UPDATE visitas SET total = total + 1 WHERE id = 1');
+        const [[fila]] = await db.query('SELECT total FROM visitas WHERE id = 1');
+        res.json({ total: fila.total });
+    } catch (error) {
+        console.error('Error al registrar visita:', error);
+        res.status(500).json({ error: 'Error al registrar visita' });
+    }
+});
+
+// ============================================================
 // ARRANQUE DEL SERVIDOR
 // app.listen() pone el servidor a escuchar peticiones en el puerto
 // definido. Solo llega aquí si todos los middlewares y rutas
@@ -465,6 +503,11 @@ app.get('/api/ping', (req, res) => {
 // ============================================================
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
+
+    // Crea la tabla visitas si no existe
+    inicializarVisitas()
+        .then(() => console.log('✅ Tabla visitas lista'))
+        .catch(err => console.error('❌ Error inicializando visitas:', err.message));
 
     // ── Auto-ping para Render free tier ──────────────────────
     // Render apaga los servicios gratuitos tras 15 min sin tráfico.

@@ -667,6 +667,26 @@ function iniciarNavbar() {
 // INICIALIZACIÓN
 // ============================================================
 
+// ============================================================
+// VISITAS
+// ============================================================
+
+/**
+ * registrarVisita()
+ * Llama a /api/visitas para incrementar el contador y muestra
+ * el total de forma muy discreta en el footer.
+ */
+async function registrarVisita() {
+    try {
+        const res = await fetch(`${API_URL}/visitas`);
+        const { total } = await res.json();
+        const el = document.getElementById('visitas-counter');
+        if (el) el.textContent = `${total} visitas`;
+    } catch {
+        // Si falla, simplemente no mostramos nada
+    }
+}
+
 // Estas llamadas se ejecutan inmediatamente al cargar el script.
 // No esperan a DOMContentLoaded porque hacen fetch (asíncrono) y
 // solo modifican elementos que ya existen en el HTML inicial.
@@ -675,6 +695,7 @@ cargarPerfil();
 cargarProyectos();
 cargarHabilidades();
 cargarExperiencia();
+registrarVisita();
 
 /**
  * DOMContentLoaded: se dispara cuando el HTML está completamente cargado

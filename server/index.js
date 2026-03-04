@@ -89,8 +89,11 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 // Importamos el módulo de conexión a la base de datos
 const db = require('./db');
 
-// nodemailer: librería para enviar emails desde Node.js
-const nodemailer = require('nodemailer');
+// Resend: servicio de email por HTTP API (no SMTP).
+// Funciona en Render free tier porque usa el puerto 443 (HTTPS),
+// no el 465/587 que Render bloquea para evitar spam.
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Ruta raíz: devuelve el index.html del frontend
 app.get('/', (req, res) => {
@@ -478,24 +481,13 @@ app.get('/api/ping', (req, res) => {
 // ============================================================
 
 /**
- * Configuramos el transporter de nodemailer con Gmail.
- * Se crea una vez y se reutiliza en cada petición (eficiente).
- * Si las credenciales no están en el .env, nodemailer lo indicará al enviar.
- */
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // SSL
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS
-    }
-});
-
-/**
  * POST /api/contacto
- * Recibe { nombre, email, mensaje } y envía un email al dueño del portafolio.
- * Validamos que los tres campos estén presentes antes de intentar enviar.
+ * Recibe { nombre, email, mensaje } y lo envía a tu correo usando Resend.
+ * Resend usa HTTP (puerto 443) en lugar de SMTP, por lo que funciona
+ * en Render free tier sin restricciones de red.
+ *
+ * El from usa el dominio de Resend (onboarding@resend.dev) porque en el
+ * plan gratuito no es necesario verificar un dominio propio.
  */
 app.post('/api/contacto', async (req, res) => {
     try {
@@ -505,10 +497,10 @@ app.post('/api/contacto', async (req, res) => {
             return res.status(400).json({ error: 'Todos los campos son obligatorios' });
         }
 
-        await transporter.sendMail({
-            from: `"Portafolio" <${process.env.GMAIL_USER}>`, // remitente (tu cuenta Gmail)
-            to: process.env.GMAIL_USER,                        // destinatario (tú mismo)
-            replyTo: email,                                    // al responder, va al visitante
+        const { error } = await resend.emails.send({
+            from: 'Portafolio <onboarding@resend.dev>',
+            to: process.env.GMAIL_USER,   // tu email — donde recibes el mensaje
+            replyTo: email,               // al responder, va al visitante
             subject: `📩 Mensaje de ${nombre} — Portafolio`,
             html: `
                 <h2>Nuevo mensaje desde tu portafolio</h2>
@@ -519,13 +511,14 @@ app.post('/api/contacto', async (req, res) => {
             `
         });
 
+        if (error) {
+            console.error('Error de Resend:', error);
+            return res.status(500).json({ error: 'Error al enviar el mensaje.' });
+        }
+
         res.json({ mensaje: '¡Mensaje enviado correctamente!' });
     } catch (error) {
-        // Mostramos el error completo en los logs de Render para poder diagnosticarlo
         console.error('Error al enviar email:', error.message);
-        console.error('Código de error:', error.code);
-        console.error('GMAIL_USER configurado:', !!process.env.GMAIL_USER);
-        console.error('GMAIL_PASS configurado:', !!process.env.GMAIL_PASS);
         res.status(500).json({ error: 'Error al enviar el mensaje. Inténtalo de nuevo.' });
     }
 });

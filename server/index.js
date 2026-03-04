@@ -477,7 +477,9 @@ app.get('/api/ping', (req, res) => {
  * Si las credenciales no están en el .env, nodemailer lo indicará al enviar.
  */
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // SSL
     auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS
@@ -513,7 +515,11 @@ app.post('/api/contacto', async (req, res) => {
 
         res.json({ mensaje: '¡Mensaje enviado correctamente!' });
     } catch (error) {
-        console.error('Error al enviar email:', error);
+        // Mostramos el error completo en los logs de Render para poder diagnosticarlo
+        console.error('Error al enviar email:', error.message);
+        console.error('Código de error:', error.code);
+        console.error('GMAIL_USER configurado:', !!process.env.GMAIL_USER);
+        console.error('GMAIL_PASS configurado:', !!process.env.GMAIL_PASS);
         res.status(500).json({ error: 'Error al enviar el mensaje. Inténtalo de nuevo.' });
     }
 });

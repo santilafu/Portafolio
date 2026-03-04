@@ -623,8 +623,7 @@ function iniciarEasterEgg() {
     let clics = 0;
     let timer = null;
 
-    logo.addEventListener('click', async (e) => {
-        e.preventDefault(); // evitamos navegar a #inicio mientras hacemos clics
+    logo.addEventListener('click', async () => {
         clics++;
 
         // Resetear contador si pasan más de 2 segundos sin clic
@@ -633,9 +632,8 @@ function iniciarEasterEgg() {
 
         if (clics >= 5) {
             clics = 0;
-            // Pedimos el total actual (sin incrementar — endpoint GET directo a BD)
             try {
-                const res  = await fetch('/api/visitas-total');
+                const res  = await fetch(`${API_URL}/visitas-total`);
                 const data = await res.json();
                 document.getElementById('stats-visitas').textContent = data.total;
             } catch {

@@ -1,51 +1,106 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-const path = require('path');
+/**
+ * index.js
+ * --------
+ * Punto de entrada del servidor. Aquí arranca la aplicación Express
+ * y se definen todas las rutas de la API REST.
+ *
+ * API REST significa que cada recurso (perfil, proyectos...) tiene su propia
+ * URL y respondemos con JSON. Los métodos HTTP indican la acción:
+ *   GET    → leer datos
+ *   POST   → crear nuevo registro
+ *   PUT    → actualizar registro existente
+ *   DELETE → eliminar registro
+ *
+ * Buenas prácticas aplicadas:
+ *  - Helmet:     añade cabeceras de seguridad HTTP automáticamente
+ *  - Rate limit: limita peticiones por IP para evitar abuso o ataques DDoS
+ *  - CORS:       controla qué dominios pueden hacer peticiones a nuestra API
+ *  - dotenv:     las configuraciones sensibles van en .env, no en el código
+ *  - async/await + try/catch: manejo de errores limpio en todas las rutas
+ */
 
-const app = express();
+// Cargamos las variables de entorno antes que cualquier otra cosa
+require('dotenv').config({ override: true });
+
+const express = require('express');
+const cors    = require('cors');
+const helmet  = require('helmet');
+const rateLimit = require('express-rate-limit');
+const path    = require('path');
+
+const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// Seguridad: cabeceras HTTP
+// ============================================================
+// MIDDLEWARES DE SEGURIDAD
+// Los middlewares son funciones que se ejecutan antes de llegar
+// a nuestras rutas. Los configuramos aquí arriba para que se
+// apliquen a todas las peticiones.
+// ============================================================
+
+/**
+ * Helmet añade automáticamente cabeceras HTTP de seguridad
+ * (por ejemplo: X-Content-Type-Options, X-Frame-Options...).
+ * Desactivamos contentSecurityPolicy y crossOriginEmbedderPolicy
+ * porque interfieren con nuestro frontend estático.
+ */
 app.use(helmet({
     contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
 }));
 
-// Seguridad: limitar peticiones por IP (100 por cada 15 min)
+/**
+ * Rate Limiting: limitamos a 100 peticiones por IP cada 15 minutos
+ * en todas las rutas que empiecen por /api/.
+ * Esto protege contra ataques de fuerza bruta o abuso de la API.
+ */
 app.use('/api/', rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: false,
+    windowMs: 15 * 60 * 1000, // ventana de tiempo: 15 minutos en milisegundos
+    max: 100,                  // máximo de peticiones por IP en esa ventana
+    standardHeaders: true,     // incluye info del límite en las cabeceras de respuesta
+    legacyHeaders: false,      // desactiva cabeceras antiguas (X-RateLimit-*)
     message: { error: 'Demasiadas peticiones, intenta de nuevo mas tarde.' }
 }));
 
-// CORS
+/**
+ * CORS (Cross-Origin Resource Sharing):
+ * Controla qué dominios pueden hacer fetch/ajax a nuestra API.
+ * En producción debería ser el dominio real, en desarrollo usamos localhost.
+ * El valor viene del .env (CORS_ORIGIN).
+ */
 app.use(cors({
     origin: process.env.CORS_ORIGIN || '*',
     optionsSuccessStatus: 200
 }));
 
+// Permite que Express entienda el cuerpo de las peticiones en formato JSON
 app.use(express.json());
 
-// Servir archivos estaticos del frontend
+// Servimos los archivos estáticos del frontend (HTML, CSS, JS, imágenes)
+// desde la carpeta /public
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
+// Importamos el módulo de conexión a la base de datos
 const db = require('./db');
 
-// Ruta raiz -> index.html
+// Ruta raíz: devuelve el index.html del frontend
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
-// ==========================================
+// ============================================================
 // PERFIL
-// ==========================================
+// Tabla: perfil — datos personales del desarrollador
+// ============================================================
+
+/**
+ * GET /api/perfil
+ * Devuelve todos los registros de la tabla perfil en formato JSON.
+ * El frontend usa esto para mostrar el nombre, foto, etc.
+ */
 app.get('/api/perfil', async (req, res) => {
     try {
+        // db.query devuelve un array: [filas, campos]. Solo nos interesan las filas.
         const [filas] = await db.query('SELECT * FROM perfil');
         res.json(filas);
     } catch (error) {
@@ -54,14 +109,25 @@ app.get('/api/perfil', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/perfil
+ * Crea un nuevo perfil con los datos del body (JSON).
+ * nombre y email son obligatorios; si faltan devolvemos 400 (Bad Request).
+ */
 app.post('/api/perfil', async (req, res) => {
     try {
         const { nombre, titular, sobre_mi, email, enlace_github, enlace_linkedin } = req.body;
+
+        // Validación básica: campos obligatorios
         if (!nombre || !email) {
             return res.status(400).json({ error: 'Los campos nombre y email son obligatorios' });
         }
+
+        // Usamos ? para evitar inyección SQL (consulta parametrizada)
         const sql = 'INSERT INTO perfil (nombre, titular, sobre_mi, email, enlace_github, enlace_linkedin) VALUES (?, ?, ?, ?, ?, ?)';
         const [resultado] = await db.query(sql, [nombre, titular, sobre_mi, email, enlace_github, enlace_linkedin]);
+
+        // 201 Created: el recurso se ha creado correctamente
         res.status(201).json({ mensaje: 'Perfil guardado correctamente', id_asignado: resultado.insertId });
     } catch (error) {
         console.error('Error al insertar el perfil:', error);
@@ -69,20 +135,33 @@ app.post('/api/perfil', async (req, res) => {
     }
 });
 
+/**
+ * PUT /api/perfil/:id
+ * Actualiza un perfil existente identificado por su :id.
+ * Acepta tanto foto_perfil como foto_url en el body (compatibilidad).
+ * Si no existe el perfil, devolvemos 404 (Not Found).
+ */
 app.put('/api/perfil/:id', async (req, res) => {
     try {
-        const idPerfil = req.params.id;
-        // FIX: ahora acepta tanto foto_perfil como foto_url del body
+        const idPerfil = req.params.id; // id que viene en la URL
+
         const { nombre, titular, sobre_mi, email, enlace_github, enlace_linkedin, foto_perfil, foto_url } = req.body;
+
         if (!nombre || !email) {
             return res.status(400).json({ error: 'Los campos nombre y email son obligatorios' });
         }
+
+        // Aceptamos cualquiera de los dos campos para la foto
         const foto = foto_perfil || foto_url || null;
+
         const sql = 'UPDATE perfil SET nombre = ?, titular = ?, sobre_mi = ?, email = ?, enlace_github = ?, enlace_linkedin = ?, foto_perfil = ? WHERE id = ?';
         const [resultado] = await db.query(sql, [nombre, titular, sobre_mi, email, enlace_github, enlace_linkedin, foto, idPerfil]);
+
+        // affectedRows = 0 significa que no existía ningún registro con ese id
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Perfil no encontrado' });
         }
+
         res.json({ mensaje: 'Perfil actualizado correctamente' });
     } catch (error) {
         console.error('Error al actualizar perfil:', error);
@@ -90,9 +169,16 @@ app.put('/api/perfil/:id', async (req, res) => {
     }
 });
 
-// ==========================================
+// ============================================================
 // PROYECTOS
-// ==========================================
+// Tabla: proyectos — cada proyecto tiene un perfil_id (clave foránea)
+// que lo vincula a un perfil concreto.
+// ============================================================
+
+/**
+ * GET /api/proyectos
+ * Devuelve todos los proyectos almacenados.
+ */
 app.get('/api/proyectos', async (req, res) => {
     try {
         const [proyectos] = await db.query('SELECT * FROM proyectos');
@@ -103,14 +189,22 @@ app.get('/api/proyectos', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/proyectos
+ * Crea un nuevo proyecto vinculado a un perfil.
+ * perfil_id y titulo son obligatorios.
+ */
 app.post('/api/proyectos', async (req, res) => {
     try {
         const { perfil_id, titulo, descripcion, url_repo, url_demo } = req.body;
+
         if (!perfil_id || !titulo) {
             return res.status(400).json({ error: 'Los campos perfil_id y titulo son obligatorios' });
         }
+
         const sql = 'INSERT INTO proyectos (perfil_id, titulo, descripcion, url_repo, url_demo) VALUES (?, ?, ?, ?, ?)';
         const [resultado] = await db.query(sql, [perfil_id, titulo, descripcion, url_repo, url_demo]);
+
         res.status(201).json({ mensaje: 'Proyecto anadido correctamente', id_proyecto: resultado.insertId });
     } catch (error) {
         console.error('Error al insertar el proyecto:', error);
@@ -118,18 +212,26 @@ app.post('/api/proyectos', async (req, res) => {
     }
 });
 
+/**
+ * PUT /api/proyectos/:id
+ * Actualiza los datos de un proyecto existente.
+ */
 app.put('/api/proyectos/:id', async (req, res) => {
     try {
         const idProyecto = req.params.id;
         const { titulo, descripcion, url_repo, url_demo } = req.body;
+
         if (!titulo) {
             return res.status(400).json({ error: 'El campo titulo es obligatorio' });
         }
+
         const sql = 'UPDATE proyectos SET titulo = ?, descripcion = ?, url_repo = ?, url_demo = ? WHERE id = ?';
         const [resultado] = await db.query(sql, [titulo, descripcion, url_repo, url_demo, idProyecto]);
+
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Proyecto no encontrado' });
         }
+
         res.json({ mensaje: 'Proyecto actualizado correctamente' });
     } catch (error) {
         console.error('Error al actualizar:', error);
@@ -137,13 +239,20 @@ app.put('/api/proyectos/:id', async (req, res) => {
     }
 });
 
+/**
+ * DELETE /api/proyectos/:id
+ * Elimina un proyecto por su id.
+ * Si no existe, devolvemos 404.
+ */
 app.delete('/api/proyectos/:id', async (req, res) => {
     try {
         const idProyecto = req.params.id;
         const [resultado] = await db.query('DELETE FROM proyectos WHERE id = ?', [idProyecto]);
+
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Proyecto no encontrado' });
         }
+
         res.json({ mensaje: 'Proyecto eliminado correctamente' });
     } catch (error) {
         console.error('Error al borrar:', error);
@@ -151,9 +260,15 @@ app.delete('/api/proyectos/:id', async (req, res) => {
     }
 });
 
-// ==========================================
+// ============================================================
 // HABILIDADES
-// ==========================================
+// Tabla: habilidades — tecnologías y nivel de dominio
+// ============================================================
+
+/**
+ * GET /api/habilidades
+ * Devuelve todas las habilidades almacenadas.
+ */
 app.get('/api/habilidades', async (req, res) => {
     try {
         const [habilidades] = await db.query('SELECT * FROM habilidades');
@@ -164,14 +279,22 @@ app.get('/api/habilidades', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/habilidades
+ * Añade una nueva habilidad vinculada a un perfil.
+ * perfil_id y nombre son obligatorios.
+ */
 app.post('/api/habilidades', async (req, res) => {
     try {
         const { perfil_id, nombre, nivel } = req.body;
+
         if (!perfil_id || !nombre) {
             return res.status(400).json({ error: 'Los campos perfil_id y nombre son obligatorios' });
         }
+
         const sql = 'INSERT INTO habilidades (perfil_id, nombre, nivel) VALUES (?, ?, ?)';
         const [resultado] = await db.query(sql, [perfil_id, nombre, nivel]);
+
         res.status(201).json({ mensaje: 'Habilidad anadida correctamente', id_habilidad: resultado.insertId });
     } catch (error) {
         console.error('Error al insertar habilidad:', error);
@@ -179,18 +302,26 @@ app.post('/api/habilidades', async (req, res) => {
     }
 });
 
+/**
+ * PUT /api/habilidades/:id
+ * Actualiza el nombre o nivel de una habilidad.
+ */
 app.put('/api/habilidades/:id', async (req, res) => {
     try {
         const idHabilidad = req.params.id;
         const { nombre, nivel } = req.body;
+
         if (!nombre) {
             return res.status(400).json({ error: 'El campo nombre es obligatorio' });
         }
+
         const sql = 'UPDATE habilidades SET nombre = ?, nivel = ? WHERE id = ?';
         const [resultado] = await db.query(sql, [nombre, nivel, idHabilidad]);
+
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Habilidad no encontrada' });
         }
+
         res.json({ mensaje: 'Habilidad actualizada correctamente' });
     } catch (error) {
         console.error('Error al actualizar habilidad:', error);
@@ -198,13 +329,19 @@ app.put('/api/habilidades/:id', async (req, res) => {
     }
 });
 
+/**
+ * DELETE /api/habilidades/:id
+ * Elimina una habilidad por su id.
+ */
 app.delete('/api/habilidades/:id', async (req, res) => {
     try {
         const idHabilidad = req.params.id;
         const [resultado] = await db.query('DELETE FROM habilidades WHERE id = ?', [idHabilidad]);
+
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Habilidad no encontrada' });
         }
+
         res.json({ mensaje: 'Habilidad eliminada correctamente' });
     } catch (error) {
         console.error('Error al borrar habilidad:', error);
@@ -212,9 +349,16 @@ app.delete('/api/habilidades/:id', async (req, res) => {
     }
 });
 
-// ==========================================
+// ============================================================
 // EXPERIENCIA
-// ==========================================
+// Tabla: experiencia — historial laboral / prácticas
+// ============================================================
+
+/**
+ * GET /api/experiencia
+ * Devuelve toda la experiencia laboral ordenada por fecha de inicio
+ * descendente (la más reciente primero).
+ */
 app.get('/api/experiencia', async (req, res) => {
     try {
         const [experiencia] = await db.query('SELECT * FROM experiencia ORDER BY fecha_inicio DESC');
@@ -225,14 +369,23 @@ app.get('/api/experiencia', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/experiencia
+ * Añade un nuevo registro de experiencia laboral.
+ * perfil_id, empresa, puesto y fecha_inicio son obligatorios.
+ * fecha_fin puede ser null si el trabajo sigue en curso.
+ */
 app.post('/api/experiencia', async (req, res) => {
     try {
         const { perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion } = req.body;
+
         if (!perfil_id || !empresa || !puesto || !fecha_inicio) {
             return res.status(400).json({ error: 'Los campos perfil_id, empresa, puesto y fecha_inicio son obligatorios' });
         }
+
         const sql = 'INSERT INTO experiencia (perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion) VALUES (?, ?, ?, ?, ?, ?)';
         const [resultado] = await db.query(sql, [perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion]);
+
         res.status(201).json({ mensaje: 'Experiencia anadida correctamente', id_experiencia: resultado.insertId });
     } catch (error) {
         console.error('Error al insertar experiencia:', error);
@@ -240,18 +393,26 @@ app.post('/api/experiencia', async (req, res) => {
     }
 });
 
+/**
+ * PUT /api/experiencia/:id
+ * Actualiza un registro de experiencia existente.
+ */
 app.put('/api/experiencia/:id', async (req, res) => {
     try {
         const idExperiencia = req.params.id;
         const { empresa, puesto, fecha_inicio, fecha_fin, descripcion } = req.body;
+
         if (!empresa || !puesto || !fecha_inicio) {
             return res.status(400).json({ error: 'Los campos empresa, puesto y fecha_inicio son obligatorios' });
         }
+
         const sql = 'UPDATE experiencia SET empresa = ?, puesto = ?, fecha_inicio = ?, fecha_fin = ?, descripcion = ? WHERE id = ?';
         const [resultado] = await db.query(sql, [empresa, puesto, fecha_inicio, fecha_fin, descripcion, idExperiencia]);
+
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Experiencia no encontrada' });
         }
+
         res.json({ mensaje: 'Experiencia actualizada correctamente' });
     } catch (error) {
         console.error('Error al actualizar experiencia:', error);
@@ -259,13 +420,19 @@ app.put('/api/experiencia/:id', async (req, res) => {
     }
 });
 
+/**
+ * DELETE /api/experiencia/:id
+ * Elimina un registro de experiencia por su id.
+ */
 app.delete('/api/experiencia/:id', async (req, res) => {
     try {
         const idExperiencia = req.params.id;
         const [resultado] = await db.query('DELETE FROM experiencia WHERE id = ?', [idExperiencia]);
+
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Experiencia no encontrada' });
         }
+
         res.json({ mensaje: 'Experiencia eliminada correctamente' });
     } catch (error) {
         console.error('Error al borrar experiencia:', error);
@@ -273,6 +440,12 @@ app.delete('/api/experiencia/:id', async (req, res) => {
     }
 });
 
+// ============================================================
+// ARRANQUE DEL SERVIDOR
+// app.listen() pone el servidor a escuchar peticiones en el puerto
+// definido. Solo llega aquí si todos los middlewares y rutas
+// se han registrado correctamente.
+// ============================================================
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

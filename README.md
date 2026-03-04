@@ -2,19 +2,23 @@
 
 Portafolio personal desarrollado con **Node.js**, **Express** y **MySQL** como backend, y **HTML + Tailwind CSS** como frontend. Sirve como escaparate profesional con datos dinamicos gestionados por una API REST.
 
+La base de datos esta alojada en la nube mediante **Aiven** (MySQL gestionado), con conexion SSL.
+
 ## Estructura del proyecto
 
 ```
 mi-portafolio/
 ├── public/              # Frontend (archivos estaticos)
-│   ├── index.html       # Pagina principal
+│   ├── index.html       # Pagina principal (comentada al detalle)
 │   ├── js/
-│   │   └── app.js       # Logica del frontend
+│   │   └── app.js       # Logica del frontend (comentada al detalle)
 │   └── img/
 │       └── perfil.jpg   # Foto de perfil
 ├── server/              # Backend
-│   ├── index.js         # Servidor Express + rutas API
-│   └── db.js            # Conexion a MySQL
+│   ├── index.js         # Servidor Express + rutas API REST
+│   ├── db.js            # Conexion al pool MySQL (Aiven)
+│   ├── init-db.js       # Script: crea las tablas en la BD
+│   └── seed.js          # Script: inserta los datos reales del portafolio
 ├── .env                 # Variables de entorno (NO se sube a git)
 ├── .env.example         # Plantilla de variables de entorno
 ├── .gitignore
@@ -26,8 +30,8 @@ mi-portafolio/
 ## Requisitos
 
 - **Node.js** v18 o superior
-- **MySQL** 8.0 o superior
 - **npm**
+- Una base de datos MySQL accesible (local o en la nube — se recomienda [Aiven](https://aiven.io))
 
 ## Instalacion
 
@@ -42,64 +46,39 @@ mi-portafolio/
    npm install
    ```
 
-3. Crea la base de datos en MySQL:
-   ```sql
-   CREATE DATABASE mi_portafolio;
-   USE mi_portafolio;
-
-   CREATE TABLE perfil (
-       id INT AUTO_INCREMENT PRIMARY KEY,
-       nombre VARCHAR(100) NOT NULL,
-       titular VARCHAR(150),
-       sobre_mi TEXT,
-       email VARCHAR(100) NOT NULL,
-       enlace_github VARCHAR(255),
-       enlace_linkedin VARCHAR(255),
-       foto_perfil VARCHAR(255)
-   );
-
-   CREATE TABLE proyectos (
-       id INT AUTO_INCREMENT PRIMARY KEY,
-       perfil_id INT NOT NULL,
-       titulo VARCHAR(150) NOT NULL,
-       descripcion TEXT,
-       url_repo VARCHAR(255),
-       url_demo VARCHAR(255),
-       FOREIGN KEY (perfil_id) REFERENCES perfil(id)
-   );
-
-   CREATE TABLE habilidades (
-       id INT AUTO_INCREMENT PRIMARY KEY,
-       perfil_id INT NOT NULL,
-       nombre VARCHAR(100) NOT NULL,
-       nivel VARCHAR(50),
-       FOREIGN KEY (perfil_id) REFERENCES perfil(id)
-   );
-
-   CREATE TABLE experiencia (
-       id INT AUTO_INCREMENT PRIMARY KEY,
-       perfil_id INT NOT NULL,
-       empresa VARCHAR(150) NOT NULL,
-       puesto VARCHAR(150) NOT NULL,
-       fecha_inicio DATE NOT NULL,
-       fecha_fin DATE,
-       descripcion TEXT,
-       FOREIGN KEY (perfil_id) REFERENCES perfil(id)
-   );
-   ```
-
-4. Configura las variables de entorno:
+3. Configura las variables de entorno:
    ```bash
    cp .env.example .env
    ```
-   Edita `.env` con tus credenciales de MySQL.
+   Edita `.env` con tus credenciales de MySQL:
+   ```env
+   DB_HOST=tu-host.aivencloud.com
+   DB_PORT=16101
+   DB_USER=avnadmin
+   DB_PASSWORD=tu_contraseña
+   DB_NAME=defaultdb
+   DB_SSL=true
+   PORT=3000
+   CORS_ORIGIN=http://localhost:3000
+   ```
 
-5. Arranca el servidor:
+4. Crea las tablas en la base de datos:
+   ```bash
+   node server/init-db.js
+   ```
+
+5. Inserta los datos del portafolio:
+   ```bash
+   node server/seed.js
+   ```
+   > El script es idempotente: si ya hay datos, los omite sin error.
+
+6. Arranca el servidor:
    ```bash
    npm start
    ```
 
-6. Abre en el navegador: [http://localhost:3000](http://localhost:3000)
+7. Abre en el navegador: [http://localhost:3000](http://localhost:3000)
 
 ## API Endpoints
 
@@ -127,12 +106,14 @@ mi-portafolio/
 - **express-rate-limit** - Limite de 100 peticiones/15min por IP
 - **dotenv** - Credenciales fuera del codigo fuente
 - **Consultas parametrizadas** - Prevencion de inyeccion SQL
+- **SSL** - Conexion cifrada con la BD en Aiven
 - **CORS** configurable desde `.env`
 
 ## Tech Stack
 
-**Backend:** Node.js, Express, MySQL2, Helmet, dotenv
+**Backend:** Node.js, Express, MySQL2, Helmet, dotenv, express-rate-limit
 **Frontend:** HTML5, Tailwind CSS, JavaScript vanilla, Font Awesome, Devicon
+**Base de datos:** MySQL en Aiven (nube)
 
 ## Autor
 

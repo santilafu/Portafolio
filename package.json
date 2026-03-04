@@ -7,7 +7,11 @@
     "start": "node server/index.js",
     "dev": "node --watch server/index.js"
   },
-  "keywords": ["portfolio", "express", "mysql"],
+  "keywords": [
+    "portfolio",
+    "express",
+    "mysql"
+  ],
   "author": "Santiago Lafuente Hernandez",
   "license": "ISC",
   "type": "commonjs",

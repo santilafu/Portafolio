@@ -27,7 +27,7 @@ const datosPerfil = {
     sobre_mi: 'Apasionado por el backend, las bases de datos y la creacion de APIs robustas. Siempre buscando aprender nuevas tecnologias y mejorar mis habilidades.',
     email: 'santi10dy@gmail.com',
     enlace_github: 'https://github.com/santilafu',
-    enlace_linkedin: 'www.linkedin.com/in/santiago-lafuente-hernandez-796783226',
+    enlace_linkedin: 'https://www.linkedin.com/in/santiago-lafuente-hern%C3%A1ndez-796783226/',
     foto_perfil: 'perfil.jpg'
 };
 

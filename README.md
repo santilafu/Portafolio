@@ -1,6 +1,6 @@
 # Santiago Lafuente — Portafolio
 
-> Portafolio personal full-stack con API REST, base de datos en la nube y despliegue en producción.
+> Portafolio personal full-stack con API REST, base de datos en la nube y despliegue en produccion con dominio propio.
 
 🌐 **[santiagolafuente.com](https://santiagolafuente.com)**
 
@@ -10,6 +10,7 @@
 ![Aiven](https://img.shields.io/badge/Aiven-FF0000?style=flat&logo=aiven&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-46E3B7?style=flat&logo=render&logoColor=black)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=flat&logo=tailwindcss&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
 
 ---
 
@@ -20,7 +21,10 @@ Portafolio personal desarrollado como proyecto de fin de ciclo DAM. Incluye:
 - **Backend** con Node.js y Express que expone una API REST completa (CRUD)
 - **Base de datos** MySQL alojada en la nube con **Aiven**, conexion SSL
 - **Frontend** con HTML5, Tailwind CSS y JavaScript vanilla que consume la API
-- **Desplegado en produccion** con **Render** (backend) + Aiven (BD)
+- **Panel de administracion** en `/admin` para gestionar el contenido sin tocar codigo
+- **Dominio propio** `santiagolafuente.com` desplegado en **Render** (plan Starter)
+- **Email real** via Resend (HTTP API, sin dependencia de SMTP)
+- **Contador de visitas** persistente en Aiven con easter egg secreto
 
 ---
 
@@ -29,15 +33,21 @@ Portafolio personal desarrollado como proyecto de fin de ciclo DAM. Incluye:
 ```
 mi-portafolio/
 ├── public/                  # Frontend (archivos estaticos)
-│   ├── index.html           # Pagina principal
+│   ├── index.html           # SPA principal con todas las secciones
+│   ├── admin.html           # Panel de administracion protegido
+│   ├── favicon.svg          # Favicon SVG con iniciales SL
 │   ├── js/
-│   │   └── app.js           # Logica del frontend (fetch, animaciones, DOM)
-│   └── img/
-│       └── perfil.jpg       # Foto de perfil
+│   │   └── app.js           # Logica completa del frontend
+│   ├── img/
+│   │   ├── perfil.jpg       # Foto de perfil
+│   │   ├── logo.svg         # Logo SVG (indigo/cyan, sin fondo)
+│   │   └── logo1.png        # Logo PNG original
+│   └── cv/
+│       └── cv-santiago-lafuente.pdf   # CV descargable
 ├── server/                  # Backend
-│   ├── index.js             # Servidor Express + rutas API REST
+│   ├── index.js             # Servidor Express + todas las rutas API REST
 │   ├── db.js                # Pool de conexiones MySQL (Aiven, SSL)
-│   ├── init-db.js           # Script: crea las tablas en la BD
+│   ├── init-db.js           # Script: crea las 5 tablas en la BD
 │   └── seed.js              # Script: inserta los datos del portafolio
 ├── .env                     # Variables de entorno locales (NO se sube a git)
 ├── .env.example             # Plantilla de variables de entorno
@@ -84,6 +94,9 @@ DB_NAME=defaultdb
 DB_SSL=true
 PORT=3000
 CORS_ORIGIN=https://santiagolafuente.com
+GMAIL_USER=tu_email@gmail.com
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+ADMIN_PASSWORD=tu_contraseña_admin
 ```
 
 **4. Crear las tablas**
@@ -113,36 +126,65 @@ http://localhost:3000
 
 ### Backend — Render + Dominio personalizado
 
-El servidor Express esta desplegado como **Web Service** en [Render](https://render.com) con dominio personalizado.
+El servidor Express esta desplegado como **Web Service** en [Render](https://render.com) (plan Starter) con dominio personalizado verificado.
 
 | Parametro | Valor |
 |-----------|-------|
-| Plataforma | Render (Web Service) |
+| Plataforma | Render (Web Service — Starter) |
 | Dominio | [santiagolafuente.com](https://santiagolafuente.com) |
 | Build command | `npm install` |
 | Start command | `npm start` |
-| Variables de entorno | Configuradas en el panel de Render (nunca en el repositorio) |
-
-Las credenciales de Aiven se inyectan directamente desde el panel de control de Render como variables de entorno seguras, garantizando que ninguna informacion sensible resida en el repositorio publico.
+| Auto-deploy | Si — en cada `git push` a `main` |
+| Variables de entorno | Panel de Render (nunca en el repositorio) |
 
 ### Base de datos — Aiven
 
 MySQL gestionado en la nube con conexion SSL obligatoria. Las credenciales se configuran exclusivamente via variables de entorno tanto en local (`.env`) como en produccion (panel de Render).
 
+| Tabla | Descripcion |
+|-------|-------------|
+| `perfil` | Datos personales del desarrollador |
+| `proyectos` | Proyectos con repo y demo |
+| `habilidades` | Tecnologias y nivel de dominio |
+| `experiencia` | Historial laboral y practicas |
+| `tech_stack` | Iconos del apartado de tecnologias |
+| `visitas` | Contador de visitas persistente |
+
 ---
 
+## Panel de administracion
 
+Accesible en [`/admin`](https://santiagolafuente.com/admin). Protegido con contrasena (variable de entorno `ADMIN_PASSWORD`).
 
-## Panel de administración
+Permite gestionar el contenido sin tocar codigo:
 
-Accesible en `/admin`. Protegido con contraseña (variable de entorno `ADMIN_PASSWORD`).
+| Seccion | Operaciones |
+|---------|-------------|
+| Perfil | Editar nombre, titular, sobre mi, foto y enlaces |
+| Proyectos | Anadir y eliminar proyectos |
+| Habilidades | Anadir y eliminar habilidades |
+| Experiencia | Anadir y eliminar experiencia laboral |
+| Tech Stack | Anadir y eliminar tecnologias con sus iconos |
 
-Permite gestionar sin tocar código:
-- **Perfil** — editar nombre, titular, sobre mí, foto y enlaces
-- **Proyectos** — añadir y eliminar proyectos
-- **Habilidades** — añadir y eliminar habilidades
-- **Experiencia** — añadir y eliminar experiencia laboral
-- **Tech Stack** — añadir y eliminar tecnologías (los iconos se cargan desde la BD)
+---
+
+## Features del frontend
+
+| Feature | Descripcion |
+|---------|-------------|
+| Scroll progress bar | Barra de progreso de lectura en el top |
+| Cursor personalizado | Punto + anillo con efecto glow |
+| Toast de bienvenida | Primera visita detectada con localStorage |
+| Nav activo | Link resaltado segun seccion visible (IntersectionObserver) |
+| GitHub stats | Repos y seguidores en tiempo real desde la API publica |
+| Modo claro/oscuro | Toggle con persistencia en localStorage |
+| Formulario de contacto | Envia email real via Resend |
+| Descarga de CV | PDF descargable desde el servidor |
+| Contador de visitas | Persistente en Aiven, visible en el footer |
+| Easter egg | 5 clics en el logo → panel de stats secreto |
+| Auto-ping | Ping cada 10 min para mantener Render activo |
+| Logo SVG | Iniciales SL estilo circuito con gradiente indigo/cyan |
+| Favicon | Logo SVG en la pestana del navegador |
 
 ---
 
@@ -172,6 +214,9 @@ Permite gestionar sin tocar código:
 | GET | `/api/visitas` | Incrementa y devuelve contador |
 | GET | `/api/visitas-total` | Lee el contador sin incrementar |
 | GET | `/api/ping` | Health check |
+| POST | `/api/contacto` | Envia email via Resend |
+
+> Los endpoints POST, PUT y DELETE requieren la cabecera `x-admin-password`.
 
 ---
 
@@ -185,7 +230,8 @@ Permite gestionar sin tocar código:
 | SSL | Conexion cifrada con la BD en Aiven |
 | dotenv | Credenciales fuera del codigo fuente |
 | CORS | Origen configurable desde `.env` |
-| ADMIN_PASSWORD | Panel admin protegido por cabecera HTTP |
+| ADMIN_PASSWORD | Panel admin protegido por cabecera HTTP (`x-admin-password`) |
+| trust proxy | Configurado para Render (IP real del cliente) |
 
 ---
 
@@ -194,10 +240,10 @@ Permite gestionar sin tocar código:
 | Capa | Tecnologias |
 |------|-------------|
 | Backend | Node.js, Express, mysql2, Helmet, dotenv, express-rate-limit, compression, Resend |
-| Frontend | HTML5, Tailwind CSS, JavaScript vanilla, Font Awesome, Devicon |
-| Base de datos | MySQL (Aiven — cloud managed, 5 tablas) |
-| Despliegue | Render (backend), Aiven (BD) |
-| Optimizaciones | Compresion gzip, Cache-Control, panel admin, tech stack en BD |
+| Frontend | HTML5, Tailwind CSS, JavaScript vanilla, Font Awesome, Devicon v2.16.0 |
+| Base de datos | MySQL (Aiven — cloud managed, 6 tablas) |
+| Despliegue | Render Starter (backend + dominio), Aiven (BD) |
+| Optimizaciones | Compresion gzip, Cache-Control 60s, panel admin, tech stack en BD |
 
 ---
 
@@ -206,6 +252,7 @@ Permite gestionar sin tocar código:
 **Santiago Lafuente Hernandez**
 Estudiante de DAM — Desarrollo de Aplicaciones Multiplataforma
 
+[![Web](https://img.shields.io/badge/Web-santiagolafuente.com-6366f1?style=flat&logo=google-chrome&logoColor=white)](https://santiagolafuente.com)
 [![GitHub](https://img.shields.io/badge/GitHub-santilafu-181717?style=flat&logo=github)](https://github.com/santilafu)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Santiago_Lafuente-0A66C2?style=flat&logo=linkedin)](https://www.linkedin.com/in/santiago-lafuente-hernandez-796783226)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Santiago_Lafuente-0A66C2?style=flat&logo=linkedin)](https://www.linkedin.com/in/santiago-lafuente-hern%C3%A1ndez-796783226/)
 [![Email](https://img.shields.io/badge/Email-santi10dy@gmail.com-EA4335?style=flat&logo=gmail&logoColor=white)](mailto:santi10dy@gmail.com)

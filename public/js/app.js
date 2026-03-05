@@ -609,7 +609,7 @@ function mostrarFeedback(el, texto, colorClass) {
 // ============================================================
 
 function iniciarEasterEgg() {
-    const logo  = document.querySelector('a.gradient-text');
+    const logo  = document.getElementById('logo-navbar');
     const panel = document.getElementById('stats-panel');
     if (!logo || !panel) return;
 

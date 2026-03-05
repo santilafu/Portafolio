@@ -49,6 +49,10 @@ async function renderTechStack() {
         let idx = 0;
         main.forEach(tech  => mainContainer.appendChild(crearTechCard(tech, 'text-3xl md:text-4xl', idx++)));
         other.forEach(tech => otherContainer.appendChild(crearTechCard(tech, 'text-2xl md:text-3xl', idx++)));
+
+        // Las tarjetas se añaden al DOM después del fetch (async),
+        // así que lanzamos la animación aquí, no al inicio del script.
+        animarTechEntrada();
     } catch (e) {
         console.warn('No se pudo cargar el tech stack desde la API', e);
     }
@@ -705,7 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarAnimaciones();
     iniciarNavbar();
     iniciarCopiarEmail();
-    animarTechEntrada();
     iniciarParallax();
     iniciarScrollProgress();
     iniciarCursor();

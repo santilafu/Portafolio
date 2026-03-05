@@ -2,6 +2,8 @@
 
 > Portafolio personal full-stack con API REST, base de datos en la nube y despliegue en producción.
 
+🌐 **[santiagolafuente.com](https://santiagolafuente.com)**
+
 ![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat&logo=nodedotjs&logoColor=white)
 ![Express](https://img.shields.io/badge/Express-000000?style=flat&logo=express&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white)
@@ -81,7 +83,7 @@ DB_PASSWORD=tu_contraseña
 DB_NAME=defaultdb
 DB_SSL=true
 PORT=3000
-CORS_ORIGIN=http://localhost:3000
+CORS_ORIGIN=https://santiagolafuente.com
 ```
 
 **4. Crear las tablas**
@@ -109,13 +111,14 @@ http://localhost:3000
 
 ## Despliegue en produccion
 
-### Backend — Render
+### Backend — Render + Dominio personalizado
 
-El servidor Express esta desplegado como **Web Service** en [Render](https://render.com).
+El servidor Express esta desplegado como **Web Service** en [Render](https://render.com) con dominio personalizado.
 
 | Parametro | Valor |
 |-----------|-------|
 | Plataforma | Render (Web Service) |
+| Dominio | [santiagolafuente.com](https://santiagolafuente.com) |
 | Build command | `npm install` |
 | Start command | `npm start` |
 | Variables de entorno | Configuradas en el panel de Render (nunca en el repositorio) |

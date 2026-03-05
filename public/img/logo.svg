@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 115">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#38bdf8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Hexágono sin relleno (fondo transparente) -->
+  <polygon
+    points="50,4 96,29 96,79 50,104 4,79 4,29"
+    fill="none"
+    stroke="url(#grad)"
+    stroke-width="4"
+    stroke-linejoin="round"/>
+
+  <!-- Corchete izquierdo < -->
+  <text x="10" y="68"
+    font-family="'Arial Black', Arial, sans-serif"
+    font-weight="900" font-size="34"
+    fill="url(#grad)">&lt;</text>
+
+  <!-- Corchete derecho > -->
+  <text x="66" y="68"
+    font-family="'Arial Black', Arial, sans-serif"
+    font-weight="900" font-size="34"
+    fill="url(#grad)">&gt;</text>
+
+  <!-- Iniciales SL centradas -->
+  <text x="50" y="65"
+    font-family="'Arial Black', Arial, sans-serif"
+    font-weight="900" font-size="20"
+    fill="url(#grad)"
+    text-anchor="middle">SL</text>
+
+  <!-- Prompt de terminal >_ -->
+  <text x="50" y="91"
+    font-family="'Courier New', monospace"
+    font-weight="700" font-size="13"
+    fill="#38bdf8"
+    text-anchor="middle">&gt;_</text>
+</svg>

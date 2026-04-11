@@ -37,25 +37,37 @@ const datosProyectos = [
         titulo: 'SuscriptWallet - Gestor de Suscripciones',
         descripcion: 'Aplicacion full-stack para gestionar todas tus suscripciones de pago en un solo lugar. Backend en Kotlin + Spring Boot 3.3 + PostgreSQL con Spring Security y JWT. App movil multiplataforma con Kotlin Multiplatform y Jetpack Compose. Catalogo de 320+ servicios, dashboard con graficos por categoria, notificaciones de renovacion, modo offline y soporte multi-divisa.',
         url_repo: 'https://github.com/santilafu/SuscriptWallet',
-        url_demo: ''
+        url_demo: '',
+        imagen: '/img/suscriptwallet-banner.png',
+        destacado: true,
+        orden: 1
     },
     {
         titulo: 'Portafolio Full-Stack',
         descripcion: 'Portafolio personal con backend Node.js/Express y API REST completa (CRUD) conectada a MySQL. Frontend con tema oscuro, animaciones y Tailwind CSS. Incluye seguridad con Helmet, rate-limiting y dotenv.',
         url_repo: 'https://github.com/santilafu/Portafolio',
-        url_demo: 'https://santiagolafuente.com'
+        url_demo: 'https://santiagolafuente.com',
+        imagen: null,
+        destacado: false,
+        orden: 2
     },
     {
         titulo: 'MoodTrack - Registro de Emociones',
         descripcion: 'Aplicacion web con Spring Boot y Thymeleaf para registrar emociones diarias, ver historial y estadisticas graficas. Base de datos H2 en memoria. Proyecto de 1er curso DAM.',
         url_repo: 'https://github.com/santilafu/App-Moodtrack',
-        url_demo: ''
+        url_demo: '',
+        imagen: null,
+        destacado: false,
+        orden: 3
     },
     {
         titulo: 'Gestion Bancaria Segura',
         descripcion: 'App de escritorio Java Swing con cifrado AES-128, firmas digitales DSA y SHA-256. Gestiona cuentas bancarias con depositos, transferencias y control de acceso criptografico. Proyecto de 2o DAM.',
         url_repo: 'https://github.com/santilafu/GestionBancaria',
-        url_demo: ''
+        url_demo: '',
+        imagen: null,
+        destacado: false,
+        orden: 4
     }
 ];
 
@@ -205,9 +217,10 @@ async function poblarBaseDatos() {
             // Recorremos el array e insertamos cada proyecto
             for (const proyecto of datosProyectos) {
                 await conexion.query(
-                    `INSERT INTO proyectos (perfil_id, titulo, descripcion, url_repo, url_demo)
-                     VALUES (?, ?, ?, ?, ?)`,
-                    [perfilId, proyecto.titulo, proyecto.descripcion, proyecto.url_repo, proyecto.url_demo]
+                    `INSERT INTO proyectos (perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [perfilId, proyecto.titulo, proyecto.descripcion, proyecto.url_repo, proyecto.url_demo,
+                     proyecto.imagen, proyecto.destacado ? 1 : 0, proyecto.orden]
                 );
                 console.log(`✅ Proyecto insertado: ${proyecto.titulo}`);
             }

@@ -401,21 +401,52 @@ async function cargarProyectos() {
         contenedor.innerHTML = '';
         if (proyectos.length > 0) {
             proyectos.forEach((proyecto, idx) => {
+                // Los proyectos destacados ocupan las 2 columnas y muestran banner + icono
+                const esDestacado = proyecto.destacado == 1 || proyecto.destacado === true;
                 const tarjeta = document.createElement('div');
-                tarjeta.className = 'card-hover bg-slate-900/80 border border-slate-800 p-6 rounded-2xl group fade-up';
                 tarjeta.style.transitionDelay = `${idx * 0.1}s`;
-                tarjeta.innerHTML = `
-                    <div class="flex items-center gap-2 text-purple-400 mb-4">
-                        <i class="fa-solid fa-folder-open"></i>
-                        <span class="text-xs uppercase tracking-wider font-semibold">Proyecto</span>
-                    </div>
-                    <h4 class="text-xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors">${proyecto.titulo}</h4>
-                    <p class="text-gray-400 leading-relaxed mb-5 text-sm">${proyecto.descripcion}</p>
-                    <div class="flex gap-4 text-sm font-semibold">
-                        ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 transition-colors"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
-                        ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="inline-flex items-center gap-1.5 text-pink-400 hover:text-pink-300 transition-colors"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
-                    </div>
-                `;
+
+                if (esDestacado) {
+                    tarjeta.className = 'card-hover lg:col-span-2 bg-gradient-to-br from-slate-900/90 to-slate-900/60 border-2 border-purple-500/40 rounded-2xl overflow-hidden group fade-up shadow-2xl shadow-purple-900/20';
+                    tarjeta.innerHTML = `
+                        ${proyecto.imagen ? `
+                            <div class="relative w-full h-56 md:h-72 overflow-hidden bg-slate-950">
+                                <img src="${proyecto.imagen}" alt="${proyecto.titulo}"
+                                     class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+                                <div class="absolute top-4 left-4">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full uppercase tracking-wider">
+                                        <i class="fa-solid fa-star"></i> Proyecto Destacado
+                                    </span>
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div class="p-6 md:p-8">
+                            <div class="flex items-start gap-4 mb-4">
+                                <h4 class="text-2xl md:text-3xl font-bold text-white group-hover:text-purple-300 transition-colors flex-1">${proyecto.titulo}</h4>
+                            </div>
+                            <p class="text-gray-300 leading-relaxed mb-6 text-base">${proyecto.descripcion}</p>
+                            <div class="flex flex-wrap gap-4 text-sm font-semibold">
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 border border-slate-700 hover:border-purple-500 text-white rounded-full transition-all"><i class="fa-brands fa-github"></i> Ver codigo</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white rounded-full transition-all"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo en vivo</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    tarjeta.className = 'card-hover bg-slate-900/80 border border-slate-800 p-6 rounded-2xl group fade-up';
+                    tarjeta.innerHTML = `
+                        <div class="flex items-center gap-2 text-purple-400 mb-4">
+                            <i class="fa-solid fa-folder-open"></i>
+                            <span class="text-xs uppercase tracking-wider font-semibold">Proyecto</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors">${proyecto.titulo}</h4>
+                        <p class="text-gray-400 leading-relaxed mb-5 text-sm">${proyecto.descripcion}</p>
+                        <div class="flex gap-4 text-sm font-semibold">
+                            ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 transition-colors"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
+                            ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="inline-flex items-center gap-1.5 text-pink-400 hover:text-pink-300 transition-colors"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
+                        </div>
+                    `;
+                }
                 contenedor.appendChild(tarjeta);
             });
             setTimeout(reobservarAnimaciones, 100);
@@ -509,10 +540,10 @@ async function cargarExperiencia() {
             const fechaInicio = formatearFecha(exp.fecha_inicio);
             const esActual   = !exp.fecha_fin;
             const esPersonal = !!exp.enlace_github;
-            // Si la experiencia trae logo de la empresa, lo mostramos arriba en una "píldora" blanca
-            // que respeta el diseño dark del resto de la página.
+            // Si la experiencia trae logo de la empresa, lo mostramos en una "píldora" oscura
+            // (slate-800) que contrasta tanto con logos claros como oscuros y mantiene el diseño dark.
             const logoHtml = exp.logo
-                ? `<div class="flex items-center justify-center w-14 h-14 rounded-xl bg-white p-2 border border-slate-700 shrink-0">
+                ? `<div class="flex items-center justify-center w-16 h-16 rounded-xl bg-slate-800 p-2.5 border border-slate-700 shrink-0">
                        <img src="${exp.logo}" alt="${exp.empresa}" class="max-w-full max-h-full object-contain">
                    </div>`
                 : '';

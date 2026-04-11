@@ -53,6 +53,9 @@ async function crearTablas() {
                 descripcion TEXT,                            -- descripción detallada
                 url_repo    VARCHAR(255),                    -- enlace al repositorio (GitHub, etc.)
                 url_demo    VARCHAR(255),                    -- enlace a demo en vivo (si existe)
+                imagen      VARCHAR(255),                    -- ruta a imagen banner del proyecto
+                destacado   BOOLEAN DEFAULT FALSE,           -- si es true se renderiza en grande con banner
+                orden       INT DEFAULT 0,                   -- orden de aparición
                 -- Si se borra el perfil, sus proyectos se borran también (CASCADE)
                 FOREIGN KEY (perfil_id) REFERENCES perfil(id) ON DELETE CASCADE
             )

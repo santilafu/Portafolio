@@ -47,8 +47,10 @@ mi-portafolio/
 ├── server/                  # Backend
 │   ├── index.js             # Servidor Express + todas las rutas API REST
 │   ├── db.js                # Pool de conexiones MySQL (Aiven, SSL)
-│   ├── init-db.js           # Script: crea las 5 tablas en la BD
-│   └── seed.js              # Script: inserta los datos del portafolio
+│   ├── init-db.js           # Script: crea las 7 tablas en la BD
+│   ├── seed.js              # Script: inserta los datos del portafolio
+│   ├── migrate-add-gdes-cert.js          # Migracion: GDES + certificados
+│   └── migrate-proyectos-destacado.js    # Migracion: proyectos destacados
 ├── .env                     # Variables de entorno locales (NO se sube a git)
 ├── .env.example             # Plantilla de variables de entorno
 ├── .gitignore
@@ -144,9 +146,10 @@ MySQL gestionado en la nube con conexion SSL obligatoria. Las credenciales se co
 | Tabla | Descripcion |
 |-------|-------------|
 | `perfil` | Datos personales del desarrollador |
-| `proyectos` | Proyectos con repo y demo |
+| `proyectos` | Proyectos con repo, demo, banner y flag `destacado` |
 | `habilidades` | Tecnologias y nivel de dominio |
-| `experiencia` | Historial laboral y practicas |
+| `experiencia` | Historial laboral y practicas (con logo de empresa) |
+| `certificados` | Cursos y certificaciones obtenidas |
 | `tech_stack` | Iconos del apartado de tecnologias |
 | `visitas` | Contador de visitas persistente |
 
@@ -161,9 +164,10 @@ Permite gestionar el contenido sin tocar codigo:
 | Seccion | Operaciones |
 |---------|-------------|
 | Perfil | Editar nombre, titular, sobre mi, foto y enlaces |
-| Proyectos | Anadir y eliminar proyectos |
+| Proyectos | Anadir y eliminar proyectos (con banner, destacado y orden) |
 | Habilidades | Anadir y eliminar habilidades |
-| Experiencia | Anadir y eliminar experiencia laboral |
+| Experiencia | Anadir y eliminar experiencia laboral (con logo de empresa) |
+| Certificados | Anadir y eliminar certificados con icono y gradiente |
 | Tech Stack | Anadir y eliminar tecnologias con sus iconos |
 
 ---
@@ -185,6 +189,8 @@ Permite gestionar el contenido sin tocar codigo:
 | Auto-ping | Ping cada 10 min para mantener Render activo |
 | Logo SVG | Iniciales SL estilo circuito con gradiente indigo/cyan |
 | Favicon | Logo SVG en la pestana del navegador |
+| Proyecto destacado | Banner full-width con badge para el proyecto principal |
+| Certificados | Seccion dedicada con tarjetas de cursos completados (PDFs descargables) |
 
 ---
 
@@ -207,6 +213,10 @@ Permite gestionar el contenido sin tocar codigo:
 | POST | `/api/experiencia` | Crear experiencia |
 | PUT | `/api/experiencia/:id` | Actualizar experiencia |
 | DELETE | `/api/experiencia/:id` | Eliminar experiencia |
+| GET | `/api/certificados` | Listar certificados |
+| POST | `/api/certificados` | Crear certificado |
+| PUT | `/api/certificados/:id` | Actualizar certificado |
+| DELETE | `/api/certificados/:id` | Eliminar certificado |
 | GET | `/api/tech-stack` | Listar tech stack |
 | POST | `/api/tech-stack` | Crear tecnologia |
 | PUT | `/api/tech-stack/:id` | Actualizar tecnologia |
@@ -241,7 +251,7 @@ Permite gestionar el contenido sin tocar codigo:
 |------|-------------|
 | Backend | Node.js, Express, mysql2, Helmet, dotenv, express-rate-limit, compression, Resend |
 | Frontend | HTML5, Tailwind CSS, JavaScript vanilla, Font Awesome, Devicon v2.16.0 |
-| Base de datos | MySQL (Aiven — cloud managed, 6 tablas) |
+| Base de datos | MySQL (Aiven — cloud managed, 7 tablas) |
 | Despliegue | Render Starter (backend + dominio), Aiven (BD) |
 | Optimizaciones | Compresion gzip, Cache-Control 60s, panel admin, tech stack en BD |
 

@@ -34,10 +34,16 @@ const datosPerfil = {
 // Cada proyecto referencia el perfil_id que se asignará tras insertar el perfil
 const datosProyectos = [
     {
+        titulo: 'SuscriptWallet - Gestor de Suscripciones',
+        descripcion: 'Aplicacion full-stack para gestionar todas tus suscripciones de pago en un solo lugar. Backend en Kotlin + Spring Boot 3.3 + PostgreSQL con Spring Security y JWT. App movil multiplataforma con Kotlin Multiplatform y Jetpack Compose. Catalogo de 320+ servicios, dashboard con graficos por categoria, notificaciones de renovacion, modo offline y soporte multi-divisa.',
+        url_repo: 'https://github.com/santilafu/SuscriptWallet',
+        url_demo: ''
+    },
+    {
         titulo: 'Portafolio Full-Stack',
         descripcion: 'Portafolio personal con backend Node.js/Express y API REST completa (CRUD) conectada a MySQL. Frontend con tema oscuro, animaciones y Tailwind CSS. Incluye seguridad con Helmet, rate-limiting y dotenv.',
         url_repo: 'https://github.com/santilafu/Portafolio',
-        url_demo: ''
+        url_demo: 'https://santiagolafuente.com'
     },
     {
         titulo: 'MoodTrack - Registro de Emociones',
@@ -92,16 +98,56 @@ const datosTechOther = [
     { nombre: 'Unity',      icono: 'devicon-unity-plain',              color: 'from-gray-400/20 to-gray-600/20',     border: 'border-gray-400/30',    icon_color: '', grupo: 'other', orden: 8 },
     { nombre: 'Linux',      icono: 'devicon-linux-plain',              color: 'from-yellow-500/20 to-gray-500/20',   border: 'border-yellow-500/30',  icon_color: '', grupo: 'other', orden: 9 },
     { nombre: 'VS Code',    icono: 'devicon-vscode-plain colored',     color: 'from-blue-500/20 to-cyan-400/20',     border: 'border-blue-500/30',    icon_color: '', grupo: 'other', orden: 10 },
+    { nombre: 'PostgreSQL', icono: 'devicon-postgresql-plain colored', color: 'from-blue-700/20 to-indigo-700/20',   border: 'border-blue-700/30',    icon_color: '', grupo: 'other', orden: 11 },
 ];
 
 // fecha_fin null significa que sigue en curso
 const datosExperiencia = [
     {
+        empresa: 'GD Energy Services',
+        puesto: 'Practicas IT',
+        fecha_inicio: '2026-03-23',
+        fecha_fin: null,
+        descripcion: 'Practicas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Soporte tecnico, mantenimiento de sistemas y desarrollo de herramientas internas para apoyar las operaciones de la empresa.',
+        logo: '/img/gdes-logo.png'
+    },
+    {
         empresa: 'En busqueda activa',
         puesto: 'Estudiante en Practicas DAM',
         fecha_inicio: '2024-10-20',
         fecha_fin: null,
-        descripcion: 'Buscando una empresa para realizar las practicas del ciclo de Desarrollo de Aplicaciones Multiplataforma, con ganas de aportar y aprender en un entorno real.'
+        descripcion: 'Buscando una empresa para realizar las practicas del ciclo de Desarrollo de Aplicaciones Multiplataforma, con ganas de aportar y aprender en un entorno real.',
+        logo: null
+    }
+];
+
+// Certificados y cursos completados
+const datosCertificados = [
+    {
+        titulo: 'Curso de Automatizaciones con N8N e IA',
+        emisor: 'Raiola Networks',
+        fecha: '2026-01-10',
+        descripcion: 'Diseno de flujos de automatizacion combinando N8N con servicios de inteligencia artificial para crear procesos sin codigo.',
+        url_archivo: '/certificados/curso-n8n-ia-raiola.pdf',
+        url_externa: '',
+        icono: 'fa-solid fa-robot',
+        color: 'from-cyan-500/20 to-blue-500/20',
+        border: 'border-cyan-500/30',
+        icon_color: 'text-cyan-400',
+        orden: 1
+    },
+    {
+        titulo: 'Curso de Iniciacion al Desarrollo con IA',
+        emisor: 'BIG school (mouredev)',
+        fecha: '2025-11-21',
+        descripcion: 'Jornadas formativas sobre desarrollo de aplicaciones aprovechando inteligencia artificial. 6 horas de formacion impartidas por Romuald Fons y Brais Moure.',
+        url_archivo: '/certificados/curso-iniciacion-ia-bigschool.pdf',
+        url_externa: '',
+        icono: 'fa-solid fa-brain',
+        color: 'from-purple-500/20 to-pink-500/20',
+        border: 'border-purple-500/30',
+        icon_color: 'text-purple-400',
+        orden: 2
     }
 ];
 
@@ -194,11 +240,30 @@ async function poblarBaseDatos() {
         } else {
             for (const exp of datosExperiencia) {
                 await conexion.query(
-                    `INSERT INTO experiencia (perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion)
-                     VALUES (?, ?, ?, ?, ?, ?)`,
-                    [perfilId, exp.empresa, exp.puesto, exp.fecha_inicio, exp.fecha_fin, exp.descripcion]
+                    `INSERT INTO experiencia (perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion, logo)
+                     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                    [perfilId, exp.empresa, exp.puesto, exp.fecha_inicio, exp.fecha_fin, exp.descripcion, exp.logo]
                 );
                 console.log(`✅ Experiencia insertada: ${exp.puesto} en ${exp.empresa}`);
+            }
+        }
+
+        // ── CERTIFICADOS ─────────────────────────────────────────
+        // La tabla certificados no tiene perfil_id (es global del portfolio)
+        const [certsExistentes] = await conexion.query('SELECT id FROM certificados LIMIT 1');
+
+        if (certsExistentes.length > 0) {
+            console.log('ℹ️  Certificados ya existentes, se omite la inserción');
+        } else {
+            for (const cert of datosCertificados) {
+                await conexion.query(
+                    `INSERT INTO certificados
+                        (titulo, emisor, fecha, descripcion, url_archivo, url_externa, icono, color, border, icon_color, orden)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [cert.titulo, cert.emisor, cert.fecha, cert.descripcion, cert.url_archivo, cert.url_externa,
+                     cert.icono, cert.color, cert.border, cert.icon_color, cert.orden]
+                );
+                console.log(`✅ Certificado insertado: ${cert.titulo}`);
             }
         }
 

@@ -218,10 +218,11 @@
         </a>
 
         <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
-            <a href="#proyectos"   class="nav-link hover:text-white transition-colors" data-section="proyectos">Proyectos</a>
-            <a href="#habilidades" class="nav-link hover:text-white transition-colors" data-section="habilidades">Habilidades</a>
-            <a href="#experiencia" class="nav-link hover:text-white transition-colors" data-section="experiencia">Experiencia</a>
-            <a href="#contacto"    class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:opacity-90 transition-opacity">Contactar</a>
+            <a href="#proyectos"    class="nav-link hover:text-white transition-colors" data-section="proyectos">Proyectos</a>
+            <a href="#habilidades"  class="nav-link hover:text-white transition-colors" data-section="habilidades">Habilidades</a>
+            <a href="#experiencia"  class="nav-link hover:text-white transition-colors" data-section="experiencia">Experiencia</a>
+            <a href="#certificados" class="nav-link hover:text-white transition-colors" data-section="certificados">Certificados</a>
+            <a href="#contacto"     class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:opacity-90 transition-opacity">Contactar</a>
             <!-- Toggle modo claro/oscuro -->
             <button id="theme-toggle" title="Cambiar tema" class="text-gray-400 hover:text-white transition-colors text-lg">
                 <i class="fa-solid fa-moon"></i>
@@ -240,10 +241,11 @@
 
     <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
         <div class="flex flex-col gap-3 text-sm font-medium text-gray-400 bg-slate-900/90 rounded-xl p-4">
-            <a href="#proyectos"   class="hover:text-white transition-colors py-1">Proyectos</a>
-            <a href="#habilidades" class="hover:text-white transition-colors py-1">Habilidades</a>
-            <a href="#experiencia" class="hover:text-white transition-colors py-1">Experiencia</a>
-            <a href="#contacto"    class="text-center py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full">Contactar</a>
+            <a href="#proyectos"    class="hover:text-white transition-colors py-1">Proyectos</a>
+            <a href="#habilidades"  class="hover:text-white transition-colors py-1">Habilidades</a>
+            <a href="#experiencia"  class="hover:text-white transition-colors py-1">Experiencia</a>
+            <a href="#certificados" class="hover:text-white transition-colors py-1">Certificados</a>
+            <a href="#contacto"     class="text-center py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full">Contactar</a>
         </div>
     </div>
 </nav>
@@ -359,6 +361,20 @@
         <div id="lista-experiencia" class="max-w-3xl mx-auto">
             <div class="flex items-center gap-3 text-gray-500 justify-center w-full py-6">
                 <div class="loader"></div><span>Cargando experiencia...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CERTIFICADOS -->
+    <section id="certificados" class="fade-up scroll-mt-24">
+        <div class="text-center mb-10">
+            <p class="text-sm uppercase tracking-widest text-cyan-400 font-semibold mb-2">Formacion continua</p>
+            <h3 class="text-3xl font-bold text-white">Certificados y Cursos</h3>
+            <p class="text-gray-400 mt-3 max-w-xl mx-auto">Cursos completados para mantenerme al dia con las ultimas tecnologias.</p>
+        </div>
+        <div id="lista-certificados" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex items-center gap-3 text-gray-500 justify-center col-span-1 md:col-span-2 py-10">
+                <div class="loader"></div><span>Cargando certificados...</span>
             </div>
         </div>
     </section>

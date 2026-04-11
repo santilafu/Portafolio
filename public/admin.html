@@ -78,6 +78,7 @@
         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('proyectos', this)">Proyectos</button>
         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('habilidades', this)">Habilidades</button>
         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('experiencia', this)">Experiencia</button>
+        <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('certificados', this)">Certificados</button>
         <button class="tab-btn px-4 py-2 rounded-lg text-sm font-medium bg-slate-700" onclick="mostrarTab('techstack', this)">Tech Stack</button>
     </div>
 
@@ -145,10 +146,40 @@
                 </div>
             </div>
             <textarea id="exp-desc" rows="2" placeholder="Descripción de tareas..."></textarea>
+            <input id="exp-logo" type="text" placeholder="Logo de la empresa (ej: /img/gdes-logo.png) — opcional">
             <button onclick="addExperiencia()" class="btn-primary">Añadir experiencia</button>
             <div id="exp-add-msg"></div>
         </div>
         <div id="lista-experiencia" class="space-y-2"></div>
+    </div>
+
+    <!-- ─── TAB: CERTIFICADOS ─── -->
+    <div id="tab-certificados" class="tab-content hidden space-y-4">
+        <div class="card space-y-3">
+            <h2 class="font-semibold text-indigo-300">Añadir certificado</h2>
+            <input id="cert-titulo"   type="text" placeholder="Título del curso/certificado">
+            <input id="cert-emisor"   type="text" placeholder="Emisor (ej: Raiola Networks)">
+            <div class="flex gap-2">
+                <div class="flex-1">
+                    <label class="text-xs text-slate-400">Fecha de obtención</label>
+                    <input id="cert-fecha" type="date">
+                </div>
+                <div class="flex-1">
+                    <label class="text-xs text-slate-400">Orden</label>
+                    <input id="cert-orden" type="number" min="0" placeholder="0">
+                </div>
+            </div>
+            <textarea id="cert-desc" rows="2" placeholder="Descripción breve del curso..."></textarea>
+            <input id="cert-archivo" type="text" placeholder="Ruta al PDF (ej: /certificados/mi-cert.pdf)">
+            <input id="cert-externa" type="text" placeholder="URL de verificación externa (opcional)">
+            <input id="cert-icono"   type="text" placeholder="Icono FA (ej: fa-solid fa-robot)">
+            <input id="cert-color"   type="text" placeholder="Gradiente Tailwind (ej: from-cyan-500/20 to-blue-500/20)">
+            <input id="cert-border"  type="text" placeholder="Borde Tailwind (ej: border-cyan-500/30)">
+            <input id="cert-iconcolor" type="text" placeholder="Color icono Tailwind (ej: text-cyan-400)">
+            <button onclick="addCertificado()" class="btn-primary">Añadir certificado</button>
+            <div id="cert-add-msg"></div>
+        </div>
+        <div id="lista-certificados" class="space-y-2"></div>
     </div>
 
     <!-- ─── TAB: TECH STACK ─── -->
@@ -266,6 +297,7 @@ function cargarTodo() {
     cargarProyectos();
     cargarHabilidades();
     cargarExperiencia();
+    cargarCertificados();
     cargarTechStack();
 }
 
@@ -392,9 +424,12 @@ async function cargarExperiencia() {
         const div = document.createElement('div');
         div.className = 'card flex items-start justify-between gap-3';
         div.innerHTML = `
-            <div class="flex-1 min-w-0">
-                <p class="font-medium text-sm">${e.puesto}</p>
-                <p class="text-xs text-slate-400">${e.empresa} · ${e.fecha_inicio?.substring(0,7)} – ${e.fecha_fin?.substring(0,7) || 'Actualidad'}</p>
+            <div class="flex items-start gap-3 flex-1 min-w-0">
+                ${e.logo ? `<img src="${e.logo}" alt="${e.empresa}" class="w-10 h-10 object-contain bg-white rounded p-1 flex-shrink-0">` : ''}
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-sm">${e.puesto}</p>
+                    <p class="text-xs text-slate-400">${e.empresa} · ${e.fecha_inicio?.substring(0,7)} – ${e.fecha_fin?.substring(0,7) || 'Actualidad'}</p>
+                </div>
             </div>
             <button class="btn-danger flex-shrink-0" onclick="eliminar('experiencia', ${e.id}, this)">
                 <i class="fa-solid fa-trash"></i>
@@ -413,6 +448,7 @@ async function addExperiencia() {
         fecha_inicio: document.getElementById('exp-inicio').value,
         fecha_fin:    document.getElementById('exp-fin').value || null,
         descripcion:  document.getElementById('exp-desc').value,
+        logo:         document.getElementById('exp-logo').value || null,
     };
     if (!body.empresa || !body.puesto || !body.fecha_inicio) {
         mostrarMsg('exp-add-msg', 'Empresa, puesto y fecha inicio son obligatorios', false);
@@ -422,8 +458,61 @@ async function addExperiencia() {
     const data = await r.json();
     mostrarMsg('exp-add-msg', r.ok ? '✅ Experiencia añadida' : `❌ ${data.error}`, r.ok);
     if (r.ok) {
-        ['exp-empresa','exp-puesto','exp-inicio','exp-fin','exp-desc'].forEach(id => document.getElementById(id).value = '');
+        ['exp-empresa','exp-puesto','exp-inicio','exp-fin','exp-desc','exp-logo'].forEach(id => document.getElementById(id).value = '');
         cargarExperiencia();
+    }
+}
+
+// ── CERTIFICADOS ─────────────────────────────────────────────
+async function cargarCertificados() {
+    const r = await fetch(`${API}/certificados`);
+    const lista = await r.json();
+    const contenedor = document.getElementById('lista-certificados');
+    contenedor.innerHTML = '';
+    lista.forEach(c => {
+        const div = document.createElement('div');
+        div.className = 'card flex items-start justify-between gap-3';
+        div.innerHTML = `
+            <div class="flex items-start gap-3 flex-1 min-w-0">
+                <i class="${c.icono || 'fa-solid fa-certificate'} ${c.icon_color || 'text-cyan-400'} text-xl mt-0.5 flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                    <p class="font-medium text-sm truncate">${c.titulo}</p>
+                    <p class="text-xs text-slate-400 truncate">${c.emisor} · ${c.fecha?.substring(0,10)}</p>
+                    ${c.url_archivo ? `<a href="${c.url_archivo}" target="_blank" class="text-xs text-indigo-400 hover:underline">${c.url_archivo}</a>` : ''}
+                </div>
+            </div>
+            <button class="btn-danger flex-shrink-0" onclick="eliminar('certificados', ${c.id}, this)">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        `;
+        contenedor.appendChild(div);
+    });
+}
+
+async function addCertificado() {
+    const body = {
+        titulo:      document.getElementById('cert-titulo').value,
+        emisor:      document.getElementById('cert-emisor').value,
+        fecha:       document.getElementById('cert-fecha').value,
+        descripcion: document.getElementById('cert-desc').value,
+        url_archivo: document.getElementById('cert-archivo').value,
+        url_externa: document.getElementById('cert-externa').value,
+        icono:       document.getElementById('cert-icono').value || 'fa-solid fa-certificate',
+        color:       document.getElementById('cert-color').value,
+        border:      document.getElementById('cert-border').value,
+        icon_color:  document.getElementById('cert-iconcolor').value,
+        orden:       parseInt(document.getElementById('cert-orden').value) || 0,
+    };
+    if (!body.titulo || !body.emisor || !body.fecha) {
+        mostrarMsg('cert-add-msg', 'Título, emisor y fecha son obligatorios', false);
+        return;
+    }
+    const r = await fetch(`${API}/certificados`, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
+    const data = await r.json();
+    mostrarMsg('cert-add-msg', r.ok ? '✅ Certificado añadido' : `❌ ${data.error}`, r.ok);
+    if (r.ok) {
+        ['cert-titulo','cert-emisor','cert-fecha','cert-desc','cert-archivo','cert-externa','cert-icono','cert-color','cert-border','cert-iconcolor','cert-orden'].forEach(id => document.getElementById(id).value = '');
+        cargarCertificados();
     }
 }
 

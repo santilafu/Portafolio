@@ -509,24 +509,36 @@ async function cargarExperiencia() {
             const fechaInicio = formatearFecha(exp.fecha_inicio);
             const esActual   = !exp.fecha_fin;
             const esPersonal = !!exp.enlace_github;
+            // Si la experiencia trae logo de la empresa, lo mostramos arriba en una "píldora" blanca
+            // que respeta el diseño dark del resto de la página.
+            const logoHtml = exp.logo
+                ? `<div class="flex items-center justify-center w-14 h-14 rounded-xl bg-white p-2 border border-slate-700 shrink-0">
+                       <img src="${exp.logo}" alt="${exp.empresa}" class="max-w-full max-h-full object-contain">
+                   </div>`
+                : '';
             item.innerHTML = `
                 <div class="timeline-dot absolute -left-5 top-1.5 w-4 h-4 rounded-full border-2 border-slate-950"></div>
                 <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-xl hover:border-purple-500/30 transition-all duration-300">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                        <h4 class="text-lg font-bold text-white">${exp.puesto}</h4>
-                        <div class="flex items-center gap-2 flex-wrap">
-                            ${esActual   ? '<span class="px-2 py-0.5 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-semibold rounded-full">Actual</span>' : ''}
-                            ${esPersonal ? '<span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full"><i class="fa-solid fa-code mr-1"></i>Side projects</span>' : ''}
-                            <span class="text-xs font-medium text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full">${fechaInicio} - ${fechaFin}</span>
+                    <div class="flex items-start gap-4">
+                        ${logoHtml}
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                                <h4 class="text-lg font-bold text-white">${exp.puesto}</h4>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    ${esActual   ? '<span class="px-2 py-0.5 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-semibold rounded-full">Actual</span>' : ''}
+                                    ${esPersonal ? '<span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full"><i class="fa-solid fa-code mr-1"></i>Side projects</span>' : ''}
+                                    <span class="text-xs font-medium text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full">${fechaInicio} - ${fechaFin}</span>
+                                </div>
+                            </div>
+                            <p class="text-sm font-semibold text-blue-400 mb-2">
+                                ${esPersonal
+                                    ? `<a href="${exp.enlace_github}" target="_blank" class="hover:text-blue-300 transition-colors"><i class="fa-brands fa-github mr-1"></i>${exp.empresa}</a>`
+                                    : `<i class="fa-solid fa-building mr-1"></i>${exp.empresa}`
+                                }
+                            </p>
+                            ${exp.descripcion ? `<p class="text-gray-400 text-sm leading-relaxed">${exp.descripcion}</p>` : ''}
                         </div>
                     </div>
-                    <p class="text-sm font-semibold text-blue-400 mb-2">
-                        ${esPersonal
-                            ? `<a href="${exp.enlace_github}" target="_blank" class="hover:text-blue-300 transition-colors"><i class="fa-brands fa-github mr-1"></i>${exp.empresa}</a>`
-                            : `<i class="fa-solid fa-building mr-1"></i>${exp.empresa}`
-                        }
-                    </p>
-                    ${exp.descripcion ? `<p class="text-gray-400 text-sm leading-relaxed">${exp.descripcion}</p>` : ''}
                 </div>
             `;
             timeline.appendChild(item);
@@ -541,6 +553,76 @@ function formatearFecha(fechaStr) {
     const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
     const fecha = new Date(fechaStr);
     return `${meses[fecha.getMonth()]} ${fecha.getFullYear()}`;
+}
+
+// ============================================================
+// CERTIFICADOS
+// Carga los certificados desde la API y los renderiza como
+// tarjetas con el mismo estilo glassmorphism que el resto.
+// Cada tarjeta enlaza al PDF para descargarlo / verlo.
+// ============================================================
+
+async function cargarCertificados() {
+    try {
+        const respuesta    = await fetch(`${API_URL}/certificados`);
+        const certificados = await respuesta.json();
+        const contenedor   = document.getElementById('lista-certificados');
+        contenedor.innerHTML = '';
+
+        if (certificados.length === 0) {
+            contenedor.innerHTML = '<p class="text-gray-500 italic col-span-full text-center py-10">Aun no hay certificados para mostrar.</p>';
+            return;
+        }
+
+        certificados.forEach((cert, idx) => {
+            const tarjeta = document.createElement('div');
+            tarjeta.className = `card-hover bg-gradient-to-br ${cert.color || 'from-slate-800/40 to-slate-900/40'} border ${cert.border || 'border-slate-700'} p-6 rounded-2xl group fade-up`;
+            tarjeta.style.transitionDelay = `${idx * 0.1}s`;
+
+            // Construimos los enlaces opcionales (PDF y verificación externa)
+            const enlaces = [];
+            if (cert.url_archivo) {
+                enlaces.push(`
+                    <a href="${cert.url_archivo}" target="_blank"
+                       class="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition-colors">
+                        <i class="fa-solid fa-file-pdf"></i> Ver certificado
+                    </a>
+                `);
+            }
+            if (cert.url_externa) {
+                enlaces.push(`
+                    <a href="${cert.url_externa}" target="_blank"
+                       class="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 transition-colors">
+                        <i class="fa-solid fa-up-right-from-square"></i> Verificar
+                    </a>
+                `);
+            }
+
+            tarjeta.innerHTML = `
+                <div class="flex items-start gap-4 mb-4">
+                    <div class="flex items-center justify-center w-14 h-14 rounded-xl bg-slate-900/60 border ${cert.border || 'border-slate-700'} shrink-0">
+                        <i class="${cert.icono || 'fa-solid fa-certificate'} text-2xl ${cert.icon_color || 'text-cyan-400'}"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <h4 class="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">${cert.titulo}</h4>
+                        <p class="text-sm font-semibold text-blue-400 mt-1">
+                            <i class="fa-solid fa-building-columns mr-1"></i>${cert.emisor}
+                        </p>
+                    </div>
+                    <span class="text-xs font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-full whitespace-nowrap">
+                        ${formatearFecha(cert.fecha)}
+                    </span>
+                </div>
+                ${cert.descripcion ? `<p class="text-gray-400 text-sm leading-relaxed mb-4">${cert.descripcion}</p>` : ''}
+                ${enlaces.length ? `<div class="flex gap-4 text-sm font-semibold pt-2 border-t border-slate-700/50">${enlaces.join('')}</div>` : ''}
+            `;
+            contenedor.appendChild(tarjeta);
+        });
+
+        setTimeout(reobservarAnimaciones, 100);
+    } catch (error) {
+        console.error('Error al cargar certificados:', error);
+    }
 }
 
 // ============================================================
@@ -702,6 +784,7 @@ cargarPerfil();
 cargarProyectos();
 cargarHabilidades();
 cargarExperiencia();
+cargarCertificados();
 cargarGithubStats();
 registrarVisita();
 

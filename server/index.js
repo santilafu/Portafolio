@@ -429,14 +429,14 @@ app.get('/api/experiencia', async (req, res) => {
  */
 app.post('/api/experiencia', adminAuth, async (req, res) => {
     try {
-        const { perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion } = req.body;
+        const { perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion, logo } = req.body;
 
         if (!perfil_id || !empresa || !puesto || !fecha_inicio) {
             return res.status(400).json({ error: 'Los campos perfil_id, empresa, puesto y fecha_inicio son obligatorios' });
         }
 
-        const sql = 'INSERT INTO experiencia (perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion) VALUES (?, ?, ?, ?, ?, ?)';
-        const [resultado] = await db.query(sql, [perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion]);
+        const sql = 'INSERT INTO experiencia (perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion, logo) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        const [resultado] = await db.query(sql, [perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion, logo || null]);
 
         res.status(201).json({ mensaje: 'Experiencia anadida correctamente', id_experiencia: resultado.insertId });
     } catch (error) {
@@ -452,14 +452,14 @@ app.post('/api/experiencia', adminAuth, async (req, res) => {
 app.put('/api/experiencia/:id', adminAuth, async (req, res) => {
     try {
         const idExperiencia = req.params.id;
-        const { empresa, puesto, fecha_inicio, fecha_fin, descripcion } = req.body;
+        const { empresa, puesto, fecha_inicio, fecha_fin, descripcion, logo } = req.body;
 
         if (!empresa || !puesto || !fecha_inicio) {
             return res.status(400).json({ error: 'Los campos empresa, puesto y fecha_inicio son obligatorios' });
         }
 
-        const sql = 'UPDATE experiencia SET empresa = ?, puesto = ?, fecha_inicio = ?, fecha_fin = ?, descripcion = ? WHERE id = ?';
-        const [resultado] = await db.query(sql, [empresa, puesto, fecha_inicio, fecha_fin, descripcion, idExperiencia]);
+        const sql = 'UPDATE experiencia SET empresa = ?, puesto = ?, fecha_inicio = ?, fecha_fin = ?, descripcion = ?, logo = ? WHERE id = ?';
+        const [resultado] = await db.query(sql, [empresa, puesto, fecha_inicio, fecha_fin, descripcion, logo || null, idExperiencia]);
 
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Experiencia no encontrada' });
@@ -670,6 +670,77 @@ app.delete('/api/tech-stack/:id', adminAuth, async (req, res) => {
         res.json({ ok: true });
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar tech stack' });
+    }
+});
+
+// ============================================================
+// CERTIFICADOS
+// Tabla: certificados — cursos y certificaciones obtenidas.
+// No depende de perfil_id (es un dato global del portfolio).
+// ============================================================
+
+app.get('/api/certificados', async (req, res) => {
+    try {
+        setCache(res);
+        const [filas] = await db.query('SELECT * FROM certificados ORDER BY orden, fecha DESC');
+        res.json(filas);
+    } catch (error) {
+        console.error('Error al obtener certificados:', error);
+        res.status(500).json({ error: 'Error al consultar los certificados' });
+    }
+});
+
+app.post('/api/certificados', adminAuth, async (req, res) => {
+    try {
+        const { titulo, emisor, fecha, descripcion, url_archivo, url_externa, icono, color, border, icon_color, orden } = req.body;
+        if (!titulo || !emisor || !fecha) {
+            return res.status(400).json({ error: 'Los campos titulo, emisor y fecha son obligatorios' });
+        }
+        const [r] = await db.query(
+            `INSERT INTO certificados (titulo, emisor, fecha, descripcion, url_archivo, url_externa, icono, color, border, icon_color, orden)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [titulo, emisor, fecha, descripcion || '', url_archivo || '', url_externa || '',
+             icono || 'fa-solid fa-certificate', color || '', border || '', icon_color || '', orden || 0]
+        );
+        res.status(201).json({ mensaje: 'Certificado anadido correctamente', id: r.insertId });
+    } catch (error) {
+        console.error('Error al insertar certificado:', error);
+        res.status(500).json({ error: 'Error al guardar el certificado' });
+    }
+});
+
+app.put('/api/certificados/:id', adminAuth, async (req, res) => {
+    try {
+        const { titulo, emisor, fecha, descripcion, url_archivo, url_externa, icono, color, border, icon_color, orden } = req.body;
+        if (!titulo || !emisor || !fecha) {
+            return res.status(400).json({ error: 'Los campos titulo, emisor y fecha son obligatorios' });
+        }
+        const [resultado] = await db.query(
+            `UPDATE certificados SET titulo = ?, emisor = ?, fecha = ?, descripcion = ?, url_archivo = ?, url_externa = ?,
+                icono = ?, color = ?, border = ?, icon_color = ?, orden = ? WHERE id = ?`,
+            [titulo, emisor, fecha, descripcion || '', url_archivo || '', url_externa || '',
+             icono || 'fa-solid fa-certificate', color || '', border || '', icon_color || '', orden || 0, req.params.id]
+        );
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({ error: 'Certificado no encontrado' });
+        }
+        res.json({ mensaje: 'Certificado actualizado correctamente' });
+    } catch (error) {
+        console.error('Error al actualizar certificado:', error);
+        res.status(500).json({ error: 'Error al modificar el certificado' });
+    }
+});
+
+app.delete('/api/certificados/:id', adminAuth, async (req, res) => {
+    try {
+        const [resultado] = await db.query('DELETE FROM certificados WHERE id = ?', [req.params.id]);
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({ error: 'Certificado no encontrado' });
+        }
+        res.json({ mensaje: 'Certificado eliminado correctamente' });
+    } catch (error) {
+        console.error('Error al borrar certificado:', error);
+        res.status(500).json({ error: 'Error al eliminar el certificado' });
     }
 });
 

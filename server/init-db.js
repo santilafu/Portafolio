@@ -83,10 +83,32 @@ async function crearTablas() {
                 fecha_inicio DATE NOT NULL,                  -- cuándo empezó (obligatorio)
                 fecha_fin    DATE,                           -- cuándo terminó (NULL = sigue activo)
                 descripcion  TEXT,                           -- descripción de las tareas realizadas
+                logo         VARCHAR(255),                   -- ruta al logo de la empresa (opcional)
                 FOREIGN KEY (perfil_id) REFERENCES perfil(id) ON DELETE CASCADE
             )
         `);
         console.log('✅ Tabla experiencia creada');
+
+        // ── TABLA CERTIFICADOS ───────────────────────────────────
+        // Cursos y certificaciones obtenidas. No depende de perfil_id
+        // porque es un dato global del portafolio.
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS certificados (
+                id           INT AUTO_INCREMENT PRIMARY KEY,
+                titulo       VARCHAR(200) NOT NULL,           -- nombre del curso/certificado
+                emisor       VARCHAR(150) NOT NULL,           -- entidad emisora (ej: "Raiola Networks")
+                fecha        DATE NOT NULL,                   -- fecha de obtención
+                descripcion  TEXT,                            -- breve descripción del curso
+                url_archivo  VARCHAR(255),                    -- ruta al PDF del certificado
+                url_externa  VARCHAR(255),                    -- enlace externo de verificación
+                icono        VARCHAR(100) DEFAULT 'fa-solid fa-certificate', -- clase font-awesome
+                color        VARCHAR(255) DEFAULT '',         -- gradiente Tailwind
+                border       VARCHAR(255) DEFAULT '',         -- borde Tailwind
+                icon_color   VARCHAR(100) DEFAULT '',         -- color icono Tailwind
+                orden        INT DEFAULT 0                    -- orden de aparición
+            )
+        `);
+        console.log('✅ Tabla certificados creada');
 
         // ── TABLA TECH_STACK ─────────────────────────────────────
         // Tecnologías del portfolio mostradas como tarjetas visuales.

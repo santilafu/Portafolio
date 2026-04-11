@@ -160,6 +160,19 @@ const datosCertificados = [
         border: 'border-purple-500/30',
         icon_color: 'text-purple-400',
         orden: 2
+    },
+    {
+        titulo: 'Curso de Ciberseguridad y Hacking Etico',
+        emisor: 'BIG school',
+        fecha: '2026-04-11',
+        descripcion: 'Jornadas sobre ciberseguridad y hacking etico: tecnicas de deteccion de vulnerabilidades y defensa digital. 6 horas de formacion impartidas por Romuald Fons y Mario Alvarez (Director del Master de Ciberseguridad).',
+        url_archivo: '/certificados/curso-ciberseguridad-bigschool.pdf',
+        url_externa: '',
+        icono: 'fa-solid fa-shield-halved',
+        color: 'from-emerald-500/20 to-green-500/20',
+        border: 'border-emerald-500/30',
+        icon_color: 'text-emerald-400',
+        orden: 3
     }
 ];
 

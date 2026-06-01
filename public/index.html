@@ -23,6 +23,47 @@
     <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
     <meta name="description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y mas.">
 
+    <!-- ── SEO: canonical ──────────────────────────────────────────
+         URL canónica del sitio. Evita contenido duplicado (con/sin www,
+         con parámetros, etc.): le decimos a Google cuál es la oficial. -->
+    <link rel="canonical" href="https://santiagolafuente.com">
+
+    <!-- ── OPEN GRAPH (Facebook, LinkedIn, WhatsApp...) ─────────────
+         Controla la tarjeta enriquecida al compartir el enlace.
+         Las URLs son ABSOLUTAS (con dominio) porque los scrapers de las
+         redes no resuelven rutas relativas. -->
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="Santiago Lafuente">
+    <meta property="og:title"       content="Santiago Lafuente | Desarrollador Multiplataforma">
+    <meta property="og:description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y mas.">
+    <meta property="og:url"         content="https://santiagolafuente.com">
+    <meta property="og:image"       content="https://santiagolafuente.com/img/perfil.jpg">
+    <meta property="og:image:alt"   content="Santiago Lafuente - Desarrollador Multiplataforma">
+
+    <!-- ── TWITTER / X CARDS ───────────────────────────────────────
+         summary_large_image = tarjeta grande con imagen destacada. -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="Santiago Lafuente | Desarrollador Multiplataforma">
+    <meta name="twitter:description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y mas.">
+    <meta name="twitter:image"       content="https://santiagolafuente.com/img/perfil.jpg">
+
+    <!-- ── JSON-LD: datos estructurados schema.org (Person) ────────
+         Le da a Google contexto semántico: quién soy, mi puesto, mis
+         perfiles. Puede habilitar el "knowledge panel" en búsquedas. -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Santiago Lafuente",
+        "jobTitle": "Desarrollador de Aplicaciones Multiplataforma",
+        "url": "https://santiagolafuente.com",
+        "image": "https://santiagolafuente.com/img/perfil.jpg",
+        "sameAs": [
+            "https://github.com/santilafu"
+        ]
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">

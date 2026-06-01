@@ -40,7 +40,8 @@ const datosProyectos = [
         url_demo: '',
         imagen: '/img/suscriptwallet-banner.png',
         destacado: true,
-        orden: 1
+        orden: 1,
+        estado: 'completado'
     },
     {
         titulo: 'Portafolio Full-Stack',
@@ -49,7 +50,8 @@ const datosProyectos = [
         url_demo: 'https://santiagolafuente.com',
         imagen: null,
         destacado: false,
-        orden: 2
+        orden: 2,
+        estado: 'completado'
     },
     {
         titulo: 'MoodTrack - Registro de Emociones',
@@ -58,7 +60,8 @@ const datosProyectos = [
         url_demo: '',
         imagen: null,
         destacado: false,
-        orden: 3
+        orden: 3,
+        estado: 'completado'
     },
     {
         titulo: 'Gestion Bancaria Segura',
@@ -67,7 +70,28 @@ const datosProyectos = [
         url_demo: '',
         imagen: null,
         destacado: false,
-        orden: 4
+        orden: 4,
+        estado: 'completado'
+    },
+    {
+        titulo: 'Revisa - Mantenimiento de Vehiculos',
+        descripcion: 'Aplicacion web progresiva (PWA) para gestionar el mantenimiento de tus vehiculos. Avisa de ITV, seguro y revisiones por fecha o kilometraje, mostrando de un vistazo que esta al dia, proximo o vencido. Frontend en React + TypeScript + Vite con Tailwind CSS, animaciones con Framer Motion y persistencia local offline con Dexie.js (IndexedDB).',
+        url_repo: 'https://github.com/santilafu/App-Revisa',
+        url_demo: '',
+        imagen: null,
+        destacado: false,
+        orden: 5,
+        estado: 'en_desarrollo'
+    },
+    {
+        titulo: 'Rondas - Checklists de Inspeccion Industrial',
+        descripcion: 'Aplicacion web para realizar rondas de mantenimiento e inspecciones desde el movil o el PC. Permite rellenar checklists punto por punto (OK / No OK / N-A con comentarios y fotos), firmar con el dedo y generar un acta en PDF con veredicto Apto/No Apto. Incluye editor de plantillas personalizables, autoguardado y reanudacion de inspecciones a medias, panel de estadisticas con los puntos que mas fallan, filtros y copia de seguridad. Construida en React + Vite con Tailwind CSS, sin backend: toda la persistencia es local en el navegador.',
+        url_repo: 'https://github.com/santilafu/App-CheckList',
+        url_demo: '',
+        imagen: null,
+        destacado: false,
+        orden: 6,
+        estado: 'en_desarrollo'
     }
 ];
 
@@ -230,10 +254,10 @@ async function poblarBaseDatos() {
             // Recorremos el array e insertamos cada proyecto
             for (const proyecto of datosProyectos) {
                 await conexion.query(
-                    `INSERT INTO proyectos (perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    `INSERT INTO proyectos (perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden, estado)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [perfilId, proyecto.titulo, proyecto.descripcion, proyecto.url_repo, proyecto.url_demo,
-                     proyecto.imagen, proyecto.destacado ? 1 : 0, proyecto.orden]
+                     proyecto.imagen, proyecto.destacado ? 1 : 0, proyecto.orden, proyecto.estado || 'completado']
                 );
                 console.log(`✅ Proyecto insertado: ${proyecto.titulo}`);
             }

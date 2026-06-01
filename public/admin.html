@@ -109,6 +109,10 @@
             <input id="proy-demo" type="text" placeholder="URL demo (opcional)">
             <input id="proy-imagen" type="text" placeholder="URL imagen banner (ej: /img/proyecto.png)">
             <input id="proy-orden" type="number" placeholder="Orden (menor = primero)" value="0">
+            <select id="proy-estado">
+                <option value="completado" selected>Completado</option>
+                <option value="en_desarrollo">🚧 En desarrollo</option>
+            </select>
             <label class="flex items-center gap-2 text-sm text-slate-300">
                 <input id="proy-destacado" type="checkbox" class="w-4 h-4">
                 Destacado (se renderiza en grande con banner)
@@ -382,6 +386,7 @@ async function addProyecto() {
         imagen:      document.getElementById('proy-imagen').value,
         destacado:   document.getElementById('proy-destacado').checked ? 1 : 0,
         orden:       parseInt(document.getElementById('proy-orden').value) || 0,
+        estado:      document.getElementById('proy-estado').value,
     };
     if (!body.titulo) { mostrarMsg('proy-add-msg', 'El título es obligatorio', false); return; }
     const r = await fetch(`${API}/proyectos`, { method: 'POST', headers: headers(), body: JSON.stringify(body) });
@@ -391,6 +396,7 @@ async function addProyecto() {
         ['proy-titulo','proy-desc','proy-repo','proy-demo','proy-imagen'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('proy-destacado').checked = false;
         document.getElementById('proy-orden').value = '0';
+        document.getElementById('proy-estado').value = 'completado';
         cargarProyectos();
     }
 }

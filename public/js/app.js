@@ -403,6 +403,12 @@ async function cargarProyectos() {
             proyectos.forEach((proyecto, idx) => {
                 // Los proyectos destacados ocupan las 2 columnas y muestran banner + icono
                 const esDestacado = proyecto.destacado == 1 || proyecto.destacado === true;
+                // Si el proyecto esta en desarrollo mostramos un badge naranja "En desarrollo"
+                const enDesarrollo = proyecto.estado === 'en_desarrollo';
+                // Badge reutilizable en ambos tipos de tarjeta (solo se pinta si enDesarrollo)
+                const badgeDesarrollo = enDesarrollo
+                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-500/15 border border-orange-500/40 text-orange-300 text-[11px] font-bold rounded-full uppercase tracking-wider"><i class="fa-solid fa-screwdriver-wrench"></i> En desarrollo</span>`
+                    : '';
                 const tarjeta = document.createElement('div');
                 tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
@@ -424,6 +430,7 @@ async function cargarProyectos() {
                         <div class="p-6 md:p-8">
                             <div class="flex items-start gap-4 mb-4">
                                 <h4 class="text-2xl md:text-3xl font-bold text-white group-hover:text-purple-300 transition-colors flex-1">${proyecto.titulo}</h4>
+                                ${badgeDesarrollo}
                             </div>
                             <p class="text-gray-300 leading-relaxed mb-6 text-base">${proyecto.descripcion}</p>
                             <div class="flex flex-wrap gap-4 text-sm font-semibold">
@@ -435,9 +442,12 @@ async function cargarProyectos() {
                 } else {
                     tarjeta.className = 'card-hover bg-slate-900/80 border border-slate-800 p-6 rounded-2xl group fade-up';
                     tarjeta.innerHTML = `
-                        <div class="flex items-center gap-2 text-purple-400 mb-4">
-                            <i class="fa-solid fa-folder-open"></i>
-                            <span class="text-xs uppercase tracking-wider font-semibold">Proyecto</span>
+                        <div class="flex items-center justify-between gap-2 mb-4">
+                            <div class="flex items-center gap-2 text-purple-400">
+                                <i class="fa-solid fa-folder-open"></i>
+                                <span class="text-xs uppercase tracking-wider font-semibold">Proyecto</span>
+                            </div>
+                            ${badgeDesarrollo}
                         </div>
                         <h4 class="text-xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors">${proyecto.titulo}</h4>
                         <p class="text-gray-400 leading-relaxed mb-5 text-sm">${proyecto.descripcion}</p>

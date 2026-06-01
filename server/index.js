@@ -247,14 +247,14 @@ app.get('/api/proyectos', async (req, res) => {
  */
 app.post('/api/proyectos', adminAuth, async (req, res) => {
     try {
-        const { perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden } = req.body;
+        const { perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden, estado } = req.body;
 
         if (!perfil_id || !titulo) {
             return res.status(400).json({ error: 'Los campos perfil_id y titulo son obligatorios' });
         }
 
-        const sql = 'INSERT INTO proyectos (perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        const [resultado] = await db.query(sql, [perfil_id, titulo, descripcion, url_repo, url_demo, imagen || null, destacado ? 1 : 0, orden || 0]);
+        const sql = 'INSERT INTO proyectos (perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        const [resultado] = await db.query(sql, [perfil_id, titulo, descripcion, url_repo, url_demo, imagen || null, destacado ? 1 : 0, orden || 0, estado || 'completado']);
 
         res.status(201).json({ mensaje: 'Proyecto anadido correctamente', id_proyecto: resultado.insertId });
     } catch (error) {
@@ -270,14 +270,14 @@ app.post('/api/proyectos', adminAuth, async (req, res) => {
 app.put('/api/proyectos/:id', adminAuth, async (req, res) => {
     try {
         const idProyecto = req.params.id;
-        const { titulo, descripcion, url_repo, url_demo, imagen, destacado, orden } = req.body;
+        const { titulo, descripcion, url_repo, url_demo, imagen, destacado, orden, estado } = req.body;
 
         if (!titulo) {
             return res.status(400).json({ error: 'El campo titulo es obligatorio' });
         }
 
-        const sql = 'UPDATE proyectos SET titulo = ?, descripcion = ?, url_repo = ?, url_demo = ?, imagen = ?, destacado = ?, orden = ? WHERE id = ?';
-        const [resultado] = await db.query(sql, [titulo, descripcion, url_repo, url_demo, imagen || null, destacado ? 1 : 0, orden || 0, idProyecto]);
+        const sql = 'UPDATE proyectos SET titulo = ?, descripcion = ?, url_repo = ?, url_demo = ?, imagen = ?, destacado = ?, orden = ?, estado = ? WHERE id = ?';
+        const [resultado] = await db.query(sql, [titulo, descripcion, url_repo, url_demo, imagen || null, destacado ? 1 : 0, orden || 0, estado || 'completado', idProyecto]);
 
         if (resultado.affectedRows === 0) {
             return res.status(404).json({ error: 'Proyecto no encontrado' });

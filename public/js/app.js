@@ -298,7 +298,9 @@ async function cargarPerfil() {
             const p = perfiles[0];
             document.getElementById('nombre').textContent   = p.nombre;
             document.getElementById('sobre_mi').textContent = p.sobre_mi;
-            iniciarTyping(p.titular);
+            document.getElementById('titular').textContent  = p.titular;
+            // iniciarBootHero rellena la ventana de terminal con los datos del perfil
+            iniciarBootHero(p);
 
             if (p.foto_perfil) {
                 const img  = document.getElementById('foto_perfil');
@@ -387,6 +389,58 @@ function iniciarTyping(texto) {
             setTimeout(() => el.classList.remove('typing-cursor'), 2000);
         }
     }, 60);
+}
+
+// ============================================================
+// HERO TERMINAL: secuencia de boot + comandos autoescritos
+// Recibe el objeto perfil (de la API) y rellena #term-body con
+// el HTML final que simula una sesión de terminal en reposo.
+// Si prefers-reduced-motion está activo, omite la transición.
+// ============================================================
+
+function iniciarBootHero(perfil) {
+    const body = document.getElementById('term-body');
+    if (!body) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const nombre  = perfil.nombre   || 'Santiago Lafuente';
+    const titular = perfil.titular  || 'Desarrollador Multiplataforma';
+    const bio     = perfil.sobre_mi || '';
+
+    // HTML final que queda tras la "secuencia de boot"
+    const finalHtml = `
+        <div style="color: var(--ok)">&gt; initializing portfolio... [OK]</div>
+        <div style="color: var(--ok)">&gt; loading profile.............. [OK]</div>
+        <div class="mt-4"><span class="phosphor">$</span> whoami</div>
+        <div class="glow phosphor text-2xl md:text-3xl font-bold mt-1">${nombre}</div>
+        <div style="color: var(--amber-dim)">Titulado en DAM (9.0) &middot; ${titular}</div>
+        <div class="mt-4"><span class="phosphor">$</span> cat about.txt</div>
+        <div class="mt-1">${bio}</div>
+        <div class="mt-4"><span class="phosphor">$</span> status</div>
+        <div class="mt-1 flex items-center gap-2" style="color: var(--ok)">
+            <span class="inline-block w-2 h-2 rounded-full" style="background: var(--ok); box-shadow: 0 0 8px var(--ok)"></span>
+            available for hire &middot; disponible para empleo
+        </div>
+        <div class="mt-4 flex flex-wrap gap-4 items-center">
+            <a href="/cv/cv-santiago-lafuente.pdf" download class="phosphor hover:underline">[ descargar CV ]</a>
+            <a href="#contacto" class="phosphor hover:underline">[ ./contact.sh ]</a>
+        </div>
+        <div class="mt-4"><span class="phosphor">$</span> <span class="term-caret">&nbsp;</span></div>`;
+
+    if (reduce) {
+        // Sin movimiento: mostramos el resultado final directamente
+        body.innerHTML = finalHtml;
+        return;
+    }
+
+    // Con movimiento: fade de entrada suave (0.5 s) para que el boot
+    // no sea un corte brusco al llegar el fetch de la API.
+    body.style.opacity = '0';
+    body.innerHTML = finalHtml;
+    requestAnimationFrame(() => {
+        body.style.transition = 'opacity 0.5s ease';
+        body.style.opacity = '1';
+    });
 }
 
 // ============================================================

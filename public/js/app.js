@@ -465,59 +465,53 @@ async function cargarProyectos() {
             proyectos.forEach((proyecto, idx) => {
                 // Los proyectos destacados ocupan las 2 columnas y muestran banner + icono
                 const esDestacado = proyecto.destacado == 1 || proyecto.destacado === true;
-                // Si el proyecto esta en desarrollo mostramos un badge naranja "En desarrollo"
+                // Si el proyecto esta en desarrollo mostramos badge [WIP] en estilo terminal
                 const enDesarrollo = proyecto.estado === 'en_desarrollo';
-                // Badge reutilizable en ambos tipos de tarjeta (solo se pinta si enDesarrollo)
-                const badgeDesarrollo = enDesarrollo
-                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-500/15 border border-orange-500/40 text-orange-300 text-[11px] font-bold rounded-full uppercase tracking-wider"><i class="fa-solid fa-screwdriver-wrench"></i> En desarrollo</span>`
-                    : '';
                 const tarjeta = document.createElement('div');
                 tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
+                // Badge [WIP] en rojo terminal para proyectos en desarrollo
+                const wipBadge = enDesarrollo
+                    ? '<span class="ml-2 text-xs" style="color: var(--err)">[WIP]</span>'
+                    : '';
+                // Número de tarjeta formateado como nombre de archivo de terminal
+                const numArchivo = `proyecto_${String(idx + 1).padStart(2, '0')}.md`;
+
                 if (esDestacado) {
-                    tarjeta.className = 'card-hover lg:col-span-2 bg-gradient-to-br from-slate-900/90 to-slate-900/60 border-2 border-purple-500/40 rounded-2xl overflow-hidden group fade-up shadow-2xl shadow-purple-900/20';
+                    // El destacado ocupa ambas columnas y muestra el banner sobre el panel
+                    tarjeta.className = 'lg:col-span-2 border rounded overflow-hidden card-hover fade-up';
+                    tarjeta.style.borderColor = 'var(--line)';
+                    tarjeta.style.background  = 'var(--surface)';
                     tarjeta.innerHTML = `
-                        ${proyecto.imagen ? `
-                            <div class="relative w-full h-56 md:h-72 overflow-hidden bg-slate-950">
-                                <img src="${proyecto.imagen}" alt="${proyecto.titulo}"
-                                     class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-                                <div class="absolute top-4 left-4">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full uppercase tracking-wider">
-                                        <i class="fa-solid fa-star"></i> Proyecto Destacado
-                                    </span>
-                                </div>
-                            </div>
-                        ` : ''}
-                        <div class="p-6 md:p-8">
-                            <div class="flex items-start gap-4 mb-4">
-                                <h4 class="text-2xl md:text-3xl font-bold text-white group-hover:text-purple-300 transition-colors flex-1">${proyecto.titulo}</h4>
-                                ${badgeDesarrollo}
-                            </div>
-                            <p class="text-gray-300 leading-relaxed mb-6 text-base">${proyecto.descripcion}</p>
-                            <div class="flex flex-wrap gap-4 text-sm font-semibold">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 border border-slate-700 hover:border-purple-500 text-white rounded-full transition-all"><i class="fa-brands fa-github"></i> Ver codigo</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white rounded-full transition-all"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo en vivo</a>` : ''}
-                            </div>
+                        ${proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-48 object-cover" alt="${proyecto.titulo}">` : ''}
+                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--amber-dim)">
+                            <span>${numArchivo} <span class="phosphor">★ featured</span></span>${wipBadge}
                         </div>
-                    `;
+                        <div class="p-5">
+                            <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
+                            <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
+                            <div class="mt-4 flex gap-4 text-sm">
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="phosphor hover:underline">[ repo ]</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="phosphor hover:underline">[ demo ]</a>` : ''}
+                            </div>
+                        </div>`;
                 } else {
-                    tarjeta.className = 'card-hover bg-slate-900/80 border border-slate-800 p-6 rounded-2xl group fade-up';
+                    // Tarjeta normal: panel de terminal con cabecera de archivo
+                    tarjeta.className = 'border rounded overflow-hidden card-hover fade-up';
+                    tarjeta.style.borderColor = 'var(--line)';
+                    tarjeta.style.background  = 'var(--surface)';
                     tarjeta.innerHTML = `
-                        <div class="flex items-center justify-between gap-2 mb-4">
-                            <div class="flex items-center gap-2 text-purple-400">
-                                <i class="fa-solid fa-folder-open"></i>
-                                <span class="text-xs uppercase tracking-wider font-semibold">Proyecto</span>
+                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--amber-dim)">
+                            <span>${numArchivo}</span>${wipBadge}
+                        </div>
+                        <div class="p-5">
+                            <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
+                            <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
+                            <div class="mt-4 flex gap-4 text-sm">
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="phosphor hover:underline">[ repo ]</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="phosphor hover:underline">[ demo ]</a>` : ''}
                             </div>
-                            ${badgeDesarrollo}
-                        </div>
-                        <h4 class="text-xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors">${proyecto.titulo}</h4>
-                        <p class="text-gray-400 leading-relaxed mb-5 text-sm">${proyecto.descripcion}</p>
-                        <div class="flex gap-4 text-sm font-semibold">
-                            ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 transition-colors"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
-                            ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="inline-flex items-center gap-1.5 text-pink-400 hover:text-pink-300 transition-colors"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
-                        </div>
-                    `;
+                        </div>`;
                 }
                 contenedor.appendChild(tarjeta);
             });

@@ -562,6 +562,14 @@ async function cargarHabilidades() {
 // EXPERIENCIA
 // ============================================================
 
+// Genera un "hash" corto y estable a partir de un texto (estilo commit git).
+// Usamos un hash determinista para que cada experiencia tenga siempre el mismo hash
+// sin depender de Math.random (que cambia en cada recarga).
+function pseudoHash(str) {
+    let h = 0; for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) >>> 0; }
+    return h.toString(16).padStart(7, '0').slice(0, 7);
+}
+
 async function cargarExperiencia() {
     try {
         const respuesta = await fetch(`${API_URL}/experiencia`);
@@ -588,54 +596,28 @@ async function cargarExperiencia() {
             enlace_github: 'https://github.com/santilafu'
         });
 
-        const timeline = document.createElement('div');
-        timeline.className = 'relative pl-8 space-y-8';
-        const linea = document.createElement('div');
-        linea.className = 'timeline-line absolute left-[11px] top-2 bottom-2 w-0.5 rounded-full';
-        timeline.appendChild(linea);
-
+        // Cada experiencia se renderiza como un commit de git log:
+        // commit <hash>  (HEAD -> activo) si sigue en curso
+        // Author: <empresa>
+        // Date:   <inicio> - <fin|HEAD>
         experiencias.forEach(exp => {
-            const item       = document.createElement('div');
-            item.className   = 'relative';
-            const fechaFin   = exp.fecha_fin ? formatearFecha(exp.fecha_fin) : 'Actualidad';
-            const fechaInicio = formatearFecha(exp.fecha_inicio);
-            const esActual   = !exp.fecha_fin;
-            const esPersonal = !!exp.enlace_github;
-            // Si la experiencia trae logo de la empresa, lo mostramos en una "píldora" oscura
-            // (slate-800) que contrasta tanto con logos claros como oscuros y mantiene el diseño dark.
-            const logoHtml = exp.logo
-                ? `<div class="flex items-center justify-center w-16 h-16 rounded-xl bg-slate-800 p-2.5 border border-slate-700 shrink-0">
-                       <img src="${exp.logo}" alt="${exp.empresa}" class="max-w-full max-h-full object-contain">
-                   </div>`
-                : '';
+            const fin  = exp.fecha_fin ? formatearFecha(exp.fecha_fin) : 'HEAD';
+            const ini  = formatearFecha(exp.fecha_inicio);
+            // Las experiencias sin fecha_fin están en curso → etiqueta "(HEAD -> activo)" en verde
+            const rama = exp.fecha_fin ? '' : '<span style="color: var(--ok)"> (HEAD -> activo)</span>';
+            const hash = pseudoHash(exp.empresa + exp.puesto);
+            const item = document.createElement('div');
+            item.className = 'pl-4 border-l pb-6';
+            item.style.borderColor = 'var(--line)';
             item.innerHTML = `
-                <div class="timeline-dot absolute -left-5 top-1.5 w-4 h-4 rounded-full border-2 border-slate-950"></div>
-                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-xl hover:border-purple-500/30 transition-all duration-300">
-                    <div class="flex items-start gap-4">
-                        ${logoHtml}
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                                <h4 class="text-lg font-bold text-white">${exp.puesto}</h4>
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    ${esActual   ? '<span class="px-2 py-0.5 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-semibold rounded-full">Actual</span>' : ''}
-                                    ${esPersonal ? '<span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full"><i class="fa-solid fa-code mr-1"></i>Side projects</span>' : ''}
-                                    <span class="text-xs font-medium text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full">${fechaInicio} - ${fechaFin}</span>
-                                </div>
-                            </div>
-                            <p class="text-sm font-semibold text-blue-400 mb-2">
-                                ${esPersonal
-                                    ? `<a href="${exp.enlace_github}" target="_blank" class="hover:text-blue-300 transition-colors"><i class="fa-brands fa-github mr-1"></i>${exp.empresa}</a>`
-                                    : `<i class="fa-solid fa-building mr-1"></i>${exp.empresa}`
-                                }
-                            </p>
-                            ${exp.descripcion ? `<p class="text-gray-400 text-sm leading-relaxed">${exp.descripcion}</p>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-            timeline.appendChild(item);
+                <div style="color: var(--amber)">commit ${hash}${rama}</div>
+                <div style="color: var(--amber-dim)">Author: ${exp.empresa}</div>
+                <div style="color: var(--amber-dim)">Date:   ${ini} - ${fin}</div>
+                <div class="mt-2 phosphor font-semibold">${exp.puesto}</div>
+                ${exp.descripcion ? `<div class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</div>` : ''}
+                ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" class="text-sm phosphor hover:underline">[ github ]</a>` : ''}`;
+            contenedor.appendChild(item);
         });
-        contenedor.appendChild(timeline);
     } catch (error) {
         console.error('Error al cargar experiencia:', error);
     }

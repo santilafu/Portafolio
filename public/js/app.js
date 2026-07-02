@@ -650,46 +650,38 @@ async function cargarCertificados() {
 
         certificados.forEach((cert, idx) => {
             const tarjeta = document.createElement('div');
-            tarjeta.className = `card-hover bg-gradient-to-br ${cert.color || 'from-slate-800/40 to-slate-900/40'} border ${cert.border || 'border-slate-700'} p-6 rounded-2xl group fade-up`;
+            // Estilo "archivo de terminal": borde sutil + superficie del tema ámbar
+            tarjeta.className            = 'border rounded overflow-hidden card-hover fade-up';
+            tarjeta.style.borderColor    = 'var(--line)';
+            tarjeta.style.background     = 'var(--surface)';
             tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
-            // Construimos los enlaces opcionales (PDF y verificación externa)
-            const enlaces = [];
-            if (cert.url_archivo) {
-                enlaces.push(`
-                    <a href="${cert.url_archivo}" target="_blank"
-                       class="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition-colors">
-                        <i class="fa-solid fa-file-pdf"></i> Ver certificado
-                    </a>
-                `);
-            }
-            if (cert.url_externa) {
-                enlaces.push(`
-                    <a href="${cert.url_externa}" target="_blank"
-                       class="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 transition-colors">
-                        <i class="fa-solid fa-up-right-from-square"></i> Verificar
-                    </a>
-                `);
-            }
+            // Enlace al PDF del certificado (condicional)
+            const enlaceAbrir = cert.url_archivo
+                ? `<a href="${cert.url_archivo}" target="_blank"
+                      class="text-sm phosphor hover:underline mt-3 inline-block mr-4">[ abrir ]</a>`
+                : '';
+
+            // Enlace de verificación online (condicional)
+            const enlaceOnline = cert.url_externa
+                ? `<a href="${cert.url_externa}" target="_blank"
+                      class="text-sm phosphor hover:underline mt-3 inline-block">[ ver online ]</a>`
+                : '';
 
             tarjeta.innerHTML = `
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="flex items-center justify-center w-14 h-14 rounded-xl bg-slate-900/60 border ${cert.border || 'border-slate-700'} shrink-0">
-                        <i class="${cert.icono || 'fa-solid fa-certificate'} text-2xl ${cert.icon_color || 'text-cyan-400'}"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">${cert.titulo}</h4>
-                        <p class="text-sm font-semibold text-blue-400 mt-1">
-                            <i class="fa-solid fa-building-columns mr-1"></i>${cert.emisor}
-                        </p>
-                    </div>
-                    <span class="text-xs font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-full whitespace-nowrap">
-                        ${formatearFecha(cert.fecha)}
-                    </span>
+                <div class="px-4 py-2 border-b text-xs"
+                     style="border-color: var(--line); color: var(--amber-dim)">
+                    <i class="fa-solid fa-file-lines mr-1"></i> cert_${String(idx + 1).padStart(2, '0')}.pdf
                 </div>
-                ${cert.descripcion ? `<p class="text-gray-400 text-sm leading-relaxed mb-4">${cert.descripcion}</p>` : ''}
-                ${enlaces.length ? `<div class="flex gap-4 text-sm font-semibold pt-2 border-t border-slate-700/50">${enlaces.join('')}</div>` : ''}
-            `;
+                <div class="p-5">
+                    <h4 class="phosphor font-bold">${cert.titulo}</h4>
+                    <p class="text-sm mt-1" style="color: var(--amber-dim)">
+                        ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
+                    </p>
+                    <p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>
+                    ${enlaceAbrir}${enlaceOnline}
+                </div>`;
+
             contenedor.appendChild(tarjeta);
         });
 

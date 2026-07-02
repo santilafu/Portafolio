@@ -63,11 +63,15 @@ function crearTechCard(tech, iconSize, index) {
     // La API devuelve icon_color (snake_case); el campo antiguo hardcodeado era iconColor (camelCase)
     const colorClass = tech.icon_color || tech.iconColor || '';
     const card = document.createElement('div');
-    card.className = `skill-card tech-enter flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br ${tech.color} border ${tech.border} cursor-default`;
+    // Caja ámbar uniforme: fondo surface + borde --line en lugar de gradientes por tecnología.
+    // cursor-default y rounded-xl se aplican vía Tailwind antes de los estilos inline.
+    card.className = 'tech-enter flex flex-col items-center justify-center gap-2 p-4 border rounded skill-card';
+    card.style.borderColor = 'var(--line)';
+    card.style.background  = 'var(--surface)';
     card.dataset.index = index;
     card.innerHTML = `
         <div class="${floatClass}"><i class="${tech.icono} ${iconSize} ${colorClass}"></i></div>
-        <span class="text-xs font-medium text-gray-300">${tech.nombre}</span>
+        <span class="text-xs font-medium" style="color: var(--fg)">${tech.nombre}</span>
     `;
     return card;
 }
@@ -229,23 +233,29 @@ async function cargarGithubStats() {
         // Lenguaje más repetido
         const topLang = Object.entries(langs).sort((a, b) => b[1] - a[1])[0];
 
+        // Prefijo de prompt y ítems con tokens CSS del tema terminal ámbar.
+        // Los valores numéricos usan .phosphor para el brillo característico.
         contenedor.innerHTML = `
-            <a href="https://github.com/santilafu" target="_blank"
-               class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/60 border border-slate-800 rounded-full hover:border-purple-500/40 transition-colors">
-                <i class="fa-brands fa-github text-white"></i>
-                <span class="text-white font-semibold">${user.public_repos}</span>
-                <span>repos publicos</span>
+            <span style="color: var(--amber-dim)">$ git stats</span>
+            <a href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-colors"
+               style="background: var(--surface); border: 1px solid var(--line);">
+                <i class="fa-brands fa-github phosphor"></i>
+                <span class="phosphor font-semibold">${user.public_repos}</span>
+                <span style="color: var(--amber-dim)">repos publicos</span>
             </a>
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/60 border border-slate-800 rounded-full">
-                <i class="fa-solid fa-users text-purple-400"></i>
-                <span class="text-white font-semibold">${user.followers}</span>
-                <span>seguidores</span>
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                 style="background: var(--surface); border: 1px solid var(--line);">
+                <i class="fa-solid fa-users" style="color: var(--amber)"></i>
+                <span class="phosphor font-semibold">${user.followers}</span>
+                <span style="color: var(--amber-dim)">seguidores</span>
             </div>
             ${topLang ? `
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/60 border border-slate-800 rounded-full">
-                <i class="fa-solid fa-code text-blue-400"></i>
-                <span class="text-white font-semibold">${topLang[0]}</span>
-                <span>lenguaje top</span>
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                 style="background: var(--surface); border: 1px solid var(--line);">
+                <i class="fa-solid fa-code" style="color: var(--amber)"></i>
+                <span class="phosphor font-semibold">${topLang[0]}</span>
+                <span style="color: var(--amber-dim)">lenguaje top</span>
             </div>` : ''}
         `;
     } catch {
@@ -298,7 +308,9 @@ async function cargarPerfil() {
             const p = perfiles[0];
             document.getElementById('nombre').textContent   = p.nombre;
             document.getElementById('sobre_mi').textContent = p.sobre_mi;
-            iniciarTyping(p.titular);
+            document.getElementById('titular').textContent  = p.titular;
+            // iniciarBootHero rellena la ventana de terminal con los datos del perfil
+            iniciarBootHero(p);
 
             if (p.foto_perfil) {
                 const img  = document.getElementById('foto_perfil');
@@ -321,19 +333,21 @@ async function cargarPerfil() {
 function buildEnlaces(p, classes) {
     return `
         ${p.email          ? `<a href="mailto:${p.email}" title="Email" class="${classes} transition-colors"><i class="fa-solid fa-envelope"></i></a>` : ''}
-        ${p.enlace_github  ? `<a href="${p.enlace_github}" target="_blank" title="GitHub" class="${classes} transition-colors"><i class="fa-brands fa-github"></i></a>` : ''}
-        ${p.enlace_linkedin ? `<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" title="LinkedIn" class="${classes} transition-colors"><i class="fa-brands fa-linkedin"></i></a>` : ''}
+        ${p.enlace_github  ? `<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" title="GitHub" class="${classes} transition-colors"><i class="fa-brands fa-github"></i></a>` : ''}
+        ${p.enlace_linkedin ? `<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="${classes} transition-colors"><i class="fa-brands fa-linkedin"></i></a>` : ''}
     `;
 }
 
 function buildEnlacesFooter(p) {
+    // Estilo terminal ámbar: icono con .phosphor, etiqueta en --amber-dim
+    const base = 'flex flex-col items-center gap-2 phosphor transition-all duration-300 hover:-translate-y-1';
     const items = [];
     if (p.email)
-        items.push(`<a href="mailto:${p.email}" class="flex flex-col items-center gap-2 text-gray-400 hover:text-blue-400 transition-all duration-300 hover:-translate-y-1"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs">Email</span></a>`);
+        items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">Email</span></a>`);
     if (p.enlace_github)
-        items.push(`<a href="${p.enlace_github}" target="_blank" class="flex flex-col items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs">GitHub</span></a>`);
+        items.push(`<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">GitHub</span></a>`);
     if (p.enlace_linkedin)
-        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" class="flex flex-col items-center gap-2 text-gray-400 hover:text-blue-500 transition-all duration-300 hover:-translate-y-1"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs">LinkedIn</span></a>`);
+        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">LinkedIn</span></a>`);
     return items.join('');
 }
 
@@ -371,22 +385,64 @@ function iniciarCopiarEmail() {
     });
 }
 
+// iniciarTyping eliminada: ya no se usa desde que el hero
+// es una secuencia de boot (iniciarBootHero). El efecto de
+// typing-cursor también se ha eliminado del CSS.
+
 // ============================================================
-// TYPING EFFECT
+// HERO TERMINAL: secuencia de boot + comandos autoescritos
+// Recibe el objeto perfil (de la API) y rellena #term-body con
+// el HTML final que simula una sesión de terminal en reposo.
+// Si prefers-reduced-motion está activo, omite la transición.
 // ============================================================
 
-function iniciarTyping(texto) {
-    const el = document.getElementById('titular');
-    el.textContent = '';
-    el.classList.add('typing-cursor');
-    let i = 0;
-    const interval = setInterval(() => {
-        el.textContent += texto.charAt(i++);
-        if (i >= texto.length) {
-            clearInterval(interval);
-            setTimeout(() => el.classList.remove('typing-cursor'), 2000);
-        }
-    }, 60);
+function iniciarBootHero(perfil) {
+    const body = document.getElementById('term-body');
+    if (!body) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const nombre  = perfil.nombre   || 'Santiago Lafuente';
+    const titular = perfil.titular  || 'Desarrollador Multiplataforma';
+    const bio     = perfil.sobre_mi || '';
+
+    // HTML final que queda tras la "secuencia de boot"
+    const finalHtml = `
+        <div style="color: var(--ok)">&gt; initializing portfolio... [OK]</div>
+        <div style="color: var(--ok)">&gt; loading profile.............. [OK]</div>
+        <div class="mt-4"><span class="phosphor">$</span> whoami</div>
+        <div class="glow phosphor text-2xl md:text-3xl font-bold mt-1">${nombre}</div>
+        <div style="color: var(--amber-dim)">Titulado en DAM (9.0) &middot; ${titular}</div>
+        <div class="mt-4"><span class="phosphor">$</span> cat about.txt</div>
+        <div class="mt-1">${bio}</div>
+        <div class="mt-4"><span class="phosphor">$</span> status</div>
+        <div class="mt-1 flex items-center gap-2" style="color: var(--ok)">
+            <span class="inline-block w-2 h-2 rounded-full" style="background: var(--ok); box-shadow: 0 0 8px var(--ok)"></span>
+            available for hire &middot; disponible para empleo
+        </div>
+        <div class="mt-4 flex flex-wrap gap-4 items-center">
+            <a href="/cv/cv-santiago-lafuente.pdf" download class="phosphor hover:underline">[ descargar CV ]</a>
+            <a href="#contacto" class="phosphor hover:underline">[ ./contact.sh ]</a>
+        </div>
+        <div class="mt-4"><span class="phosphor">$</span> <span class="term-caret">&nbsp;</span></div>`;
+
+    if (reduce) {
+        // Sin movimiento: mostramos el resultado final directamente
+        body.innerHTML = finalHtml;
+        return;
+    }
+
+    // Con movimiento: fade de entrada suave (0.5 s) para que el boot
+    // no sea un corte brusco al llegar el fetch de la API.
+    body.style.opacity = '0';
+    body.innerHTML = finalHtml;
+    // Doble rAF: el primer frame asegura que el render con opacity:0 ya ocurrio
+    // antes de aplicar la transicion; con un solo rAF Chromium puede saltarse el fade.
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            body.style.transition = 'opacity 0.5s ease';
+            body.style.opacity = '1';
+        });
+    });
 }
 
 // ============================================================
@@ -403,65 +459,59 @@ async function cargarProyectos() {
             proyectos.forEach((proyecto, idx) => {
                 // Los proyectos destacados ocupan las 2 columnas y muestran banner + icono
                 const esDestacado = proyecto.destacado == 1 || proyecto.destacado === true;
-                // Si el proyecto esta en desarrollo mostramos un badge naranja "En desarrollo"
+                // Si el proyecto esta en desarrollo mostramos badge [WIP] en estilo terminal
                 const enDesarrollo = proyecto.estado === 'en_desarrollo';
-                // Badge reutilizable en ambos tipos de tarjeta (solo se pinta si enDesarrollo)
-                const badgeDesarrollo = enDesarrollo
-                    ? `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-orange-500/15 border border-orange-500/40 text-orange-300 text-[11px] font-bold rounded-full uppercase tracking-wider"><i class="fa-solid fa-screwdriver-wrench"></i> En desarrollo</span>`
-                    : '';
                 const tarjeta = document.createElement('div');
                 tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
+                // Badge [WIP] en rojo terminal para proyectos en desarrollo
+                const wipBadge = enDesarrollo
+                    ? '<span class="ml-2 text-xs" style="color: var(--err)">[WIP]</span>'
+                    : '';
+                // Número de tarjeta formateado como nombre de archivo de terminal
+                const numArchivo = `proyecto_${String(idx + 1).padStart(2, '0')}.md`;
+
                 if (esDestacado) {
-                    tarjeta.className = 'card-hover lg:col-span-2 bg-gradient-to-br from-slate-900/90 to-slate-900/60 border-2 border-purple-500/40 rounded-2xl overflow-hidden group fade-up shadow-2xl shadow-purple-900/20';
+                    // El destacado ocupa ambas columnas y muestra el banner sobre el panel
+                    tarjeta.className = 'lg:col-span-2 border rounded overflow-hidden card-hover fade-up';
+                    tarjeta.style.borderColor = 'var(--line)';
+                    tarjeta.style.background  = 'var(--surface)';
                     tarjeta.innerHTML = `
-                        ${proyecto.imagen ? `
-                            <div class="relative w-full h-56 md:h-72 overflow-hidden bg-slate-950">
-                                <img src="${proyecto.imagen}" alt="${proyecto.titulo}"
-                                     class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
-                                <div class="absolute top-4 left-4">
-                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/90 backdrop-blur-sm text-white text-xs font-bold rounded-full uppercase tracking-wider">
-                                        <i class="fa-solid fa-star"></i> Proyecto Destacado
-                                    </span>
-                                </div>
-                            </div>
-                        ` : ''}
-                        <div class="p-6 md:p-8">
-                            <div class="flex items-start gap-4 mb-4">
-                                <h4 class="text-2xl md:text-3xl font-bold text-white group-hover:text-purple-300 transition-colors flex-1">${proyecto.titulo}</h4>
-                                ${badgeDesarrollo}
-                            </div>
-                            <p class="text-gray-300 leading-relaxed mb-6 text-base">${proyecto.descripcion}</p>
-                            <div class="flex flex-wrap gap-4 text-sm font-semibold">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 border border-slate-700 hover:border-purple-500 text-white rounded-full transition-all"><i class="fa-brands fa-github"></i> Ver codigo</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90 text-white rounded-full transition-all"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo en vivo</a>` : ''}
-                            </div>
+                        ${proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-48 object-cover" alt="${proyecto.titulo}">` : ''}
+                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--amber-dim)">
+                            <span>${numArchivo} <span class="phosphor">★ featured</span></span>${wipBadge}
                         </div>
-                    `;
+                        <div class="p-5">
+                            <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
+                            <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
+                            <div class="mt-4 flex gap-4 text-sm">
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ repo ]</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ demo ]</a>` : ''}
+                            </div>
+                        </div>`;
                 } else {
-                    tarjeta.className = 'card-hover bg-slate-900/80 border border-slate-800 p-6 rounded-2xl group fade-up';
+                    // Tarjeta normal: panel de terminal con cabecera de archivo
+                    tarjeta.className = 'border rounded overflow-hidden card-hover fade-up';
+                    tarjeta.style.borderColor = 'var(--line)';
+                    tarjeta.style.background  = 'var(--surface)';
                     tarjeta.innerHTML = `
-                        <div class="flex items-center justify-between gap-2 mb-4">
-                            <div class="flex items-center gap-2 text-purple-400">
-                                <i class="fa-solid fa-folder-open"></i>
-                                <span class="text-xs uppercase tracking-wider font-semibold">Proyecto</span>
+                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--amber-dim)">
+                            <span>${numArchivo}</span>${wipBadge}
+                        </div>
+                        <div class="p-5">
+                            <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
+                            <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
+                            <div class="mt-4 flex gap-4 text-sm">
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ repo ]</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ demo ]</a>` : ''}
                             </div>
-                            ${badgeDesarrollo}
-                        </div>
-                        <h4 class="text-xl font-bold text-white mb-3 group-hover:text-purple-300 transition-colors">${proyecto.titulo}</h4>
-                        <p class="text-gray-400 leading-relaxed mb-5 text-sm">${proyecto.descripcion}</p>
-                        <div class="flex gap-4 text-sm font-semibold">
-                            ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="inline-flex items-center gap-1.5 text-blue-400 hover:text-blue-300 transition-colors"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
-                            ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="inline-flex items-center gap-1.5 text-pink-400 hover:text-pink-300 transition-colors"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
-                        </div>
-                    `;
+                        </div>`;
                 }
                 contenedor.appendChild(tarjeta);
             });
             setTimeout(reobservarAnimaciones, 100);
         } else {
-            contenedor.innerHTML = '<p class="text-gray-500 italic col-span-2 text-center py-10">Aun no hay proyectos para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--amber-dim)">Aun no hay proyectos para mostrar.</p>';
         }
     } catch (error) {
         console.error('Error al cargar proyectos:', error);
@@ -477,30 +527,25 @@ async function cargarHabilidades() {
         const respuesta   = await fetch(`${API_URL}/habilidades`);
         const habilidades = await respuesta.json();
         const contenedor  = document.getElementById('lista-habilidades');
-        contenedor.innerHTML = '';
+        // Bloques llenos por nivel (escala de 8 caracteres)
+        const nivelBloques = { 'Basico': 3, 'Intermedio': 6, 'Avanzado': 8 };
+
         if (habilidades.length > 0) {
-            habilidades.forEach(hab => {
-                const badge = document.createElement('div');
-                badge.className = 'inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-slate-900/80 border border-slate-700 hover:border-purple-500/50 hover:bg-slate-800/80 transition-all duration-300 cursor-default group';
-                const key       = hab.nombre.toLowerCase();
-                const iconClass = SKILL_ICONS[key] || 'fa-solid fa-code';
-                const nivel     = hab.nivel || '';
-                const nivelColor = nivel.toLowerCase() === 'avanzado'
-                    ? 'text-green-400 bg-green-500/10 border-green-500/30'
-                    : nivel.toLowerCase() === 'intermedio'
-                        ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30'
-                        : 'text-blue-400 bg-blue-500/10 border-blue-500/30';
-                badge.innerHTML = `
-                    <i class="${iconClass} text-2xl group-hover:scale-110 transition-transform"></i>
-                    <div class="flex flex-col">
-                        <span class="text-sm font-semibold text-white">${hab.nombre}</span>
-                        ${nivel ? `<span class="text-xs ${nivelColor} px-2 py-0.5 rounded-full border w-fit mt-0.5">${nivel}</span>` : ''}
-                    </div>
-                `;
-                contenedor.appendChild(badge);
-            });
+            const filas = habilidades.map(h => {
+                const llenos = nivelBloques[h.nivel] || 4;
+                // Barra de 8 bloques: █ llenos + ░ vacíos
+                const barra  = '█'.repeat(llenos) + '░'.repeat(8 - llenos);
+                // padEnd a 12 chars para alinear la columna de barras (white-space:pre lo respeta)
+                const nombre = h.nombre.padEnd(12, ' ');
+                return `<div class="flex items-center gap-3 py-0.5">
+        <span class="phosphor" style="white-space:pre">${nombre}</span>
+        <span style="color: var(--amber)">[${barra}]</span>
+        <span style="color: var(--amber-dim)">${h.nivel}</span>
+    </div>`;
+            }).join('');
+            contenedor.innerHTML = filas;
         } else {
-            contenedor.innerHTML = '<p class="text-gray-500 italic text-center w-full py-6">Aun no hay habilidades registradas.</p>';
+            contenedor.innerHTML = '<span class="phosphor" style="color: var(--amber-dim)">-- sin habilidades registradas --</span>';
         }
     } catch (error) {
         console.error('Error al cargar habilidades:', error);
@@ -510,6 +555,14 @@ async function cargarHabilidades() {
 // ============================================================
 // EXPERIENCIA
 // ============================================================
+
+// Genera un "hash" corto y estable a partir de un texto (estilo commit git).
+// Usamos un hash determinista para que cada experiencia tenga siempre el mismo hash
+// sin depender de Math.random (que cambia en cada recarga).
+function pseudoHash(str) {
+    let h = 0; for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) >>> 0; }
+    return h.toString(16).padStart(7, '0').slice(0, 7);
+}
 
 async function cargarExperiencia() {
     try {
@@ -537,54 +590,28 @@ async function cargarExperiencia() {
             enlace_github: 'https://github.com/santilafu'
         });
 
-        const timeline = document.createElement('div');
-        timeline.className = 'relative pl-8 space-y-8';
-        const linea = document.createElement('div');
-        linea.className = 'timeline-line absolute left-[11px] top-2 bottom-2 w-0.5 rounded-full';
-        timeline.appendChild(linea);
-
+        // Cada experiencia se renderiza como un commit de git log:
+        // commit <hash>  (HEAD -> activo) si sigue en curso
+        // Author: <empresa>
+        // Date:   <inicio> - <fin|HEAD>
         experiencias.forEach(exp => {
-            const item       = document.createElement('div');
-            item.className   = 'relative';
-            const fechaFin   = exp.fecha_fin ? formatearFecha(exp.fecha_fin) : 'Actualidad';
-            const fechaInicio = formatearFecha(exp.fecha_inicio);
-            const esActual   = !exp.fecha_fin;
-            const esPersonal = !!exp.enlace_github;
-            // Si la experiencia trae logo de la empresa, lo mostramos en una "píldora" oscura
-            // (slate-800) que contrasta tanto con logos claros como oscuros y mantiene el diseño dark.
-            const logoHtml = exp.logo
-                ? `<div class="flex items-center justify-center w-16 h-16 rounded-xl bg-slate-800 p-2.5 border border-slate-700 shrink-0">
-                       <img src="${exp.logo}" alt="${exp.empresa}" class="max-w-full max-h-full object-contain">
-                   </div>`
-                : '';
+            const fin  = exp.fecha_fin ? formatearFecha(exp.fecha_fin) : 'HEAD';
+            const ini  = formatearFecha(exp.fecha_inicio);
+            // Las experiencias sin fecha_fin están en curso → etiqueta "(HEAD -> activo)" en verde
+            const rama = exp.fecha_fin ? '' : '<span style="color: var(--ok)"> (HEAD -> activo)</span>';
+            const hash = pseudoHash(exp.empresa + exp.puesto);
+            const item = document.createElement('div');
+            item.className = 'pl-4 border-l pb-6';
+            item.style.borderColor = 'var(--line)';
             item.innerHTML = `
-                <div class="timeline-dot absolute -left-5 top-1.5 w-4 h-4 rounded-full border-2 border-slate-950"></div>
-                <div class="bg-slate-900/80 border border-slate-800 p-5 rounded-xl hover:border-purple-500/30 transition-all duration-300">
-                    <div class="flex items-start gap-4">
-                        ${logoHtml}
-                        <div class="flex-1 min-w-0">
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                                <h4 class="text-lg font-bold text-white">${exp.puesto}</h4>
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    ${esActual   ? '<span class="px-2 py-0.5 bg-green-500/10 border border-green-500/30 text-green-400 text-xs font-semibold rounded-full">Actual</span>' : ''}
-                                    ${esPersonal ? '<span class="px-2 py-0.5 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full"><i class="fa-solid fa-code mr-1"></i>Side projects</span>' : ''}
-                                    <span class="text-xs font-medium text-purple-400 bg-purple-500/10 px-3 py-1 rounded-full">${fechaInicio} - ${fechaFin}</span>
-                                </div>
-                            </div>
-                            <p class="text-sm font-semibold text-blue-400 mb-2">
-                                ${esPersonal
-                                    ? `<a href="${exp.enlace_github}" target="_blank" class="hover:text-blue-300 transition-colors"><i class="fa-brands fa-github mr-1"></i>${exp.empresa}</a>`
-                                    : `<i class="fa-solid fa-building mr-1"></i>${exp.empresa}`
-                                }
-                            </p>
-                            ${exp.descripcion ? `<p class="text-gray-400 text-sm leading-relaxed">${exp.descripcion}</p>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
-            timeline.appendChild(item);
+                <div style="color: var(--amber)">commit ${hash}${rama}</div>
+                <div style="color: var(--amber-dim)">Author: ${exp.empresa}</div>
+                <div style="color: var(--amber-dim)">Date:   ${ini} - ${fin}</div>
+                <div class="mt-2 phosphor font-semibold">${exp.puesto}</div>
+                ${exp.descripcion ? `<div class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</div>` : ''}
+                ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="text-sm phosphor hover:underline">[ github ]</a>` : ''}`;
+            contenedor.appendChild(item);
         });
-        contenedor.appendChild(timeline);
     } catch (error) {
         console.error('Error al cargar experiencia:', error);
     }
@@ -611,52 +638,44 @@ async function cargarCertificados() {
         contenedor.innerHTML = '';
 
         if (certificados.length === 0) {
-            contenedor.innerHTML = '<p class="text-gray-500 italic col-span-full text-center py-10">Aun no hay certificados para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--amber-dim)">Aun no hay certificados para mostrar.</p>';
             return;
         }
 
         certificados.forEach((cert, idx) => {
             const tarjeta = document.createElement('div');
-            tarjeta.className = `card-hover bg-gradient-to-br ${cert.color || 'from-slate-800/40 to-slate-900/40'} border ${cert.border || 'border-slate-700'} p-6 rounded-2xl group fade-up`;
+            // Estilo "archivo de terminal": borde sutil + superficie del tema ámbar
+            tarjeta.className            = 'border rounded overflow-hidden card-hover fade-up';
+            tarjeta.style.borderColor    = 'var(--line)';
+            tarjeta.style.background     = 'var(--surface)';
             tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
-            // Construimos los enlaces opcionales (PDF y verificación externa)
-            const enlaces = [];
-            if (cert.url_archivo) {
-                enlaces.push(`
-                    <a href="${cert.url_archivo}" target="_blank"
-                       class="inline-flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 transition-colors">
-                        <i class="fa-solid fa-file-pdf"></i> Ver certificado
-                    </a>
-                `);
-            }
-            if (cert.url_externa) {
-                enlaces.push(`
-                    <a href="${cert.url_externa}" target="_blank"
-                       class="inline-flex items-center gap-1.5 text-purple-400 hover:text-purple-300 transition-colors">
-                        <i class="fa-solid fa-up-right-from-square"></i> Verificar
-                    </a>
-                `);
-            }
+            // Enlace al PDF del certificado (condicional)
+            const enlaceAbrir = cert.url_archivo
+                ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer"
+                      class="text-sm phosphor hover:underline mt-3 inline-block mr-4">[ abrir ]</a>`
+                : '';
+
+            // Enlace de verificación online (condicional)
+            const enlaceOnline = cert.url_externa
+                ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer"
+                      class="text-sm phosphor hover:underline mt-3 inline-block">[ ver online ]</a>`
+                : '';
 
             tarjeta.innerHTML = `
-                <div class="flex items-start gap-4 mb-4">
-                    <div class="flex items-center justify-center w-14 h-14 rounded-xl bg-slate-900/60 border ${cert.border || 'border-slate-700'} shrink-0">
-                        <i class="${cert.icono || 'fa-solid fa-certificate'} text-2xl ${cert.icon_color || 'text-cyan-400'}"></i>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">${cert.titulo}</h4>
-                        <p class="text-sm font-semibold text-blue-400 mt-1">
-                            <i class="fa-solid fa-building-columns mr-1"></i>${cert.emisor}
-                        </p>
-                    </div>
-                    <span class="text-xs font-medium text-cyan-400 bg-cyan-500/10 border border-cyan-500/20 px-2.5 py-1 rounded-full whitespace-nowrap">
-                        ${formatearFecha(cert.fecha)}
-                    </span>
+                <div class="px-4 py-2 border-b text-xs"
+                     style="border-color: var(--line); color: var(--amber-dim)">
+                    <i class="fa-solid fa-file-lines mr-1"></i> cert_${String(idx + 1).padStart(2, '0')}.pdf
                 </div>
-                ${cert.descripcion ? `<p class="text-gray-400 text-sm leading-relaxed mb-4">${cert.descripcion}</p>` : ''}
-                ${enlaces.length ? `<div class="flex gap-4 text-sm font-semibold pt-2 border-t border-slate-700/50">${enlaces.join('')}</div>` : ''}
-            `;
+                <div class="p-5">
+                    <h4 class="phosphor font-bold">${cert.titulo}</h4>
+                    <p class="text-sm mt-1" style="color: var(--amber-dim)">
+                        ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
+                    </p>
+                    ${cert.descripcion ? `<p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>` : ''}
+                    ${enlaceAbrir}${enlaceOnline}
+                </div>`;
+
             contenedor.appendChild(tarjeta);
         });
 
@@ -687,7 +706,7 @@ function iniciarFormContacto() {
 
         // Estado de carga en el botón
         btnEnviar.disabled = true;
-        btnEnviar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+        btnEnviar.textContent = '[ enviando... ]';
 
         try {
             const res = await fetch(`${API_URL}/contacto`, {
@@ -698,29 +717,34 @@ function iniciarFormContacto() {
             const data = await res.json();
 
             if (res.ok) {
-                // Éxito: limpiamos el formulario y mostramos mensaje verde
+                // Éxito: limpiamos el formulario y mostramos confirmación en verde terminal
                 form.reset();
-                mostrarFeedback(feedback, data.mensaje, 'text-green-400');
+                mostrarFeedback(feedback, '[ok] mensaje enviado correctamente', 'var(--ok)');
             } else {
-                mostrarFeedback(feedback, data.error || 'Error al enviar', 'text-red-400');
+                // Error devuelto por el servidor (p.ej. campo vacío, rate limit)
+                mostrarFeedback(feedback, '[error] ' + (data.error || 'Error al enviar'), 'var(--err)');
             }
         } catch {
-            mostrarFeedback(feedback, 'Error de conexión. Inténtalo de nuevo.', 'text-red-400');
+            // Fallo de red o sin conexión
+            mostrarFeedback(feedback, '[error] Error de conexión. Inténtalo de nuevo.', 'var(--err)');
         } finally {
             // Restauramos el botón independientemente del resultado
             btnEnviar.disabled = false;
-            btnEnviar.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar mensaje';
+            btnEnviar.textContent = '$ send';
         }
     });
 }
 
 /**
- * mostrarFeedback(el, texto, colorClass)
+ * mostrarFeedback(el, texto, color)
  * Muestra un mensaje de feedback durante 4 segundos y lo oculta.
+ * Usa tokens CSS (var(--ok) / var(--err)) en vez de clases Tailwind
+ * para que respete el sistema de diseño terminal ámbar.
  */
-function mostrarFeedback(el, texto, colorClass) {
-    el.textContent  = texto;
-    el.className    = `text-center text-sm ${colorClass}`;
+function mostrarFeedback(el, texto, color) {
+    el.textContent = texto;
+    // Aplicamos color directo via style; className solo conserva las bases
+    el.style.color = color || 'var(--ok)';
     el.classList.remove('hidden');
     setTimeout(() => el.classList.add('hidden'), 4000);
 }

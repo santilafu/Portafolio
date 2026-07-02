@@ -67,29 +67,80 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
-                }
-            }
+            theme: { extend: { fontFamily: { mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'] } } }
         }
     </script>
 
     <style>
+        /* ── TOKENS TERMINAL AMBAR ───────────────────────────────
+           Variables CSS globales del sistema de diseño retro.
+           Conviven con los estilos slate/morado hasta que se migre
+           el resto de secciones (Tasks 2-13). */
+        :root {
+            --bg: #0d0b06; --surface: #141009;
+            --amber: #ffb000; --amber-hi: #ffc94d; --amber-dim: #b3760a;
+            --fg: #d8d2c4; --ok: #5fce7a; --err: #ff5f56;
+            --line: rgba(255,176,0,0.22);
+        }
+        html, body { background: var(--bg); color: var(--fg); }
+        body { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+        .phosphor { color: var(--amber); }
+        .glow { text-shadow: 0 0 6px rgba(255,176,0,0.55), 0 0 14px rgba(255,176,0,0.25); }
+
+        /* ── CAPA CRT: SCANLINES ─────────────────────────────────
+           Overlay global tenue de líneas horizontales que simula
+           una pantalla de fosforo. z-index 55 (bajo el cursor, alto
+           que la mayoría del contenido). pointer-events:none para
+           no bloquear clics. */
+        .crt-scanlines::before {
+            content: ''; position: fixed; inset: 0; z-index: 55; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.10) 3px);
+            mix-blend-mode: multiply;
+        }
+
+        /* ── CAPA CRT: VIÑETA ────────────────────────────────────
+           Oscurece los bordes del viewport imitando el curvado
+           de los tubos CRT clasicos. */
+        .crt-vignette { position: relative; }
+        .crt-vignette::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            box-shadow: inset 0 0 160px 40px rgba(0,0,0,0.55);
+        }
+
+        /* ── CAPA CRT: FLICKER ───────────────────────────────────
+           Opacidad que cae brevemente cada 6s simulando la
+           inestabilidad de la señal de fosforo. steps(1) hace
+           el corte instantaneo, sin interpolacion. */
+        @keyframes crt-flicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:.85} 94%{opacity:1} }
+        .crt-flicker { animation: crt-flicker 6s infinite steps(1); }
+
+        /* ── ACCESIBILIDAD: MOVIMIENTO REDUCIDO ──────────────────
+           Usuarios con prefers-reduced-motion desactivan el flicker
+           y las scanlines animadas sin perder el contenido. */
+        @media (prefers-reduced-motion: reduce) {
+            .crt-flicker { animation: none; }
+            .crt-scanlines::before { display: none; }
+            /* Desactivamos tambien el resto de movimiento no esencial:
+               entradas fade-up, flotacion de iconos y el spin del loader. */
+            .fade-up { opacity: 1 !important; transform: none !important; transition: none !important; }
+            .float-1, .float-2, .float-3 { animation: none !important; }
+            .loader { animation-duration: 0s !important; }
+        }
+
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
            Barra fina en el top de la página que crece según el scroll.
-           z-[60] para estar por encima de la navbar (z-50). */
-        #scroll-progress {
-            position: fixed; top: 0; left: 0; height: 3px; width: 0%;
-            background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
-            z-index: 60;
-            transition: width 0.1s linear;
-        }
+           z-[60] para estar por encima de la navbar (z-50).
+           Color ámbar con glow fosforo en lugar del gradiente azul/morado. */
+        #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--amber); box-shadow: 0 0 8px rgba(255,176,0,0.7); z-index:60; transition: width 0.1s linear; }
+
+        /* Botón "$ contact" (navbar escritorio + móvil): hover ámbar tenue.
+           Clase CSS en lugar de handlers inline onmouseover/onmouseout. */
+        .btn-contact:hover { background: rgba(255,176,0,0.1); }
 
         /* ── CURSOR PERSONALIZADO ────────────────────────────────
            Ocultamos el cursor nativo y mostramos uno propio.
@@ -97,29 +148,17 @@
         @media (pointer: fine) {
             * { cursor: none !important; }
         }
-        .cursor-dot {
-            width: 8px; height: 8px;
-            background: #a78bfa;
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.3s, transform 0.1s;
-            box-shadow: 0 0 10px rgba(167, 139, 250, 0.8);
-        }
-        .cursor-ring {
-            width: 30px; height: 30px;
-            border: 1.5px solid rgba(167, 139, 250, 0.5);
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 9998;
-            transform: translate(-50%, -50%);
-            transition: width 0.2s, height 0.2s, border-color 0.2s;
-        }
-        /* Efecto al pasar por encima de links y botones */
-        .cursor-dot.cursor-hover { transform: translate(-50%, -50%) scale(0); }
-        .cursor-ring.cursor-hover { width: 48px; height: 48px; border-color: rgba(167, 139, 250, 0.8); background: rgba(167, 139, 250, 0.05); }
+        /* Cursor bloque ámbar — imita el caret de terminal (rect, no círculo).
+           cursor-ring sigue en el DOM (display:none) para que iniciarCursor()
+           no reciba null al buscarlo por ID. */
+        .cursor-dot { width:10px; height:16px; background: var(--amber); position:fixed; pointer-events:none; z-index:9999; transform: translate(-50%,-50%); box-shadow: 0 0 8px rgba(255,176,0,0.7); transition: opacity .3s, transform .1s; }
+        .cursor-ring { display:none; }
+        /* Al pasar por encima de links y botones el bloque se agranda ligeramente */
+        .cursor-dot.cursor-hover { transform: translate(-50%,-50%) scale(1.4); }
 
         /* ── LOADER ──────────────────────────────────────────────*/
-        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #8b5cf6; border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
+        /* border-top era morado (#8b5cf6); ahora usa el token ámbar del tema */
+        .loader { border: 3px solid var(--line); border-top: 3px solid var(--amber); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── FADE-UP ─────────────────────────────────────────────*/
@@ -128,17 +167,13 @@
         .fade-up:nth-child(2) { transition-delay: 0.1s; }
         .fade-up:nth-child(3) { transition-delay: 0.2s; }
 
-        /* ── TYPING CURSOR ───────────────────────────────────────*/
-        .typing-cursor::after { content: '|'; animation: blink 1s step-end infinite; color: #a78bfa; }
-        @keyframes blink { 50% { opacity: 0; } }
-
         /* ── CARD HOVER ──────────────────────────────────────────*/
         .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15); }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(255, 176, 0, 0.12); }
 
         /* ── SKILL CARD ──────────────────────────────────────────*/
         .skill-card { transition: all 0.3s ease; }
-        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(139, 92, 246, 0.2); }
+        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(255, 176, 0, 0.18); }
 
         /* ── TECH ENTER ──────────────────────────────────────────*/
         .tech-enter { opacity: 0; transform: scale(0.3) translateY(20px); }
@@ -156,22 +191,23 @@
         .parallax-container { perspective: 800px; }
         .parallax-layer { transition: transform 0.15s ease-out; transform-style: preserve-3d; }
 
-        /* ── GRADIENT TEXT ───────────────────────────────────────*/
-        .gradient-text { background: linear-gradient(135deg, #60a5fa, #a78bfa, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        /* gradient-text, timeline-line y timeline-dot eliminados:
+           el reskin terminal ámbar no los usa (verificado con grep). */
 
-        /* ── TIMELINE ────────────────────────────────────────────*/
-        .timeline-line { background: linear-gradient(to bottom, #3b82f6, #8b5cf6, #ec4899); }
-        .timeline-dot { background: linear-gradient(135deg, #3b82f6, #8b5cf6); box-shadow: 0 0 16px rgba(139, 92, 246, 0.5); }
-
-        /* ── NAVBAR ──────────────────────────────────────────────*/
-        .nav-scrolled { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        /* ── NAVBAR ──────────────────────────────────────────────
+           Fondo oscuro ámbar en lugar del slate azulado original.
+           Borde inferior con --line (ámbar semitransparente) en vez de box-shadow. */
+        .nav-scrolled { background: rgba(13,11,6,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
         /* Link activo en la navbar según sección visible */
-        .nav-link.active { color: white; }
-        .nav-link.active::after { content: ''; display: block; height: 2px; background: linear-gradient(to right, #3b82f6, #a78bfa); border-radius: 2px; margin-top: 2px; }
+        .nav-link.active { color: var(--amber); }
+        .nav-link.active::after { content:''; display:block; height:2px; background: var(--amber); margin-top:2px; }
+        /* Hover de links e iconos de navbar en clave ámbar (antes hover:text-white). */
+        .nav-link:hover { color: var(--amber); }
+        .nav-icon { color: var(--amber-dim); transition: color .2s; }
+        .nav-icon:hover { color: var(--amber); }
 
-        /* ── BADGE PULSE ─────────────────────────────────────────*/
-        @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
-        .badge-pulse { animation: pulse-glow 2s infinite; }
+        /* badge-pulse y @keyframes pulse-glow eliminados:
+           el badge de disponibilidad se eliminó del hero en el reskin. */
 
         /* ── TOAST ───────────────────────────────────────────────
            Notificación que aparece abajo a la derecha la primera vez
@@ -183,49 +219,101 @@
         }
         #toast.show { transform: translateY(0); }
 
-        /* ── MODO CLARO ──────────────────────────────────────────
-           Variables CSS que se sobreescriben al activar light mode.
-           Tailwind dark: no se aplica bien con CDN sin rebuildar,
-           así que usamos data-theme para los estilos propios. */
-        [data-theme="light"] body { background-color: #f1f5f9 !important; color: #1e293b !important; }
-        [data-theme="light"] nav  { background: rgba(241, 245, 249, 0.95) !important; }
-        [data-theme="light"] .nav-scrolled { background: rgba(241, 245, 249, 0.98) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important; }
-        [data-theme="light"] .bg-slate-950 { background-color: #f1f5f9 !important; }
-        [data-theme="light"] .bg-slate-900\/80, [data-theme="light"] .bg-slate-900\/90 { background-color: rgba(255,255,255,0.9) !important; }
-        [data-theme="light"] .border-slate-800, [data-theme="light"] .border-slate-700 { border-color: #cbd5e1 !important; }
-        [data-theme="light"] .text-gray-200 { color: #1e293b !important; }
-        [data-theme="light"] .text-gray-400 { color: #475569 !important; }
-        [data-theme="light"] .text-gray-500 { color: #64748b !important; }
-        [data-theme="light"] .text-gray-600 { color: #475569 !important; }
-        [data-theme="light"] .text-white    { color: #0f172a !important; }
-
-        /* ── FORM CONTACTO ───────────────────────────────────────*/
-        .form-input {
-            width: 100%; padding: 0.75rem 1rem;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid #334155; border-radius: 0.75rem;
-            color: white; outline: none;
-            transition: border-color 0.2s;
+        /* ── MODO CLARO = "PAPER TERMINAL" ───────────────────────────
+           Tinta marron sobre papel crema (impresora matricial antigua).
+           Como todo el sitio usa var(--...), redefinir las variables aqui
+           propaga el tema a todas las secciones sin reglas por-clase.
+           data-theme="light" se aplica en <html> (document.documentElement),
+           por lo que [data-theme="light"] es el elemento raiz y las variables
+           heredan a todo el arbol del DOM. */
+        [data-theme="light"] {
+            --bg: #f4ecd8; --surface: #ece0c4; --fg: #3a2f1a;
+            --amber: #9a5b00; --amber-hi: #7a4600; --amber-dim: #6f5320; --line: rgba(154,91,0,0.30);
         }
-        .form-input::placeholder { color: #64748b; }
-        .form-input:focus { border-color: #8b5cf6; }
-        [data-theme="light"] .form-input { background: rgba(255,255,255,0.8); color: #1e293b; border-color: #cbd5e1; }
-        [data-theme="light"] .form-input::placeholder { color: #94a3b8; }
+        /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
+        [data-theme="light"] .glow { text-shadow: none; }
+        /* Sin halo en el cursor personalizado para modo papel */
+        [data-theme="light"] .cursor-dot { box-shadow: none; }
+
+        /* ── HERO TERMINAL: CARET PARPADEANTE ───────────────────
+           Bloque ámbar que simula el cursor de terminal.
+           step-end hace el parpadeo instantáneo (sin fade).
+           prefers-reduced-motion: desactiva la animación. */
+        .term-caret {
+            display: inline-block; width: 0.6em; height: 1.1em;
+            background: var(--amber);
+            box-shadow: 0 0 8px rgba(255,176,0,0.7);
+            animation: caret-blink 1s step-end infinite;
+            vertical-align: text-bottom;
+        }
+        @keyframes caret-blink { 50% { opacity: 0; } }
+        @media (prefers-reduced-motion: reduce) { .term-caret { animation: none; } }
+
+        /* ── SR-ONLY: oculta visualmente pero accesible ──────────
+           Tailwind CDN lo incluye, pero lo definimos explícitamente
+           para garantizar que los IDs requeridos por app.js existan
+           en el DOM sin aparecer en la ventana de terminal. */
+        .sr-only {
+            position: absolute; width: 1px; height: 1px;
+            padding: 0; margin: -1px; overflow: hidden;
+            clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
+
+        /* ── CABECERAS DE SECCIÓN COMO COMANDOS DE TERMINAL ─────
+           .section-cmd envuelve el h3 con estilo ámbar.
+           .prompt es el símbolo "$" en tono más tenue para
+           imitar el prompt del shell sin opacar el comando. */
+        .section-cmd { color: var(--amber); font-weight: 600; }
+        .section-cmd .prompt { color: var(--amber-dim); }
+
+        /* ── FORM CONTACTO ───────────────────────────────────────
+           Inputs con tokens del sistema de diseño terminal ámbar.
+           El radio pequeño (4px) refuerza la estética de terminal. */
+        .form-input {
+            width: 100%; padding: 0.6rem 0.8rem;
+            background: var(--bg);
+            border: 1px solid var(--line); border-radius: 4px;
+            color: var(--fg); outline: none;
+            font-family: inherit;
+            transition: border-color .2s;
+        }
+        /* Placeholder en ámbar tenue para coherencia con el tema */
+        .form-input::placeholder { color: var(--amber-dim); }
+        /* Focus: borde + sombra ámbar en lugar del morado anterior */
+        .form-input:focus { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+        /* Modo paper: .form-input ya usa var(--bg)/var(--line)/var(--fg),
+           que toman los valores crema/marron al redefinir las variables en
+           [data-theme="light"]. No hace falta regla por-componente. */
+
+        /* ── ACCESIBILIDAD: FOCUS VISIBLE ────────────────────────
+           Anillo ámbar al navegar con teclado. :focus-visible solo
+           se activa con teclado/programático, nunca con clic,
+           por lo que no interfiere con el cursor personalizado. */
+        a:focus-visible,
+        button:focus-visible,
+        .form-input:focus-visible {
+            outline: 2px solid var(--amber);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 
-<body class="bg-slate-950 text-gray-200 font-sans">
+<body class="crt-scanlines font-mono" style="background: var(--bg); color: var(--fg);">
 
 <!-- Panel de stats secreto (se activa con 5 clics en el logo S.L.H.) -->
-<div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] bg-slate-900 border border-purple-500/40 rounded-2xl p-5 shadow-2xl shadow-purple-900/30 min-w-[200px]">
+<!-- Panel de stats secreto — reskinado a clave terminal ámbar -->
+<div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] rounded-2xl p-5 shadow-2xl min-w-[200px]"
+     style="background: var(--surface); border: 1px solid var(--line);">
     <div class="flex items-center justify-between mb-3">
-        <span class="text-xs uppercase tracking-widest text-purple-400 font-semibold">Stats secretos</span>
-        <button onclick="document.getElementById('stats-panel').classList.add('hidden')" class="text-gray-500 hover:text-white text-lg leading-none">×</button>
+        <span class="text-xs uppercase tracking-widest phosphor font-semibold">$ sudo stats</span>
+        <button onclick="document.getElementById('stats-panel').classList.add('hidden')"
+                class="text-lg leading-none transition-colors"
+                style="color: var(--amber-dim)">×</button>
     </div>
     <div class="space-y-2 text-sm">
         <div class="flex items-center justify-between gap-6">
-            <span class="text-gray-400">Visitas totales</span>
-            <span id="stats-visitas" class="text-white font-bold">...</span>
+            <span style="color: var(--amber-dim)">Visitas totales</span>
+            <span id="stats-visitas" class="phosphor font-bold">...</span>
         </div>
     </div>
 </div>
@@ -237,15 +325,15 @@
 <div class="cursor-dot" id="cursor-dot"></div>
 <div class="cursor-ring" id="cursor-ring"></div>
 
-<!-- Toast de bienvenida (primera visita) -->
+<!-- Toast de bienvenida (primera visita) — estética terminal ámbar -->
 <div id="toast">
-    <div class="flex items-center gap-3 px-5 py-4 bg-slate-800 border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-900/20 max-w-xs">
-        <span class="text-2xl">👋</span>
+    <div class="flex items-center gap-3 px-5 py-4 border rounded" style="background: var(--surface); border-color: var(--line);">
+        <span class="phosphor">[system]</span>
         <div>
-            <p class="text-white text-sm font-semibold">¡Bienvenido!</p>
-            <p class="text-gray-400 text-xs mt-0.5">Gracias por visitar mi portafolio</p>
+            <p class="phosphor text-sm font-semibold">welcome</p>
+            <p class="text-xs mt-0.5" style="color: var(--amber-dim)">gracias por visitar mi portafolio</p>
         </div>
-        <button onclick="cerrarToast()" class="ml-2 text-gray-500 hover:text-white transition-colors text-lg leading-none">×</button>
+        <button onclick="cerrarToast()" class="ml-2 hover:opacity-70 text-lg leading-none" style="color: var(--amber-dim)">×</button>
     </div>
 </div>
 
@@ -258,86 +346,82 @@
             <img src="/img/logo.svg" alt="SL Logo" class="h-20 w-auto object-contain">
         </a>
 
-        <div class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-400">
-            <a href="#proyectos"    class="nav-link hover:text-white transition-colors" data-section="proyectos">Proyectos</a>
-            <a href="#habilidades"  class="nav-link hover:text-white transition-colors" data-section="habilidades">Habilidades</a>
-            <a href="#experiencia"  class="nav-link hover:text-white transition-colors" data-section="experiencia">Experiencia</a>
-            <a href="#certificados" class="nav-link hover:text-white transition-colors" data-section="certificados">Certificados</a>
-            <a href="#contacto"     class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:opacity-90 transition-opacity">Contactar</a>
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium" style="color: var(--amber-dim)">
+            <a href="#proyectos"    class="nav-link transition-colors" data-section="proyectos">Proyectos</a>
+            <a href="#habilidades"  class="nav-link transition-colors" data-section="habilidades">Habilidades</a>
+            <a href="#experiencia"  class="nav-link transition-colors" data-section="experiencia">Experiencia</a>
+            <a href="#certificados" class="nav-link transition-colors" data-section="certificados">Certificados</a>
+            <a href="#contacto" class="btn-contact px-4 py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);">$ contact</a>
             <!-- Toggle modo claro/oscuro -->
-            <button id="theme-toggle" title="Cambiar tema" class="text-gray-400 hover:text-white transition-colors text-lg">
+            <button id="theme-toggle" title="Cambiar tema" class="nav-icon transition-colors text-lg">
                 <i class="fa-solid fa-moon"></i>
             </button>
         </div>
 
         <div class="flex items-center gap-3 md:hidden">
-            <button id="theme-toggle-mobile" class="text-gray-400 hover:text-white text-lg">
+            <button id="theme-toggle-mobile" class="nav-icon text-lg">
                 <i class="fa-solid fa-moon"></i>
             </button>
-            <button id="menu-toggle" class="text-gray-400 hover:text-white text-xl">
+            <button id="menu-toggle" class="nav-icon text-xl">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
     </div>
 
+    <!-- bg-slate-900/90 y text-gray-400 reemplazados por tokens CSS del tema ámbar
+         para que el menú móvil sea coherente en modo oscuro y modo paper. -->
     <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
-        <div class="flex flex-col gap-3 text-sm font-medium text-gray-400 bg-slate-900/90 rounded-xl p-4">
-            <a href="#proyectos"    class="hover:text-white transition-colors py-1">Proyectos</a>
-            <a href="#habilidades"  class="hover:text-white transition-colors py-1">Habilidades</a>
-            <a href="#experiencia"  class="hover:text-white transition-colors py-1">Experiencia</a>
-            <a href="#certificados" class="hover:text-white transition-colors py-1">Certificados</a>
-            <a href="#contacto"     class="text-center py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full">Contactar</a>
+        <div class="flex flex-col gap-3 text-sm font-medium rounded-xl p-4"
+             style="background: var(--surface); color: var(--fg); border: 1px solid var(--line)">
+            <a href="#proyectos"    class="phosphor hover:opacity-75 transition-opacity py-1">Proyectos</a>
+            <a href="#habilidades"  class="phosphor hover:opacity-75 transition-opacity py-1">Habilidades</a>
+            <a href="#experiencia"  class="phosphor hover:opacity-75 transition-opacity py-1">Experiencia</a>
+            <a href="#certificados" class="phosphor hover:opacity-75 transition-opacity py-1">Certificados</a>
+            <a href="#contacto" class="btn-contact text-center py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);">$ contact</a>
         </div>
     </div>
 </nav>
 
 <!-- ============================================================
-     HERO
+     HERO — ventana de terminal con boot y comandos autoescritos
+     (Task 2 del rediseño terminal ámbar)
+     IMPORTANTE: los IDs #nombre #titular #sobre_mi #foto_perfil
+     #enlaces #btn-cv siguen en el DOM (ocultos con .sr-only) para
+     que cargarPerfil() en app.js los siga encontrando.
 ============================================================ -->
-<header id="inicio" class="relative overflow-hidden pt-24">
-    <div class="absolute inset-0 opacity-30">
-        <div class="absolute top-20 left-10 w-72 h-72 bg-blue-600 rounded-full blur-[120px]"></div>
-        <div class="absolute top-40 right-20 w-96 h-96 bg-purple-600 rounded-full blur-[120px]"></div>
-        <div class="absolute bottom-0 left-1/2 w-80 h-80 bg-pink-600 rounded-full blur-[120px]"></div>
-    </div>
-
-    <div class="relative max-w-6xl mx-auto px-6 py-16 md:py-24 flex flex-col md:flex-row items-center gap-10 md:gap-16">
-        <div class="flex-shrink-0 relative group">
-            <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full blur opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
-            <img id="foto_perfil" src="/img/perfil.jpg" alt="Foto de Santiago Lafuente"
-                 class="relative w-44 h-44 md:w-56 md:h-56 object-cover rounded-full border-4 border-slate-900 hover:scale-105 transition-transform duration-500">
+<header id="inicio" class="relative overflow-hidden pt-28 pb-10 crt-vignette crt-flicker">
+    <div class="max-w-4xl mx-auto px-6">
+        <!-- Ventana de terminal con barra de título estilo macOS/Linux -->
+        <div class="term-window border rounded-lg overflow-hidden" style="border-color: var(--line); background: var(--surface);">
+            <div class="term-titlebar flex items-center gap-2 px-4 py-2 border-b" style="border-color: var(--line);">
+                <!-- Círculos decorativos de ventana (rojo/amarillo/verde) -->
+                <span class="w-3 h-3 rounded-full" style="background:#ff5f56"></span>
+                <span class="w-3 h-3 rounded-full" style="background:#ffbd2e"></span>
+                <span class="w-3 h-3 rounded-full" style="background:#27c93f"></span>
+                <span class="ml-3 text-xs" style="color: var(--amber-dim)">santiago@portfolio:~</span>
+            </div>
+            <!-- Cuerpo de la terminal — iniciarBootHero() escribe el contenido aquí
+                 p-4 en móvil / p-6 en md+ para evitar desbordamiento horizontal.
+                 min-h reducida en móvil para no dejar espacio vacío excesivo. -->
+            <div id="term-body" class="p-4 md:p-6 text-sm md:text-base leading-relaxed min-h-[260px] md:min-h-[320px] break-words overflow-x-auto"></div>
         </div>
 
-        <div class="text-center md:text-left flex-1 space-y-5">
-            <div class="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/30 text-green-400 rounded-full text-xs font-semibold badge-pulse">
-                <span class="w-2 h-2 bg-green-400 rounded-full"></span>
-                Disponible para practicas / empleo
-            </div>
-            <h1 id="nombre" class="text-4xl md:text-6xl font-extrabold tracking-tight text-white">Santiago Lafuente</h1>
-            <h2 id="titular" class="text-xl md:text-2xl font-light text-gray-400 typing-cursor">Desarrollador Multiplataforma</h2>
-            <p id="sobre_mi" class="text-gray-400 leading-relaxed max-w-2xl text-lg">Cargando...</p>
-
-            <div class="flex flex-wrap justify-center md:justify-start gap-3 pt-2">
-                <div id="enlaces" class="flex gap-4 text-2xl items-center"></div>
-                <!-- Botón de descarga de CV -->
-                <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download
-                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-800 border border-slate-600 text-gray-300 rounded-full font-medium hover:border-purple-500 hover:text-white transition-all text-sm">
-                    <i class="fa-solid fa-file-arrow-down text-purple-400"></i> Descargar CV
-                </a>
-                <a href="#contacto" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-semibold hover:opacity-90 transition-opacity text-sm">
-                    <i class="fa-solid fa-paper-plane"></i> Contactame
-                </a>
-            </div>
+        <!-- IDs requeridos por cargarPerfil() en app.js — ocultos visualmente
+             pero presentes en el DOM para que el JS los encuentre sin errores. -->
+        <div class="sr-only">
+            <h1 id="nombre"></h1>
+            <span id="titular"></span>
+            <span id="sobre_mi"></span>
+            <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente">
+            <div id="enlaces"></div>
+            <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download>CV</a>
         </div>
     </div>
 
     <!-- GitHub Stats bar — se rellena desde app.js con la API pública de GitHub -->
-    <div class="relative max-w-6xl mx-auto px-6 pb-10">
-        <div id="github-stats" class="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-gray-500">
-            <div class="flex items-center gap-3 text-gray-500 text-sm">
-                <div class="loader" style="width:16px;height:16px;border-width:2px;"></div>
-                <span>Cargando stats de GitHub...</span>
-            </div>
+    <div class="relative max-w-4xl mx-auto px-6 pt-8">
+        <div id="github-stats" class="flex flex-wrap gap-4 text-sm" style="color: var(--amber-dim)">
+            <span>$ loading github stats...</span>
         </div>
     </div>
 </header>
@@ -349,18 +433,20 @@
 
     <!-- TECH STACK -->
     <section class="fade-up">
-        <div class="text-center mb-10">
-            <p class="text-sm uppercase tracking-widest text-purple-400 font-semibold mb-2">Tech Stack</p>
-            <h3 class="text-3xl font-bold text-white">Tecnologias con las que he trabajado</h3>
+        <div class="mb-8">
+            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> cat tech_stack.txt</h3>
+            <div class="mt-1 h-px" style="background: var(--line)"></div>
         </div>
         <div id="tech-parallax" class="parallax-container">
             <div class="parallax-layer">
                 <div id="tech-stack-main" class="mb-8">
-                    <p class="text-sm text-gray-500 font-medium mb-4 text-center"><i class="fa-solid fa-star text-yellow-500 mr-1"></i> Uso frecuente</p>
+                    <!-- Sub-label "Uso frecuente" recoloreado a ámbar tenue para coherencia con el tema terminal -->
+                    <p class="text-sm font-medium mb-4 text-center" style="color: var(--amber-dim)"><i class="fa-solid fa-star text-yellow-500 mr-1"></i> Uso frecuente</p>
                     <div id="tech-main" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-3xl mx-auto"></div>
                 </div>
                 <div id="tech-stack-other">
-                    <p class="text-sm text-gray-500 font-medium mb-4 text-center"><i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos basicos</p>
+                    <!-- Sub-label "Conocimientos basicos" recoloreado a ámbar tenue -->
+                    <p class="text-sm font-medium mb-4 text-center" style="color: var(--amber-dim)"><i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos basicos</p>
                     <div id="tech-other" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3 max-w-4xl mx-auto"></div>
                 </div>
             </div>
@@ -369,12 +455,12 @@
 
     <!-- PROYECTOS -->
     <section id="proyectos" class="fade-up scroll-mt-24">
-        <div class="text-center mb-10">
-            <p class="text-sm uppercase tracking-widest text-blue-400 font-semibold mb-2">Portfolio</p>
-            <h3 class="text-3xl font-bold text-white">Proyectos Destacados</h3>
+        <div class="mb-8">
+            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> ls ~/proyectos</h3>
+            <div class="mt-1 h-px" style="background: var(--line)"></div>
         </div>
         <div id="lista-proyectos" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="flex items-center gap-3 text-gray-500 justify-center col-span-1 lg:col-span-2 py-10">
+            <div class="flex items-center gap-3 justify-center col-span-1 lg:col-span-2 py-10">
                 <div class="loader"></div><span>Cargando proyectos...</span>
             </div>
         </div>
@@ -382,25 +468,21 @@
 
     <!-- HABILIDADES -->
     <section id="habilidades" class="fade-up scroll-mt-24">
-        <div class="text-center mb-10">
-            <p class="text-sm uppercase tracking-widest text-purple-400 font-semibold mb-2">Skills</p>
-            <h3 class="text-3xl font-bold text-white">Habilidades</h3>
+        <div class="mb-8">
+            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> skills --list</h3>
+            <div class="mt-1 h-px" style="background: var(--line)"></div>
         </div>
-        <div id="lista-habilidades" class="flex flex-wrap justify-center gap-3">
-            <div class="flex items-center gap-3 text-gray-500 justify-center w-full py-6">
-                <div class="loader"></div><span>Cargando habilidades...</span>
-            </div>
-        </div>
+        <div id="lista-habilidades" class="max-w-2xl border rounded p-5 text-sm overflow-x-auto" style="border-color: var(--line); background: var(--surface);"></div>
     </section>
 
     <!-- EXPERIENCIA -->
     <section id="experiencia" class="fade-up scroll-mt-24">
-        <div class="text-center mb-10">
-            <p class="text-sm uppercase tracking-widest text-pink-400 font-semibold mb-2">Trayectoria</p>
-            <h3 class="text-3xl font-bold text-white">Experiencia</h3>
+        <div class="mb-8">
+            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> git log --experiencia</h3>
+            <div class="mt-1 h-px" style="background: var(--line)"></div>
         </div>
         <div id="lista-experiencia" class="max-w-3xl mx-auto">
-            <div class="flex items-center gap-3 text-gray-500 justify-center w-full py-6">
+            <div class="flex items-center gap-3 justify-center w-full py-6">
                 <div class="loader"></div><span>Cargando experiencia...</span>
             </div>
         </div>
@@ -408,13 +490,14 @@
 
     <!-- CERTIFICADOS -->
     <section id="certificados" class="fade-up scroll-mt-24">
-        <div class="text-center mb-10">
-            <p class="text-sm uppercase tracking-widest text-cyan-400 font-semibold mb-2">Formacion continua</p>
-            <h3 class="text-3xl font-bold text-white">Certificados y Cursos</h3>
-            <p class="text-gray-400 mt-3 max-w-xl mx-auto">Cursos completados para mantenerme al dia con las ultimas tecnologias.</p>
+        <div class="mb-8">
+            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> cat certificados/</h3>
+            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <!-- Descripción conservada; recoloreada a ámbar tenue en lugar de gray-400 -->
+            <p class="mt-3 max-w-xl" style="color: var(--amber-dim)">Cursos completados para mantenerme al dia con las ultimas tecnologias.</p>
         </div>
         <div id="lista-certificados" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="flex items-center gap-3 text-gray-500 justify-center col-span-1 md:col-span-2 py-10">
+            <div class="flex items-center gap-3 justify-center col-span-1 md:col-span-2 py-10">
                 <div class="loader"></div><span>Cargando certificados...</span>
             </div>
         </div>
@@ -428,12 +511,12 @@
      + email con botón copiar + enlaces sociales
 ============================================================ -->
 <section id="contacto" class="relative overflow-hidden mt-16 scroll-mt-24">
-    <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10"></div>
     <div class="relative max-w-6xl mx-auto px-6 py-20">
-        <div class="text-center space-y-4 mb-12">
-            <p class="text-sm uppercase tracking-widest text-blue-400 font-semibold">Contacto</p>
-            <h3 class="text-4xl font-bold text-white">Trabajemos juntos</h3>
-            <p class="text-gray-400 max-w-lg mx-auto text-lg">Estoy buscando oportunidades para crecer como desarrollador. Si buscas a alguien con ganas de aprender y aportar, hablemos.</p>
+        <div class="mb-12">
+            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> ./contact.sh</h3>
+            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <!-- Descripción conservada; recoloreada a ámbar tenue en lugar de gray-400 -->
+            <p class="mt-3 max-w-lg text-lg" style="color: var(--amber-dim)">Estoy buscando oportunidades para crecer como desarrollador. Si buscas a alguien con ganas de aprender y aportar, hablemos.</p>
         </div>
 
         <!-- Formulario de contacto -->
@@ -441,38 +524,33 @@
             <input  type="text"  id="contacto-nombre"  placeholder="Tu nombre"   class="form-input" required>
             <input  type="email" id="contacto-email"   placeholder="Tu email"    class="form-input" required>
             <textarea            id="contacto-mensaje" placeholder="Tu mensaje"  class="form-input resize-none" rows="4" required></textarea>
-            <button type="submit" id="btn-enviar"
-                class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-all text-sm flex items-center justify-center gap-2">
-                <i class="fa-solid fa-paper-plane"></i> Enviar mensaje
-            </button>
+            <!-- Botón estilo terminal ámbar: sin gradiente, borde y hover sutil -->
+            <button id="btn-enviar" type="submit" class="btn-contact px-5 py-2.5 border rounded phosphor transition-colors" style="border-color: var(--amber)">$ send</button>
             <!-- Feedback del envío: éxito o error -->
             <p id="form-feedback" class="text-center text-sm hidden"></p>
         </form>
 
         <div class="text-center space-y-6">
             <!-- Email con botón copiar -->
-            <div id="email-display" class="inline-flex items-center gap-3 px-6 py-4 bg-slate-900/80 border border-slate-700 rounded-2xl">
-                <i class="fa-solid fa-envelope text-purple-400 text-xl"></i>
-                <span id="email-text" class="text-lg font-mono text-white">cargando...</span>
+            <div id="email-display" class="inline-flex items-center gap-3 px-6 py-4 border rounded-2xl" style="background: var(--surface); border-color: var(--line)">
+                <i class="fa-solid fa-envelope phosphor text-xl"></i>
+                <span id="email-text" class="text-lg font-mono phosphor">cargando...</span>
                 <button id="btn-copiar-email" title="Copiar email"
-                    class="ml-2 px-3 py-1.5 bg-purple-600/20 border border-purple-500/30 text-purple-300 rounded-lg hover:bg-purple-600/40 hover:text-white transition-all text-sm">
+                    class="btn-contact ml-2 px-3 py-1.5 border rounded-lg phosphor transition-all text-sm" style="border-color: var(--line)">
                     <i class="fa-regular fa-copy"></i>
                 </button>
             </div>
-            <p id="copy-feedback" class="text-green-400 text-sm hidden">Email copiado al portapapeles</p>
+            <p id="copy-feedback" class="text-sm hidden" style="color: var(--ok)">Email copiado al portapapeles</p>
             <div id="footer-enlaces" class="flex justify-center gap-8 text-3xl pt-4"></div>
         </div>
     </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="border-t border-slate-800/50">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-3">
-        <div class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-semibold">
-            <i class="fa-solid fa-hammer"></i>
-            Portafolio en desarrollo — se vienen mas cosas
-        </div>
-        <p class="text-gray-600 text-sm">&copy; 2025 Santiago Lafuente Hernandez &nbsp;·&nbsp; <span id="visitas-counter" class="text-gray-700"></span></p>
+<!-- FOOTER — clave terminal ámbar, sin gradientes slate/morado -->
+<footer class="border-t" style="border-color: var(--line)">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-2">
+        <p style="color: var(--amber-dim)">// EOF &mdash; Santiago Lafuente 2026 <span class="term-caret">&nbsp;</span></p>
+        <p class="text-xs" style="color: var(--amber-dim)"><span id="visitas-counter"></span></p>
     </div>
 </footer>
 

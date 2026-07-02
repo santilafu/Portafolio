@@ -265,16 +265,22 @@
         .section-cmd { color: var(--amber); font-weight: 600; }
         .section-cmd .prompt { color: var(--amber-dim); }
 
-        /* ── FORM CONTACTO ───────────────────────────────────────*/
+        /* ── FORM CONTACTO ───────────────────────────────────────
+           Inputs con tokens del sistema de diseño terminal ámbar.
+           El radio pequeño (4px) refuerza la estética de terminal. */
         .form-input {
-            width: 100%; padding: 0.75rem 1rem;
-            background: rgba(30, 41, 59, 0.8);
-            border: 1px solid #334155; border-radius: 0.75rem;
-            color: white; outline: none;
-            transition: border-color 0.2s;
+            width: 100%; padding: 0.6rem 0.8rem;
+            background: var(--bg);
+            border: 1px solid var(--line); border-radius: 4px;
+            color: var(--fg); outline: none;
+            font-family: inherit;
+            transition: border-color .2s;
         }
-        .form-input::placeholder { color: #64748b; }
-        .form-input:focus { border-color: #8b5cf6; }
+        /* Placeholder en ámbar tenue para coherencia con el tema */
+        .form-input::placeholder { color: var(--amber-dim); }
+        /* Focus: borde + sombra ámbar en lugar del morado anterior */
+        .form-input:focus { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+        /* Ajuste modo paper: pendiente de tarea de tema claro */
         [data-theme="light"] .form-input { background: rgba(255,255,255,0.8); color: #1e293b; border-color: #cbd5e1; }
         [data-theme="light"] .form-input::placeholder { color: #94a3b8; }
     </style>
@@ -498,10 +504,8 @@
             <input  type="text"  id="contacto-nombre"  placeholder="Tu nombre"   class="form-input" required>
             <input  type="email" id="contacto-email"   placeholder="Tu email"    class="form-input" required>
             <textarea            id="contacto-mensaje" placeholder="Tu mensaje"  class="form-input resize-none" rows="4" required></textarea>
-            <button type="submit" id="btn-enviar"
-                class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold hover:opacity-90 transition-all text-sm flex items-center justify-center gap-2">
-                <i class="fa-solid fa-paper-plane"></i> Enviar mensaje
-            </button>
+            <!-- Botón estilo terminal ámbar: sin gradiente, borde y hover sutil -->
+            <button id="btn-enviar" type="submit" class="px-5 py-2.5 border rounded phosphor transition-colors" style="border-color: var(--amber)" onmouseover="this.style.background='rgba(255,176,0,0.1)'" onmouseout="this.style.background='transparent'">$ send</button>
             <!-- Feedback del envío: éxito o error -->
             <p id="form-feedback" class="text-center text-sm hidden"></p>
         </form>

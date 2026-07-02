@@ -723,29 +723,34 @@ function iniciarFormContacto() {
             const data = await res.json();
 
             if (res.ok) {
-                // Éxito: limpiamos el formulario y mostramos mensaje verde
+                // Éxito: limpiamos el formulario y mostramos confirmación en verde terminal
                 form.reset();
-                mostrarFeedback(feedback, data.mensaje, 'text-green-400');
+                mostrarFeedback(feedback, '[ok] mensaje enviado correctamente', 'var(--ok)');
             } else {
-                mostrarFeedback(feedback, data.error || 'Error al enviar', 'text-red-400');
+                // Error devuelto por el servidor (p.ej. campo vacío, rate limit)
+                mostrarFeedback(feedback, '[error] ' + (data.error || 'Error al enviar'), 'var(--err)');
             }
         } catch {
-            mostrarFeedback(feedback, 'Error de conexión. Inténtalo de nuevo.', 'text-red-400');
+            // Fallo de red o sin conexión
+            mostrarFeedback(feedback, '[error] Error de conexión. Inténtalo de nuevo.', 'var(--err)');
         } finally {
             // Restauramos el botón independientemente del resultado
             btnEnviar.disabled = false;
-            btnEnviar.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Enviar mensaje';
+            btnEnviar.textContent = '$ send';
         }
     });
 }
 
 /**
- * mostrarFeedback(el, texto, colorClass)
+ * mostrarFeedback(el, texto, color)
  * Muestra un mensaje de feedback durante 4 segundos y lo oculta.
+ * Usa tokens CSS (var(--ok) / var(--err)) en vez de clases Tailwind
+ * para que respete el sistema de diseño terminal ámbar.
  */
-function mostrarFeedback(el, texto, colorClass) {
-    el.textContent  = texto;
-    el.className    = `text-center text-sm ${colorClass}`;
+function mostrarFeedback(el, texto, color) {
+    el.textContent = texto;
+    // Aplicamos color directo via style; className solo conserva las bases
+    el.style.color = color || 'var(--ok)';
     el.classList.remove('hidden');
     setTimeout(() => el.classList.add('hidden'), 4000);
 }

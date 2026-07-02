@@ -218,21 +218,21 @@
         }
         #toast.show { transform: translateY(0); }
 
-        /* ── MODO CLARO ──────────────────────────────────────────
-           Variables CSS que se sobreescriben al activar light mode.
-           Tailwind dark: no se aplica bien con CDN sin rebuildar,
-           así que usamos data-theme para los estilos propios. */
-        [data-theme="light"] body { background-color: #f1f5f9 !important; color: #1e293b !important; }
-        [data-theme="light"] nav  { background: rgba(241, 245, 249, 0.95) !important; }
-        [data-theme="light"] .nav-scrolled { background: rgba(241, 245, 249, 0.98) !important; box-shadow: 0 4px 20px rgba(0,0,0,0.1) !important; }
-        [data-theme="light"] .bg-slate-950 { background-color: #f1f5f9 !important; }
-        [data-theme="light"] .bg-slate-900\/80, [data-theme="light"] .bg-slate-900\/90 { background-color: rgba(255,255,255,0.9) !important; }
-        [data-theme="light"] .border-slate-800, [data-theme="light"] .border-slate-700 { border-color: #cbd5e1 !important; }
-        [data-theme="light"] .text-gray-200 { color: #1e293b !important; }
-        [data-theme="light"] .text-gray-400 { color: #475569 !important; }
-        [data-theme="light"] .text-gray-500 { color: #64748b !important; }
-        [data-theme="light"] .text-gray-600 { color: #475569 !important; }
-        [data-theme="light"] .text-white    { color: #0f172a !important; }
+        /* ── MODO CLARO = "PAPER TERMINAL" ───────────────────────────
+           Tinta marron sobre papel crema (impresora matricial antigua).
+           Como todo el sitio usa var(--...), redefinir las variables aqui
+           propaga el tema a todas las secciones sin reglas por-clase.
+           data-theme="light" se aplica en <html> (document.documentElement),
+           por lo que [data-theme="light"] es el elemento raiz y las variables
+           heredan a todo el arbol del DOM. */
+        [data-theme="light"] {
+            --bg: #f4ecd8; --surface: #ece0c4; --fg: #3a2f1a;
+            --amber: #9a5b00; --amber-hi: #7a4600; --amber-dim: #8a6a3a; --line: rgba(154,91,0,0.30);
+        }
+        /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
+        [data-theme="light"] .glow { text-shadow: none; }
+        /* Sin halo en el cursor personalizado para modo papel */
+        [data-theme="light"] .cursor-dot { box-shadow: none; }
 
         /* ── HERO TERMINAL: CARET PARPADEANTE ───────────────────
            Bloque ámbar que simula el cursor de terminal.
@@ -280,9 +280,9 @@
         .form-input::placeholder { color: var(--amber-dim); }
         /* Focus: borde + sombra ámbar en lugar del morado anterior */
         .form-input:focus { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
-        /* Ajuste modo paper: pendiente de tarea de tema claro */
-        [data-theme="light"] .form-input { background: rgba(255,255,255,0.8); color: #1e293b; border-color: #cbd5e1; }
-        [data-theme="light"] .form-input::placeholder { color: #94a3b8; }
+        /* Modo paper: .form-input ya usa var(--bg)/var(--line)/var(--fg),
+           que toman los valores crema/marron al redefinir las variables en
+           [data-theme="light"]. No hace falta regla por-componente. */
     </style>
 </head>
 

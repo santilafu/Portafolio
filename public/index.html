@@ -77,20 +77,20 @@
     </script>
 
     <style>
-        /* ── TOKENS TERMINAL AMBAR ───────────────────────────────
+        /* ── TOKENS TERMINAL (verde menta / teal) ────────────────
            Variables CSS globales del sistema de diseño retro.
-           Conviven con los estilos slate/morado hasta que se migre
-           el resto de secciones (Tasks 2-13). */
+           El acento antes era ámbar; ahora es verde menta suave.
+           (Se conservan los nombres --amber* por simplicidad.) */
         :root {
-            --bg: #0d0b06; --surface: #141009;
-            --amber: #ffb000; --amber-hi: #ffc94d; --amber-dim: #b3760a;
-            --fg: #d8d2c4; --ok: #5fce7a; --err: #ff5f56;
-            --line: rgba(255,176,0,0.22);
+            --bg: #07100e; --surface: #0d1a17;
+            --amber: #5eead4; --amber-hi: #99f6e4; --amber-dim: #7fb3aa;
+            --fg: #cdd6d2; --ok: #5fce7a; --err: #ff5f56;
+            --line: rgba(94,234,212,0.22);
         }
         html, body { background: var(--bg); color: var(--fg); }
         body { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
         .phosphor { color: var(--amber); }
-        .glow { text-shadow: 0 0 6px rgba(255,176,0,0.55), 0 0 14px rgba(255,176,0,0.25); }
+        .glow { text-shadow: 0 0 6px rgba(94,234,212,0.55), 0 0 14px rgba(94,234,212,0.25); }
 
         /* ── CAPA CRT: SCANLINES ─────────────────────────────────
            Overlay global tenue de líneas horizontales que simula
@@ -136,13 +136,13 @@
            Barra fina en el top de la página que crece según el scroll.
            z-[60] para estar por encima de la navbar (z-50).
            Color ámbar con glow fosforo en lugar del gradiente azul/morado. */
-        #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--amber); box-shadow: 0 0 8px rgba(255,176,0,0.7); z-index:60; transition: width 0.1s linear; }
+        #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--amber); box-shadow: 0 0 8px rgba(94,234,212,0.7); z-index:60; transition: width 0.1s linear; }
 
         /* Botón "$ contact" (navbar escritorio + móvil): color base y hover ámbar tenue.
            .btn-contact se usa tanto en la navbar como en los CTAs del hero terminal.
            Clase CSS en lugar de handlers inline onmouseover/onmouseout. */
         .btn-contact { color: var(--amber); transition: background 0.15s; }
-        .btn-contact:hover { background: rgba(255,176,0,0.1); }
+        .btn-contact:hover { background: rgba(94,234,212,0.1); }
 
         /* ── CURSOR PERSONALIZADO ────────────────────────────────
            Ocultamos el cursor nativo y mostramos uno propio.
@@ -153,7 +153,7 @@
         /* Cursor bloque ámbar — imita el caret de terminal (rect, no círculo).
            cursor-ring sigue en el DOM (display:none) para que iniciarCursor()
            no reciba null al buscarlo por ID. */
-        .cursor-dot { width:10px; height:16px; background: var(--amber); position:fixed; pointer-events:none; z-index:9999; transform: translate(-50%,-50%); box-shadow: 0 0 8px rgba(255,176,0,0.7); transition: opacity .3s, transform .1s; }
+        .cursor-dot { width:10px; height:16px; background: var(--amber); position:fixed; pointer-events:none; z-index:9999; transform: translate(-50%,-50%); box-shadow: 0 0 8px rgba(94,234,212,0.7); transition: opacity .3s, transform .1s; }
         .cursor-ring { display:none; }
         /* Al pasar por encima de links y botones el bloque se agranda ligeramente */
         .cursor-dot.cursor-hover { transform: translate(-50%,-50%) scale(1.4); }
@@ -171,11 +171,11 @@
 
         /* ── CARD HOVER ──────────────────────────────────────────*/
         .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(255, 176, 0, 0.12); }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(94, 234, 212, 0.12); }
 
         /* ── SKILL CARD ──────────────────────────────────────────*/
         .skill-card { transition: all 0.3s ease; }
-        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(255, 176, 0, 0.18); }
+        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(94, 234, 212, 0.18); }
 
         /* ── TECH ENTER ──────────────────────────────────────────*/
         .tech-enter { opacity: 0; transform: scale(0.3) translateY(20px); }
@@ -229,8 +229,8 @@
            por lo que [data-theme="light"] es el elemento raiz y las variables
            heredan a todo el arbol del DOM. */
         [data-theme="light"] {
-            --bg: #f4ecd8; --surface: #ece0c4; --fg: #3a2f1a;
-            --amber: #9a5b00; --amber-hi: #7a4600; --amber-dim: #6f5320; --line: rgba(154,91,0,0.30);
+            --bg: #eef3f0; --surface: #dde7e2; --fg: #1c2b27;
+            --amber: #0f766e; --amber-hi: #115e56; --amber-dim: #3f6b64; --line: rgba(15,118,110,0.30);
         }
         /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
         [data-theme="light"] .glow { text-shadow: none; }
@@ -244,7 +244,7 @@
         .term-caret {
             display: inline-block; width: 0.6em; height: 1.1em;
             background: var(--amber);
-            box-shadow: 0 0 8px rgba(255,176,0,0.7);
+            box-shadow: 0 0 8px rgba(94,234,212,0.7);
             animation: caret-blink 1s step-end infinite;
             vertical-align: text-bottom;
         }
@@ -254,8 +254,8 @@
         /* ── FOTO ENMARCADA (HERO V1) ────────────────────────────
            Marco ámbar con glow, scanlines superpuestas (::after) y
            filtro sepia leve para integrar la foto en la estética CRT. */
-        .photo-frame { position: relative; display: inline-block; border: 2px solid var(--amber); border-radius: 6px; overflow: hidden; box-shadow: 0 0 18px rgba(255,176,0,0.25); }
-        .photo-frame img { filter: saturate(0.85) sepia(0.15) contrast(1.05); }
+        .photo-frame { position: relative; display: inline-block; border: 2px solid var(--amber); border-radius: 6px; overflow: hidden; box-shadow: 0 0 18px rgba(94,234,212,0.25); }
+        .photo-frame img { filter: saturate(0.92) contrast(1.05); }
         /* Overlay de scanlines sobre la foto — pointer-events:none para no bloquear clics */
         .photo-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none;
             background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.14) 3px); }

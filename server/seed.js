@@ -24,7 +24,7 @@ const db = require('./db');
 const datosPerfil = {
     nombre: 'Santiago Lafuente Hernandez',
     titular: 'Desarrollador Multiplataforma',
-    sobre_mi: 'Apasionado por el backend, las bases de datos y la creacion de APIs robustas. Siempre buscando aprender nuevas tecnologias y mejorar mis habilidades.',
+    sobre_mi: 'Titulado en Desarrollo de Aplicaciones Multiplataforma (DAM) con un 9 de nota media. Apasionado por el backend, las bases de datos y la creacion de APIs robustas. Siempre buscando aprender nuevas tecnologias y mejorar mis habilidades.',
     email: 'santi10dy@gmail.com',
     enlace_github: 'https://github.com/santilafu',
     enlace_linkedin: 'https://www.linkedin.com/in/santiago-lafuente-hern%C3%A1ndez-796783226/',
@@ -143,17 +143,9 @@ const datosExperiencia = [
         empresa: 'GD Energy Services',
         puesto: 'Practicas IT',
         fecha_inicio: '2026-03-23',
-        fecha_fin: null,
-        descripcion: 'Practicas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Soporte tecnico, mantenimiento de sistemas y desarrollo de herramientas internas para apoyar las operaciones de la empresa.',
+        fecha_fin: '2026-06-20',
+        descripcion: 'Practicas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Di soporte tecnico, realice mantenimiento de sistemas y desarrolle herramientas internas para apoyar las operaciones de la empresa.',
         logo: '/img/gdes-logo.png'
-    },
-    {
-        empresa: 'En busqueda activa',
-        puesto: 'Estudiante en Practicas DAM',
-        fecha_inicio: '2024-10-20',
-        fecha_fin: null,
-        descripcion: 'Buscando una empresa para realizar las practicas del ciclo de Desarrollo de Aplicaciones Multiplataforma, con ganas de aportar y aprender en un entorno real.',
-        logo: null
     }
 ];
 

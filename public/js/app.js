@@ -533,30 +533,25 @@ async function cargarHabilidades() {
         const respuesta   = await fetch(`${API_URL}/habilidades`);
         const habilidades = await respuesta.json();
         const contenedor  = document.getElementById('lista-habilidades');
-        contenedor.innerHTML = '';
+        // Bloques llenos por nivel (escala de 8 caracteres)
+        const nivelBloques = { 'Basico': 3, 'Intermedio': 6, 'Avanzado': 8 };
+
         if (habilidades.length > 0) {
-            habilidades.forEach(hab => {
-                const badge = document.createElement('div');
-                badge.className = 'inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-slate-900/80 border border-slate-700 hover:border-purple-500/50 hover:bg-slate-800/80 transition-all duration-300 cursor-default group';
-                const key       = hab.nombre.toLowerCase();
-                const iconClass = SKILL_ICONS[key] || 'fa-solid fa-code';
-                const nivel     = hab.nivel || '';
-                const nivelColor = nivel.toLowerCase() === 'avanzado'
-                    ? 'text-green-400 bg-green-500/10 border-green-500/30'
-                    : nivel.toLowerCase() === 'intermedio'
-                        ? 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30'
-                        : 'text-blue-400 bg-blue-500/10 border-blue-500/30';
-                badge.innerHTML = `
-                    <i class="${iconClass} text-2xl group-hover:scale-110 transition-transform"></i>
-                    <div class="flex flex-col">
-                        <span class="text-sm font-semibold text-white">${hab.nombre}</span>
-                        ${nivel ? `<span class="text-xs ${nivelColor} px-2 py-0.5 rounded-full border w-fit mt-0.5">${nivel}</span>` : ''}
-                    </div>
-                `;
-                contenedor.appendChild(badge);
-            });
+            const filas = habilidades.map(h => {
+                const llenos = nivelBloques[h.nivel] || 4;
+                // Barra de 8 bloques: █ llenos + ░ vacíos
+                const barra  = '█'.repeat(llenos) + '░'.repeat(8 - llenos);
+                // padEnd a 12 chars para alinear la columna de barras (white-space:pre lo respeta)
+                const nombre = h.nombre.padEnd(12, ' ');
+                return `<div class="flex items-center gap-3 py-0.5">
+        <span class="phosphor" style="white-space:pre">${nombre}</span>
+        <span style="color: var(--amber)">[${barra}]</span>
+        <span style="color: var(--amber-dim)">${h.nivel}</span>
+    </div>`;
+            }).join('');
+            contenedor.innerHTML = filas;
         } else {
-            contenedor.innerHTML = '<p class="text-gray-500 italic text-center w-full py-6">Aun no hay habilidades registradas.</p>';
+            contenedor.innerHTML = '<span class="phosphor" style="color: var(--amber-dim)">-- sin habilidades registradas --</span>';
         }
     } catch (error) {
         console.error('Error al cargar habilidades:', error);

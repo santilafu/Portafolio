@@ -129,13 +129,9 @@
 
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
            Barra fina en el top de la página que crece según el scroll.
-           z-[60] para estar por encima de la navbar (z-50). */
-        #scroll-progress {
-            position: fixed; top: 0; left: 0; height: 3px; width: 0%;
-            background: linear-gradient(to right, #3b82f6, #8b5cf6, #ec4899);
-            z-index: 60;
-            transition: width 0.1s linear;
-        }
+           z-[60] para estar por encima de la navbar (z-50).
+           Color ámbar con glow fosforo en lugar del gradiente azul/morado. */
+        #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--amber); box-shadow: 0 0 8px rgba(255,176,0,0.7); z-index:60; transition: width 0.1s linear; }
 
         /* ── CURSOR PERSONALIZADO ────────────────────────────────
            Ocultamos el cursor nativo y mostramos uno propio.
@@ -143,26 +139,13 @@
         @media (pointer: fine) {
             * { cursor: none !important; }
         }
-        .cursor-dot {
-            width: 8px; height: 8px;
-            background: #a78bfa;
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.3s, transform 0.1s;
-            box-shadow: 0 0 10px rgba(167, 139, 250, 0.8);
-        }
-        .cursor-ring {
-            width: 30px; height: 30px;
-            border: 1.5px solid rgba(167, 139, 250, 0.5);
-            border-radius: 50%;
-            position: fixed; pointer-events: none; z-index: 9998;
-            transform: translate(-50%, -50%);
-            transition: width 0.2s, height 0.2s, border-color 0.2s;
-        }
-        /* Efecto al pasar por encima de links y botones */
-        .cursor-dot.cursor-hover { transform: translate(-50%, -50%) scale(0); }
-        .cursor-ring.cursor-hover { width: 48px; height: 48px; border-color: rgba(167, 139, 250, 0.8); background: rgba(167, 139, 250, 0.05); }
+        /* Cursor bloque ámbar — imita el caret de terminal (rect, no círculo).
+           cursor-ring sigue en el DOM (display:none) para que iniciarCursor()
+           no reciba null al buscarlo por ID. */
+        .cursor-dot { width:10px; height:16px; background: var(--amber); position:fixed; pointer-events:none; z-index:9999; transform: translate(-50%,-50%); box-shadow: 0 0 8px rgba(255,176,0,0.7); transition: opacity .3s, transform .1s; }
+        .cursor-ring { display:none; }
+        /* Al pasar por encima de links y botones el bloque se agranda ligeramente */
+        .cursor-dot.cursor-hover { transform: translate(-50%,-50%) scale(1.4); }
 
         /* ── LOADER ──────────────────────────────────────────────*/
         .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid #8b5cf6; border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
@@ -209,11 +192,13 @@
         .timeline-line { background: linear-gradient(to bottom, #3b82f6, #8b5cf6, #ec4899); }
         .timeline-dot { background: linear-gradient(135deg, #3b82f6, #8b5cf6); box-shadow: 0 0 16px rgba(139, 92, 246, 0.5); }
 
-        /* ── NAVBAR ──────────────────────────────────────────────*/
-        .nav-scrolled { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        /* ── NAVBAR ──────────────────────────────────────────────
+           Fondo oscuro ámbar en lugar del slate azulado original.
+           Borde inferior con --line (ámbar semitransparente) en vez de box-shadow. */
+        .nav-scrolled { background: rgba(13,11,6,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
         /* Link activo en la navbar según sección visible */
-        .nav-link.active { color: white; }
-        .nav-link.active::after { content: ''; display: block; height: 2px; background: linear-gradient(to right, #3b82f6, #a78bfa); border-radius: 2px; margin-top: 2px; }
+        .nav-link.active { color: var(--amber); }
+        .nav-link.active::after { content:''; display:block; height:2px; background: var(--amber); margin-top:2px; }
 
         /* ── BADGE PULSE ─────────────────────────────────────────*/
         @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50% { box-shadow: 0 0 0 8px rgba(34,197,94,0); } }
@@ -307,15 +292,15 @@
 <div class="cursor-dot" id="cursor-dot"></div>
 <div class="cursor-ring" id="cursor-ring"></div>
 
-<!-- Toast de bienvenida (primera visita) -->
+<!-- Toast de bienvenida (primera visita) — estética terminal ámbar -->
 <div id="toast">
-    <div class="flex items-center gap-3 px-5 py-4 bg-slate-800 border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-900/20 max-w-xs">
-        <span class="text-2xl">👋</span>
+    <div class="flex items-center gap-3 px-5 py-4 border rounded" style="background: var(--surface); border-color: var(--line);">
+        <span class="phosphor">[system]</span>
         <div>
-            <p class="text-white text-sm font-semibold">¡Bienvenido!</p>
-            <p class="text-gray-400 text-xs mt-0.5">Gracias por visitar mi portafolio</p>
+            <p class="phosphor text-sm font-semibold">welcome</p>
+            <p class="text-xs mt-0.5" style="color: var(--amber-dim)">gracias por visitar mi portafolio</p>
         </div>
-        <button onclick="cerrarToast()" class="ml-2 text-gray-500 hover:text-white transition-colors text-lg leading-none">×</button>
+        <button onclick="cerrarToast()" class="ml-2 hover:opacity-70 text-lg leading-none" style="color: var(--amber-dim)">×</button>
     </div>
 </div>
 
@@ -333,7 +318,7 @@
             <a href="#habilidades"  class="nav-link hover:text-white transition-colors" data-section="habilidades">Habilidades</a>
             <a href="#experiencia"  class="nav-link hover:text-white transition-colors" data-section="experiencia">Experiencia</a>
             <a href="#certificados" class="nav-link hover:text-white transition-colors" data-section="certificados">Certificados</a>
-            <a href="#contacto"     class="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:opacity-90 transition-opacity">Contactar</a>
+            <a href="#contacto" class="px-4 py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);" onmouseover="this.style.background='rgba(255,176,0,0.1)'" onmouseout="this.style.background='transparent'">$ contact</a>
             <!-- Toggle modo claro/oscuro -->
             <button id="theme-toggle" title="Cambiar tema" class="text-gray-400 hover:text-white transition-colors text-lg">
                 <i class="fa-solid fa-moon"></i>
@@ -356,7 +341,7 @@
             <a href="#habilidades"  class="hover:text-white transition-colors py-1">Habilidades</a>
             <a href="#experiencia"  class="hover:text-white transition-colors py-1">Experiencia</a>
             <a href="#certificados" class="hover:text-white transition-colors py-1">Certificados</a>
-            <a href="#contacto"     class="text-center py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full">Contactar</a>
+            <a href="#contacto" class="text-center py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);" onmouseover="this.style.background='rgba(255,176,0,0.1)'" onmouseout="this.style.background='transparent'">$ contact</a>
         </div>
     </div>
 </nav>

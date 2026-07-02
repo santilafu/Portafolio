@@ -67,20 +67,66 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
-                }
-            }
+            theme: { extend: { fontFamily: { mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'] } } }
         }
     </script>
 
     <style>
+        /* ── TOKENS TERMINAL AMBAR ───────────────────────────────
+           Variables CSS globales del sistema de diseño retro.
+           Conviven con los estilos slate/morado hasta que se migre
+           el resto de secciones (Tasks 2-13). */
+        :root {
+            --bg: #0d0b06; --surface: #141009;
+            --amber: #ffb000; --amber-hi: #ffc94d; --amber-dim: #b3760a;
+            --fg: #d8d2c4; --ok: #5fce7a; --err: #ff5f56;
+            --line: rgba(255,176,0,0.22);
+        }
+        html, body { background: var(--bg); color: var(--fg); }
+        body { font-family: '"IBM Plex Mono"', ui-monospace, monospace; }
+        .phosphor { color: var(--amber); }
+        .glow { text-shadow: 0 0 6px rgba(255,176,0,0.55), 0 0 14px rgba(255,176,0,0.25); }
+
+        /* ── CAPA CRT: SCANLINES ─────────────────────────────────
+           Overlay global tenue de líneas horizontales que simula
+           una pantalla de fosforo. z-index 55 (bajo el cursor, alto
+           que la mayoría del contenido). pointer-events:none para
+           no bloquear clics. */
+        .crt-scanlines::before {
+            content: ''; position: fixed; inset: 0; z-index: 55; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.10) 3px);
+            mix-blend-mode: multiply;
+        }
+
+        /* ── CAPA CRT: VIÑETA ────────────────────────────────────
+           Oscurece los bordes del viewport imitando el curvado
+           de los tubos CRT clasicos. */
+        .crt-vignette { position: relative; }
+        .crt-vignette::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            box-shadow: inset 0 0 160px 40px rgba(0,0,0,0.55);
+        }
+
+        /* ── CAPA CRT: FLICKER ───────────────────────────────────
+           Opacidad que cae brevemente cada 6s simulando la
+           inestabilidad de la señal de fosforo. steps(1) hace
+           el corte instantaneo, sin interpolacion. */
+        @keyframes crt-flicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:.85} 94%{opacity:1} }
+        .crt-flicker { animation: crt-flicker 6s infinite steps(1); }
+
+        /* ── ACCESIBILIDAD: MOVIMIENTO REDUCIDO ──────────────────
+           Usuarios con prefers-reduced-motion desactivan el flicker
+           y las scanlines animadas sin perder el contenido. */
+        @media (prefers-reduced-motion: reduce) {
+            .crt-flicker { animation: none; }
+            .crt-scanlines::before { display: none; }
+        }
+
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
            Barra fina en el top de la página que crece según el scroll.
            z-[60] para estar por encima de la navbar (z-50). */
@@ -214,7 +260,7 @@
     </style>
 </head>
 
-<body class="bg-slate-950 text-gray-200 font-sans">
+<body class="crt-scanlines font-mono" style="background: var(--bg); color: var(--fg);">
 
 <!-- Panel de stats secreto (se activa con 5 clics en el logo S.L.H.) -->
 <div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] bg-slate-900 border border-purple-500/40 rounded-2xl p-5 shadow-2xl shadow-purple-900/30 min-w-[200px]">

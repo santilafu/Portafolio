@@ -133,6 +133,10 @@
            Color ámbar con glow fosforo en lugar del gradiente azul/morado. */
         #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--amber); box-shadow: 0 0 8px rgba(255,176,0,0.7); z-index:60; transition: width 0.1s linear; }
 
+        /* Botón "$ contact" (navbar escritorio + móvil): hover ámbar tenue.
+           Clase CSS en lugar de handlers inline onmouseover/onmouseout. */
+        .btn-contact:hover { background: rgba(255,176,0,0.1); }
+
         /* ── CURSOR PERSONALIZADO ────────────────────────────────
            Ocultamos el cursor nativo y mostramos uno propio.
            Solo en dispositivos con ratón (pointer: fine). */
@@ -318,7 +322,7 @@
             <a href="#habilidades"  class="nav-link hover:text-white transition-colors" data-section="habilidades">Habilidades</a>
             <a href="#experiencia"  class="nav-link hover:text-white transition-colors" data-section="experiencia">Experiencia</a>
             <a href="#certificados" class="nav-link hover:text-white transition-colors" data-section="certificados">Certificados</a>
-            <a href="#contacto" class="px-4 py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);" onmouseover="this.style.background='rgba(255,176,0,0.1)'" onmouseout="this.style.background='transparent'">$ contact</a>
+            <a href="#contacto" class="btn-contact px-4 py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);">$ contact</a>
             <!-- Toggle modo claro/oscuro -->
             <button id="theme-toggle" title="Cambiar tema" class="text-gray-400 hover:text-white transition-colors text-lg">
                 <i class="fa-solid fa-moon"></i>
@@ -341,7 +345,7 @@
             <a href="#habilidades"  class="hover:text-white transition-colors py-1">Habilidades</a>
             <a href="#experiencia"  class="hover:text-white transition-colors py-1">Experiencia</a>
             <a href="#certificados" class="hover:text-white transition-colors py-1">Certificados</a>
-            <a href="#contacto" class="text-center py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);" onmouseover="this.style.background='rgba(255,176,0,0.1)'" onmouseout="this.style.background='transparent'">$ contact</a>
+            <a href="#contacto" class="btn-contact text-center py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);">$ contact</a>
         </div>
     </div>
 </nav>

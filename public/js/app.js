@@ -720,7 +720,7 @@ function iniciarFormContacto() {
 
         // Estado de carga en el botón
         btnEnviar.disabled = true;
-        btnEnviar.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+        btnEnviar.textContent = '[ enviando... ]';
 
         try {
             const res = await fetch(`${API_URL}/contacto`, {

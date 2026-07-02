@@ -63,11 +63,15 @@ function crearTechCard(tech, iconSize, index) {
     // La API devuelve icon_color (snake_case); el campo antiguo hardcodeado era iconColor (camelCase)
     const colorClass = tech.icon_color || tech.iconColor || '';
     const card = document.createElement('div');
-    card.className = `skill-card tech-enter flex flex-col items-center gap-2 p-4 rounded-xl bg-gradient-to-br ${tech.color} border ${tech.border} cursor-default`;
+    // Caja ámbar uniforme: fondo surface + borde --line en lugar de gradientes por tecnología.
+    // cursor-default y rounded-xl se aplican vía Tailwind antes de los estilos inline.
+    card.className = 'tech-enter flex flex-col items-center justify-center gap-2 p-4 border rounded skill-card';
+    card.style.borderColor = 'var(--line)';
+    card.style.background  = 'var(--surface)';
     card.dataset.index = index;
     card.innerHTML = `
         <div class="${floatClass}"><i class="${tech.icono} ${iconSize} ${colorClass}"></i></div>
-        <span class="text-xs font-medium text-gray-300">${tech.nombre}</span>
+        <span class="text-xs font-medium" style="color: var(--fg)">${tech.nombre}</span>
     `;
     return card;
 }

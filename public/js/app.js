@@ -392,9 +392,20 @@ function iniciarCopiarEmail() {
 // ============================================================
 // HERO TERMINAL: secuencia de boot tecleada caracter a caracter
 // ============================================================
+// Timer del tecleo: lo guardamos a nivel de modulo para poder cancelar
+// una animacion en curso si iniciarBootHero se llamara dos veces (evita
+// que dos cadenas de tecleo escriban a la vez en #term-typed).
+let _bootTimer = null;
+
+// Escapa texto para interpolarlo en innerHTML de forma segura.
+function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 function iniciarBootHero(perfil) {
     const typed = document.getElementById('term-typed');
     if (!typed) return;
+    if (_bootTimer) { clearTimeout(_bootTimer); _bootTimer = null; } // cancela un tecleo previo
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const nombre  = perfil.nombre  || 'Santiago Lafuente';
@@ -443,7 +454,7 @@ function iniciarBootHero(perfil) {
     // Sin animacion: se pinta todo de golpe (accesibilidad).
     if (reduce) {
         typed.innerHTML = seq.map(l =>
-            `<div class="${claseLinea(l.cls)}" style="${styleFor(l.cls)}">${l.text}</div>`
+            `<div class="${claseLinea(l.cls)}" style="${styleFor(l.cls)}">${escHtml(l.text)}</div>`
         ).join('') + finalStatic;
         return;
     }
@@ -471,11 +482,11 @@ function iniciarBootHero(perfil) {
                 // insertAdjacentText es seguro: no parsea HTML, no rompe con < > en la bio
                 caret.insertAdjacentText('beforebegin', l.text.charAt(ci));
                 ci++;
-                setTimeout(typeChar, speed);
+                _bootTimer = setTimeout(typeChar, speed);
             } else {
                 caret.remove();
                 li++;
-                setTimeout(typeLine, l.cls === 'cmd' ? 90 : 160);
+                _bootTimer = setTimeout(typeLine, l.cls === 'cmd' ? 90 : 160);
             }
         })();
     }

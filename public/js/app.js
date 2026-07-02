@@ -390,62 +390,94 @@ function iniciarCopiarEmail() {
 // typing-cursor también se ha eliminado del CSS.
 
 // ============================================================
-// HERO TERMINAL: secuencia de boot + comandos autoescritos
-// Recibe el objeto perfil (de la API) y rellena #term-typed con
-// el HTML final que simula una sesión de terminal en reposo.
-// Si prefers-reduced-motion está activo, omite la transición.
+// HERO TERMINAL: secuencia de boot tecleada caracter a caracter
 // ============================================================
-
 function iniciarBootHero(perfil) {
-    // Hero V1: el texto tecleado va en #term-typed (columna derecha).
-    // La foto se muestra en #foto_perfil (columna izquierda, visible).
     const typed = document.getElementById('term-typed');
     if (!typed) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const nombre  = perfil.nombre   || 'Santiago Lafuente';
-    const titular = perfil.titular  || 'Desarrollador Multiplataforma';
+    const nombre  = perfil.nombre  || 'Santiago Lafuente';
+    const titular = perfil.titular || 'Desarrollador Multiplataforma';
     const bio     = perfil.sobre_mi || '';
 
-    // HTML final que queda tras la "secuencia de boot".
-    // CTAs como botones con borde ámbar para mayor visibilidad.
-    const finalHtml = `
-        <div style="color: var(--ok)">&gt; initializing portfolio... [OK]</div>
-        <div style="color: var(--ok)">&gt; loading profile.............. [OK]</div>
-        <div class="mt-4"><span class="phosphor">$</span> whoami</div>
-        <div class="glow phosphor text-2xl md:text-3xl font-bold mt-1">${nombre}</div>
-        <div style="color: var(--amber-dim)">Titulado en DAM (9.0) &middot; ${titular}</div>
-        <div class="mt-4"><span class="phosphor">$</span> cat about.txt</div>
-        <div class="mt-1">${bio}</div>
-        <div class="mt-4"><span class="phosphor">$</span> status</div>
+    // Secuencia de lineas que se teclean en orden.
+    const seq = [
+        { text: '> initializing portfolio... [OK]', cls: 'boot-ok' },
+        { text: '> loading profile.............. [OK]', cls: 'boot-ok' },
+        { text: '$ whoami', cls: 'cmd' },
+        { text: nombre, cls: 'name' },
+        { text: 'Titulado en DAM (9.0) - ' + titular, cls: 'dim' },
+        { text: '$ cat about.txt', cls: 'cmd' },
+        { text: bio, cls: 'fg' },
+        { text: '$ status', cls: 'cmd' },
+    ];
+
+    // Bloque final estatico (badge de estado + CTAs + prompt final).
+    const finalStatic = `
         <div class="mt-1 flex items-center gap-2" style="color: var(--ok)">
             <span class="inline-block w-2 h-2 rounded-full" style="background: var(--ok); box-shadow: 0 0 8px var(--ok)"></span>
-            available for hire &middot; disponible para empleo
+            available for hire - busco empleo activamente
         </div>
         <div class="mt-4 flex flex-wrap gap-3 items-center">
             <a href="/cv/cv-santiago-lafuente.pdf" download class="btn-contact px-4 py-2 border rounded phosphor" style="border-color: var(--amber)">[ descargar CV ]</a>
             <a href="#contacto" class="btn-contact px-4 py-2 border rounded phosphor" style="border-color: var(--amber)">[ ./contact.sh ]</a>
         </div>
-        <div class="mt-4"><span class="phosphor">$</span> <span class="term-caret">&nbsp;</span></div>`;
+        <div class="mt-3"><span class="phosphor">$</span> <span class="term-caret">&nbsp;</span></div>`;
 
+    // Estilo inline segun tipo de linea.
+    function styleFor(cls) {
+        if (cls === 'boot-ok') return 'color: var(--ok)';
+        if (cls === 'cmd')     return 'color: var(--amber)';
+        if (cls === 'dim')     return 'color: var(--amber-dim)';
+        if (cls === 'fg')      return 'color: var(--fg)';
+        return '';
+    }
+    function claseLinea(cls) {
+        if (cls === 'name')    return 'glow phosphor text-2xl md:text-3xl font-bold mt-1';
+        if (cls === 'cmd')     return 'mt-4';
+        if (cls === 'boot-ok') return '';
+        return 'mt-1';
+    }
+
+    // Sin animacion: se pinta todo de golpe (accesibilidad).
     if (reduce) {
-        // Sin movimiento: mostramos el resultado final directamente
-        typed.innerHTML = finalHtml;
+        typed.innerHTML = seq.map(l =>
+            `<div class="${claseLinea(l.cls)}" style="${styleFor(l.cls)}">${l.text}</div>`
+        ).join('') + finalStatic;
         return;
     }
 
-    // Con movimiento: fade de entrada suave (0.5 s) para que el boot
-    // no sea un corte brusco al llegar el fetch de la API.
-    typed.style.opacity = '0';
-    typed.innerHTML = finalHtml;
-    // Doble rAF: el primer frame asegura que el render con opacity:0 ya ocurrio
-    // antes de aplicar la transicion; con un solo rAF Chromium puede saltarse el fade.
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-            typed.style.transition = 'opacity 0.5s ease';
-            typed.style.opacity = '1';
-        });
-    });
+    // Con animacion: teclea linea por linea, con caret temporal al final de cada una.
+    typed.innerHTML = '';
+    let li = 0;
+    function typeLine() {
+        if (li >= seq.length) { typed.insertAdjacentHTML('beforeend', finalStatic); return; }
+        const l = seq[li];
+        const div = document.createElement('div');
+        div.className = claseLinea(l.cls);
+        if (styleFor(l.cls)) div.setAttribute('style', styleFor(l.cls));
+        const caret = document.createElement('span');
+        caret.className = 'term-caret';
+        caret.innerHTML = '&nbsp;';
+        div.appendChild(caret);
+        typed.appendChild(div);
+        let ci = 0;
+        const speed = (l.cls === 'boot-ok') ? 12 : 22; // ms por caracter
+        (function typeChar() {
+            if (ci < l.text.length) {
+                // insertAdjacentText es seguro: no parsea HTML, no rompe con < > en la bio
+                caret.insertAdjacentText('beforebegin', l.text.charAt(ci));
+                ci++;
+                setTimeout(typeChar, speed);
+            } else {
+                caret.remove();
+                li++;
+                setTimeout(typeLine, l.cls === 'cmd' ? 120 : 250);
+            }
+        })();
+    }
+    typeLine();
 }
 
 // ============================================================

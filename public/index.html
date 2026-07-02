@@ -138,8 +138,10 @@
            Color ámbar con glow fosforo en lugar del gradiente azul/morado. */
         #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--amber); box-shadow: 0 0 8px rgba(255,176,0,0.7); z-index:60; transition: width 0.1s linear; }
 
-        /* Botón "$ contact" (navbar escritorio + móvil): hover ámbar tenue.
+        /* Botón "$ contact" (navbar escritorio + móvil): color base y hover ámbar tenue.
+           .btn-contact se usa tanto en la navbar como en los CTAs del hero terminal.
            Clase CSS en lugar de handlers inline onmouseover/onmouseout. */
+        .btn-contact { color: var(--amber); transition: background 0.15s; }
         .btn-contact:hover { background: rgba(255,176,0,0.1); }
 
         /* ── CURSOR PERSONALIZADO ────────────────────────────────
@@ -271,6 +273,50 @@
         .stats-line { font-size: 0.85rem; color: var(--amber-dim); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.6rem 0; }
 
         @media (prefers-reduced-motion: reduce) { .otw-dot { animation: none; } }
+
+        /* ── HERO V2: POWER-ON CRT ───────────────────────────────
+           Simula el encendido de un monitor CRT: la imagen empieza
+           como una línea horizontal (scaleY muy pequeño) con brillo
+           exagerado, luego se expande y estabiliza en 0.7 s.
+           transform-origin center garantiza que el "desplegado" salga
+           del centro, no de la esquina superior. */
+        @keyframes crt-power-on {
+            0%   { transform: scaleY(0.004); filter: brightness(3); opacity: 0.3; }
+            12%  { transform: scaleY(0.02);  filter: brightness(3); opacity: 1; }
+            45%  { transform: scaleY(1);     filter: brightness(1.5); }
+            65%  { filter: brightness(0.75); }
+            100% { transform: scaleY(1);     filter: brightness(1); }
+        }
+        .term-window { animation: crt-power-on 0.7s ease-out both; transform-origin: center center; }
+        @media (prefers-reduced-motion: reduce) { .term-window { animation: none; } }
+
+        /* ── HERO V2: BRASAS AMBIENTALES ─────────────────────────
+           Partículas ámbar que ascienden lentamente de fondo en el
+           hero. Cada <span> tiene posición, duración y retraso
+           distintos para que el movimiento parezca orgánico.
+           position:absolute + inset:0 en .embers cubre todo el header;
+           z-index:0 lo mantiene bajo el contenido (que va en z-10). */
+        .embers { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .embers span {
+            position: absolute; bottom: -12px; width: 3px; height: 3px;
+            border-radius: 50%; background: var(--amber);
+            box-shadow: 0 0 6px var(--amber); opacity: 0;
+            animation: ember-rise linear infinite;
+        }
+        @keyframes ember-rise {
+            0%   { transform: translateY(0) translateX(0); opacity: 0; }
+            12%  { opacity: 0.7; }
+            100% { transform: translateY(-360px) translateX(24px); opacity: 0; }
+        }
+        .embers span:nth-child(1){ left: 6%;  animation-duration: 7s;   animation-delay: 0s; }
+        .embers span:nth-child(2){ left: 18%; animation-duration: 9s;   animation-delay: 1.5s; }
+        .embers span:nth-child(3){ left: 30%; animation-duration: 6.5s; animation-delay: 3s; }
+        .embers span:nth-child(4){ left: 44%; animation-duration: 8.5s; animation-delay: 0.8s; }
+        .embers span:nth-child(5){ left: 58%; animation-duration: 7.5s; animation-delay: 2.2s; }
+        .embers span:nth-child(6){ left: 70%; animation-duration: 10s;  animation-delay: 4s; }
+        .embers span:nth-child(7){ left: 82%; animation-duration: 6.8s; animation-delay: 1.2s; }
+        .embers span:nth-child(8){ left: 92%; animation-duration: 9.5s; animation-delay: 3.5s; }
+        @media (prefers-reduced-motion: reduce) { .embers { display: none; } }
 
         /* ── SR-ONLY: oculta visualmente pero accesible ──────────
            Tailwind CDN lo incluye, pero lo definimos explícitamente
@@ -413,7 +459,10 @@
      que cargarPerfil() en app.js los siga encontrando.
 ============================================================ -->
 <header id="inicio" class="relative overflow-hidden pt-28 pb-10 crt-vignette crt-flicker">
-    <div class="max-w-4xl mx-auto px-6">
+    <!-- Brasas ambientales V2: partículas ámbar que ascienden de fondo.
+         aria-hidden evita que los lectores de pantalla las anuncien. -->
+    <div class="embers" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="relative z-10 max-w-4xl mx-auto px-6">
         <!-- Badge OPEN TO WORK: punto verde pulsante + texto. Indica búsqueda activa de empleo. -->
         <div class="mb-4">
             <span class="otw-badge"><span class="otw-dot"></span> OPEN TO WORK &mdash; busco empleo activamente</span>

@@ -391,21 +391,24 @@ function iniciarCopiarEmail() {
 
 // ============================================================
 // HERO TERMINAL: secuencia de boot + comandos autoescritos
-// Recibe el objeto perfil (de la API) y rellena #term-body con
+// Recibe el objeto perfil (de la API) y rellena #term-typed con
 // el HTML final que simula una sesión de terminal en reposo.
 // Si prefers-reduced-motion está activo, omite la transición.
 // ============================================================
 
 function iniciarBootHero(perfil) {
-    const body = document.getElementById('term-body');
-    if (!body) return;
+    // Hero V1: el texto tecleado va en #term-typed (columna derecha).
+    // La foto se muestra en #foto_perfil (columna izquierda, visible).
+    const typed = document.getElementById('term-typed');
+    if (!typed) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const nombre  = perfil.nombre   || 'Santiago Lafuente';
     const titular = perfil.titular  || 'Desarrollador Multiplataforma';
     const bio     = perfil.sobre_mi || '';
 
-    // HTML final que queda tras la "secuencia de boot"
+    // HTML final que queda tras la "secuencia de boot".
+    // CTAs como botones con borde ámbar para mayor visibilidad.
     const finalHtml = `
         <div style="color: var(--ok)">&gt; initializing portfolio... [OK]</div>
         <div style="color: var(--ok)">&gt; loading profile.............. [OK]</div>
@@ -419,28 +422,28 @@ function iniciarBootHero(perfil) {
             <span class="inline-block w-2 h-2 rounded-full" style="background: var(--ok); box-shadow: 0 0 8px var(--ok)"></span>
             available for hire &middot; disponible para empleo
         </div>
-        <div class="mt-4 flex flex-wrap gap-4 items-center">
-            <a href="/cv/cv-santiago-lafuente.pdf" download class="phosphor hover:underline">[ descargar CV ]</a>
-            <a href="#contacto" class="phosphor hover:underline">[ ./contact.sh ]</a>
+        <div class="mt-4 flex flex-wrap gap-3 items-center">
+            <a href="/cv/cv-santiago-lafuente.pdf" download class="btn-contact px-4 py-2 border rounded phosphor" style="border-color: var(--amber)">[ descargar CV ]</a>
+            <a href="#contacto" class="btn-contact px-4 py-2 border rounded phosphor" style="border-color: var(--amber)">[ ./contact.sh ]</a>
         </div>
         <div class="mt-4"><span class="phosphor">$</span> <span class="term-caret">&nbsp;</span></div>`;
 
     if (reduce) {
         // Sin movimiento: mostramos el resultado final directamente
-        body.innerHTML = finalHtml;
+        typed.innerHTML = finalHtml;
         return;
     }
 
     // Con movimiento: fade de entrada suave (0.5 s) para que el boot
     // no sea un corte brusco al llegar el fetch de la API.
-    body.style.opacity = '0';
-    body.innerHTML = finalHtml;
+    typed.style.opacity = '0';
+    typed.innerHTML = finalHtml;
     // Doble rAF: el primer frame asegura que el render con opacity:0 ya ocurrio
     // antes de aplicar la transicion; con un solo rAF Chromium puede saltarse el fade.
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            body.style.transition = 'opacity 0.5s ease';
-            body.style.opacity = '1';
+            typed.style.transition = 'opacity 0.5s ease';
+            typed.style.opacity = '1';
         });
     });
 }

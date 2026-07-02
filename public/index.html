@@ -249,6 +249,29 @@
         @keyframes caret-blink { 50% { opacity: 0; } }
         @media (prefers-reduced-motion: reduce) { .term-caret { animation: none; } }
 
+        /* ── FOTO ENMARCADA (HERO V1) ────────────────────────────
+           Marco ámbar con glow, scanlines superpuestas (::after) y
+           filtro sepia leve para integrar la foto en la estética CRT. */
+        .photo-frame { position: relative; display: inline-block; border: 2px solid var(--amber); border-radius: 6px; overflow: hidden; box-shadow: 0 0 18px rgba(255,176,0,0.25); }
+        .photo-frame img { filter: saturate(0.85) sepia(0.15) contrast(1.05); }
+        /* Overlay de scanlines sobre la foto — pointer-events:none para no bloquear clics */
+        .photo-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.14) 3px); }
+
+        /* ── BADGE OPEN TO WORK ──────────────────────────────────
+           Pastilla verde con punto pulsante. Indica búsqueda activa.
+           La animación se desactiva con prefers-reduced-motion. */
+        .otw-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border: 1px solid var(--ok); border-radius: 9999px; color: var(--ok); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; }
+        .otw-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(95,206,122,0.6); animation: otw-pulse 2s infinite; }
+        @keyframes otw-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(95,206,122,0.5); } 50% { box-shadow: 0 0 0 7px rgba(95,206,122,0); } }
+
+        /* ── STATS LINE ──────────────────────────────────────────
+           Línea de datos clave debajo de la terminal: media, titulación,
+           prácticas y disponibilidad. Separa con bordes --line tenues. */
+        .stats-line { font-size: 0.85rem; color: var(--amber-dim); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.6rem 0; }
+
+        @media (prefers-reduced-motion: reduce) { .otw-dot { animation: none; } }
+
         /* ── SR-ONLY: oculta visualmente pero accesible ──────────
            Tailwind CDN lo incluye, pero lo definimos explícitamente
            para garantizar que los IDs requeridos por app.js existan
@@ -391,6 +414,11 @@
 ============================================================ -->
 <header id="inicio" class="relative overflow-hidden pt-28 pb-10 crt-vignette crt-flicker">
     <div class="max-w-4xl mx-auto px-6">
+        <!-- Badge OPEN TO WORK: punto verde pulsante + texto. Indica búsqueda activa de empleo. -->
+        <div class="mb-4">
+            <span class="otw-badge"><span class="otw-dot"></span> OPEN TO WORK &mdash; busco empleo activamente</span>
+        </div>
+
         <!-- Ventana de terminal con barra de título estilo macOS/Linux -->
         <div class="term-window border rounded-lg overflow-hidden" style="border-color: var(--line); background: var(--surface);">
             <div class="term-titlebar flex items-center gap-2 px-4 py-2 border-b" style="border-color: var(--line);">
@@ -400,19 +428,30 @@
                 <span class="w-3 h-3 rounded-full" style="background:#27c93f"></span>
                 <span class="ml-3 text-xs" style="color: var(--amber-dim)">santiago@portfolio:~</span>
             </div>
-            <!-- Cuerpo de la terminal — iniciarBootHero() escribe el contenido aquí
-                 p-4 en móvil / p-6 en md+ para evitar desbordamiento horizontal.
-                 min-h reducida en móvil para no dejar espacio vacío excesivo. -->
-            <div id="term-body" class="p-4 md:p-6 text-sm md:text-base leading-relaxed min-h-[260px] md:min-h-[320px] break-words overflow-x-auto"></div>
+            <!-- Cuerpo de la terminal: dos columnas (foto + texto tecleado).
+                 En móvil apila verticalmente. iniciarBootHero() escribe en #term-typed. -->
+            <div class="term-content flex flex-col md:flex-row gap-6 p-4 md:p-6">
+                <div class="shrink-0 mx-auto md:mx-0">
+                    <div class="photo-frame">
+                        <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente" class="block w-40 h-40 md:w-48 md:h-48 object-cover">
+                    </div>
+                    <p class="text-xs mt-2 text-center md:text-left" style="color: var(--amber-dim)">~/perfil.jpg</p>
+                </div>
+                <div id="term-typed" class="flex-1 min-h-[260px] md:min-h-[320px] text-sm md:text-base leading-relaxed break-words overflow-x-auto"></div>
+            </div>
         </div>
 
-        <!-- IDs requeridos por cargarPerfil() en app.js — ocultos visualmente
-             pero presentes en el DOM para que el JS los encuentre sin errores. -->
+        <!-- Línea de stats de impacto: datos clave visibles de un vistazo. -->
+        <div class="mt-4 stats-line">
+            <span class="phosphor">&gt;</span> 9.0 media &nbsp;&middot;&nbsp; Titulado DAM &nbsp;&middot;&nbsp; Practicas en GDES &nbsp;&middot;&nbsp; <span style="color: var(--ok)">disponible</span>
+        </div>
+
+        <!-- #foto_perfil se movió a la columna izquierda de la terminal (visible).
+             Los demás IDs siguen aquí para que cargarPerfil() los encuentre. -->
         <div class="sr-only">
             <h1 id="nombre"></h1>
             <span id="titular"></span>
             <span id="sobre_mi"></span>
-            <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente">
             <div id="enlaces"></div>
             <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download>CV</a>
         </div>

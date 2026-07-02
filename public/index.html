@@ -247,7 +247,7 @@
 
         /* ── HERO TERMINAL: CARET PARPADEANTE ───────────────────
            Bloque ámbar que simula el cursor de terminal.
-           steps(1) hace el parpadeo instantáneo (sin fade).
+           step-end hace el parpadeo instantáneo (sin fade).
            prefers-reduced-motion: desactiva la animación. */
         .term-caret {
             display: inline-block; width: 0.6em; height: 1.1em;
@@ -397,7 +397,9 @@
 
     <!-- GitHub Stats bar — se rellena desde app.js con la API pública de GitHub -->
     <div class="relative max-w-4xl mx-auto px-6 pt-8">
-        <div id="github-stats" class="flex flex-wrap gap-4 text-sm" style="color: var(--amber-dim)"></div>
+        <div id="github-stats" class="flex flex-wrap gap-4 text-sm" style="color: var(--amber-dim)">
+            <span>$ loading github stats...</span>
+        </div>
     </div>
 </header>
 

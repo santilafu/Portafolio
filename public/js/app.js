@@ -437,9 +437,13 @@ function iniciarBootHero(perfil) {
     // no sea un corte brusco al llegar el fetch de la API.
     body.style.opacity = '0';
     body.innerHTML = finalHtml;
+    // Doble rAF: el primer frame asegura que el render con opacity:0 ya ocurrio
+    // antes de aplicar la transicion; con un solo rAF Chromium puede saltarse el fade.
     requestAnimationFrame(() => {
-        body.style.transition = 'opacity 0.5s ease';
-        body.style.opacity = '1';
+        requestAnimationFrame(() => {
+            body.style.transition = 'opacity 0.5s ease';
+            body.style.opacity = '1';
+        });
     });
 }
 

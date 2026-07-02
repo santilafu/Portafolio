@@ -463,7 +463,9 @@ function iniciarBootHero(perfil) {
         div.appendChild(caret);
         typed.appendChild(div);
         let ci = 0;
-        const speed = (l.cls === 'boot-ok') ? 12 : 22; // ms por caracter
+        // La bio (fg) y el boot van rapidos para no hacer esperar los CTAs;
+        // comandos/titulo algo mas lentos por dramatismo.
+        const speed = (l.cls === 'boot-ok' || l.cls === 'fg') ? 9 : 18; // ms por caracter
         (function typeChar() {
             if (ci < l.text.length) {
                 // insertAdjacentText es seguro: no parsea HTML, no rompe con < > en la bio
@@ -473,7 +475,7 @@ function iniciarBootHero(perfil) {
             } else {
                 caret.remove();
                 li++;
-                setTimeout(typeLine, l.cls === 'cmd' ? 120 : 250);
+                setTimeout(typeLine, l.cls === 'cmd' ? 90 : 160);
             }
         })();
     }

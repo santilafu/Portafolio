@@ -678,7 +678,7 @@ async function cargarCertificados() {
                     <p class="text-sm mt-1" style="color: var(--amber-dim)">
                         ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
                     </p>
-                    <p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>
+                    ${cert.descripcion ? `<p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>` : ''}
                     ${enlaceAbrir}${enlaceOnline}
                 </div>`;
 

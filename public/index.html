@@ -289,15 +289,19 @@
 <body class="crt-scanlines font-mono" style="background: var(--bg); color: var(--fg);">
 
 <!-- Panel de stats secreto (se activa con 5 clics en el logo S.L.H.) -->
-<div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] bg-slate-900 border border-purple-500/40 rounded-2xl p-5 shadow-2xl shadow-purple-900/30 min-w-[200px]">
+<!-- Panel de stats secreto — reskinado a clave terminal ámbar -->
+<div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] rounded-2xl p-5 shadow-2xl min-w-[200px]"
+     style="background: var(--surface); border: 1px solid var(--line);">
     <div class="flex items-center justify-between mb-3">
-        <span class="text-xs uppercase tracking-widest text-purple-400 font-semibold">Stats secretos</span>
-        <button onclick="document.getElementById('stats-panel').classList.add('hidden')" class="text-gray-500 hover:text-white text-lg leading-none">×</button>
+        <span class="text-xs uppercase tracking-widest phosphor font-semibold">$ sudo stats</span>
+        <button onclick="document.getElementById('stats-panel').classList.add('hidden')"
+                class="text-lg leading-none transition-colors"
+                style="color: var(--amber-dim)">×</button>
     </div>
     <div class="space-y-2 text-sm">
         <div class="flex items-center justify-between gap-6">
-            <span class="text-gray-400">Visitas totales</span>
-            <span id="stats-visitas" class="text-white font-bold">...</span>
+            <span style="color: var(--amber-dim)">Visitas totales</span>
+            <span id="stats-visitas" class="phosphor font-bold">...</span>
         </div>
     </div>
 </div>
@@ -526,14 +530,11 @@
     </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="border-t border-slate-800/50">
-    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-3">
-        <div class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 rounded-full text-xs font-semibold">
-            <i class="fa-solid fa-hammer"></i>
-            Portafolio en desarrollo — se vienen mas cosas
-        </div>
-        <p class="text-gray-600 text-sm">&copy; 2025 Santiago Lafuente Hernandez &nbsp;·&nbsp; <span id="visitas-counter" class="text-gray-700"></span></p>
+<!-- FOOTER — clave terminal ámbar, sin gradientes slate/morado -->
+<footer class="border-t" style="border-color: var(--line)">
+    <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-2">
+        <p style="color: var(--amber-dim)">// EOF &mdash; Santiago Lafuente 2026 <span class="term-caret">&nbsp;</span></p>
+        <p class="text-xs" style="color: var(--amber-dim)"><span id="visitas-counter"></span></p>
     </div>
 </footer>
 

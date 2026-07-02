@@ -233,23 +233,29 @@ async function cargarGithubStats() {
         // Lenguaje más repetido
         const topLang = Object.entries(langs).sort((a, b) => b[1] - a[1])[0];
 
+        // Prefijo de prompt y ítems con tokens CSS del tema terminal ámbar.
+        // Los valores numéricos usan .phosphor para el brillo característico.
         contenedor.innerHTML = `
+            <span style="color: var(--amber-dim)">$ git stats</span>
             <a href="https://github.com/santilafu" target="_blank"
-               class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/60 border border-slate-800 rounded-full hover:border-purple-500/40 transition-colors">
-                <i class="fa-brands fa-github text-white"></i>
-                <span class="text-white font-semibold">${user.public_repos}</span>
-                <span>repos publicos</span>
+               class="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-colors"
+               style="background: var(--surface); border: 1px solid var(--line);">
+                <i class="fa-brands fa-github phosphor"></i>
+                <span class="phosphor font-semibold">${user.public_repos}</span>
+                <span style="color: var(--amber-dim)">repos publicos</span>
             </a>
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/60 border border-slate-800 rounded-full">
-                <i class="fa-solid fa-users text-purple-400"></i>
-                <span class="text-white font-semibold">${user.followers}</span>
-                <span>seguidores</span>
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                 style="background: var(--surface); border: 1px solid var(--line);">
+                <i class="fa-solid fa-users" style="color: var(--amber)"></i>
+                <span class="phosphor font-semibold">${user.followers}</span>
+                <span style="color: var(--amber-dim)">seguidores</span>
             </div>
             ${topLang ? `
-            <div class="inline-flex items-center gap-2 px-4 py-2 bg-slate-900/60 border border-slate-800 rounded-full">
-                <i class="fa-solid fa-code text-blue-400"></i>
-                <span class="text-white font-semibold">${topLang[0]}</span>
-                <span>lenguaje top</span>
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
+                 style="background: var(--surface); border: 1px solid var(--line);">
+                <i class="fa-solid fa-code" style="color: var(--amber)"></i>
+                <span class="phosphor font-semibold">${topLang[0]}</span>
+                <span style="color: var(--amber-dim)">lenguaje top</span>
             </div>` : ''}
         `;
     } catch {
@@ -333,13 +339,15 @@ function buildEnlaces(p, classes) {
 }
 
 function buildEnlacesFooter(p) {
+    // Estilo terminal ámbar: icono con .phosphor, etiqueta en --amber-dim
+    const base = 'flex flex-col items-center gap-2 phosphor transition-all duration-300 hover:-translate-y-1';
     const items = [];
     if (p.email)
-        items.push(`<a href="mailto:${p.email}" class="flex flex-col items-center gap-2 text-gray-400 hover:text-blue-400 transition-all duration-300 hover:-translate-y-1"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs">Email</span></a>`);
+        items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">Email</span></a>`);
     if (p.enlace_github)
-        items.push(`<a href="${p.enlace_github}" target="_blank" class="flex flex-col items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 hover:-translate-y-1"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs">GitHub</span></a>`);
+        items.push(`<a href="${p.enlace_github}" target="_blank" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">GitHub</span></a>`);
     if (p.enlace_linkedin)
-        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" class="flex flex-col items-center gap-2 text-gray-400 hover:text-blue-500 transition-all duration-300 hover:-translate-y-1"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs">LinkedIn</span></a>`);
+        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">LinkedIn</span></a>`);
     return items.join('');
 }
 

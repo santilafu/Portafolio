@@ -511,7 +511,7 @@ async function cargarProyectos() {
             });
             setTimeout(reobservarAnimaciones, 100);
         } else {
-            contenedor.innerHTML = '<p class="text-gray-500 italic col-span-2 text-center py-10">Aun no hay proyectos para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--amber-dim)">Aun no hay proyectos para mostrar.</p>';
         }
     } catch (error) {
         console.error('Error al cargar proyectos:', error);
@@ -638,7 +638,7 @@ async function cargarCertificados() {
         contenedor.innerHTML = '';
 
         if (certificados.length === 0) {
-            contenedor.innerHTML = '<p class="text-gray-500 italic col-span-full text-center py-10">Aun no hay certificados para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--amber-dim)">Aun no hay certificados para mostrar.</p>';
             return;
         }
 

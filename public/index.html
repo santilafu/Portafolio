@@ -125,6 +125,11 @@
         @media (prefers-reduced-motion: reduce) {
             .crt-flicker { animation: none; }
             .crt-scanlines::before { display: none; }
+            /* Desactivamos tambien el resto de movimiento no esencial:
+               entradas fade-up, flotacion de iconos y el spin del loader. */
+            .fade-up { opacity: 1 !important; transform: none !important; transition: none !important; }
+            .float-1, .float-2, .float-3 { animation: none !important; }
+            .loader { animation-duration: 0s !important; }
         }
 
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
@@ -153,7 +158,7 @@
 
         /* ── LOADER ──────────────────────────────────────────────*/
         /* border-top era morado (#8b5cf6); ahora usa el token ámbar del tema */
-        .loader { border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--amber); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
+        .loader { border: 3px solid var(--line); border-top: 3px solid var(--amber); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── FADE-UP ─────────────────────────────────────────────*/
@@ -164,11 +169,11 @@
 
         /* ── CARD HOVER ──────────────────────────────────────────*/
         .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15); }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(255, 176, 0, 0.12); }
 
         /* ── SKILL CARD ──────────────────────────────────────────*/
         .skill-card { transition: all 0.3s ease; }
-        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(139, 92, 246, 0.2); }
+        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(255, 176, 0, 0.18); }
 
         /* ── TECH ENTER ──────────────────────────────────────────*/
         .tech-enter { opacity: 0; transform: scale(0.3) translateY(20px); }
@@ -223,7 +228,7 @@
            heredan a todo el arbol del DOM. */
         [data-theme="light"] {
             --bg: #f4ecd8; --surface: #ece0c4; --fg: #3a2f1a;
-            --amber: #9a5b00; --amber-hi: #7a4600; --amber-dim: #8a6a3a; --line: rgba(154,91,0,0.30);
+            --amber: #9a5b00; --amber-hi: #7a4600; --amber-dim: #6f5320; --line: rgba(154,91,0,0.30);
         }
         /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
         [data-theme="light"] .glow { text-shadow: none; }
@@ -404,7 +409,7 @@
         <!-- IDs requeridos por cargarPerfil() en app.js — ocultos visualmente
              pero presentes en el DOM para que el JS los encuentre sin errores. -->
         <div class="sr-only">
-            <span id="nombre"></span>
+            <h1 id="nombre"></h1>
             <span id="titular"></span>
             <span id="sobre_mi"></span>
             <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente">
@@ -455,7 +460,7 @@
             <div class="mt-1 h-px" style="background: var(--line)"></div>
         </div>
         <div id="lista-proyectos" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="flex items-center gap-3 text-gray-500 justify-center col-span-1 lg:col-span-2 py-10">
+            <div class="flex items-center gap-3 justify-center col-span-1 lg:col-span-2 py-10">
                 <div class="loader"></div><span>Cargando proyectos...</span>
             </div>
         </div>
@@ -477,7 +482,7 @@
             <div class="mt-1 h-px" style="background: var(--line)"></div>
         </div>
         <div id="lista-experiencia" class="max-w-3xl mx-auto">
-            <div class="flex items-center gap-3 text-gray-500 justify-center w-full py-6">
+            <div class="flex items-center gap-3 justify-center w-full py-6">
                 <div class="loader"></div><span>Cargando experiencia...</span>
             </div>
         </div>
@@ -492,7 +497,7 @@
             <p class="mt-3 max-w-xl" style="color: var(--amber-dim)">Cursos completados para mantenerme al dia con las ultimas tecnologias.</p>
         </div>
         <div id="lista-certificados" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="flex items-center gap-3 text-gray-500 justify-center col-span-1 md:col-span-2 py-10">
+            <div class="flex items-center gap-3 justify-center col-span-1 md:col-span-2 py-10">
                 <div class="loader"></div><span>Cargando certificados...</span>
             </div>
         </div>

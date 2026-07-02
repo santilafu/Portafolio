@@ -237,7 +237,7 @@ async function cargarGithubStats() {
         // Los valores numéricos usan .phosphor para el brillo característico.
         contenedor.innerHTML = `
             <span style="color: var(--amber-dim)">$ git stats</span>
-            <a href="https://github.com/santilafu" target="_blank"
+            <a href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-colors"
                style="background: var(--surface); border: 1px solid var(--line);">
                 <i class="fa-brands fa-github phosphor"></i>
@@ -333,8 +333,8 @@ async function cargarPerfil() {
 function buildEnlaces(p, classes) {
     return `
         ${p.email          ? `<a href="mailto:${p.email}" title="Email" class="${classes} transition-colors"><i class="fa-solid fa-envelope"></i></a>` : ''}
-        ${p.enlace_github  ? `<a href="${p.enlace_github}" target="_blank" title="GitHub" class="${classes} transition-colors"><i class="fa-brands fa-github"></i></a>` : ''}
-        ${p.enlace_linkedin ? `<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" title="LinkedIn" class="${classes} transition-colors"><i class="fa-brands fa-linkedin"></i></a>` : ''}
+        ${p.enlace_github  ? `<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" title="GitHub" class="${classes} transition-colors"><i class="fa-brands fa-github"></i></a>` : ''}
+        ${p.enlace_linkedin ? `<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="${classes} transition-colors"><i class="fa-brands fa-linkedin"></i></a>` : ''}
     `;
 }
 
@@ -345,9 +345,9 @@ function buildEnlacesFooter(p) {
     if (p.email)
         items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">Email</span></a>`);
     if (p.enlace_github)
-        items.push(`<a href="${p.enlace_github}" target="_blank" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">GitHub</span></a>`);
+        items.push(`<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">GitHub</span></a>`);
     if (p.enlace_linkedin)
-        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">LinkedIn</span></a>`);
+        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">LinkedIn</span></a>`);
     return items.join('');
 }
 
@@ -385,23 +385,9 @@ function iniciarCopiarEmail() {
     });
 }
 
-// ============================================================
-// TYPING EFFECT
-// ============================================================
-
-function iniciarTyping(texto) {
-    const el = document.getElementById('titular');
-    el.textContent = '';
-    el.classList.add('typing-cursor');
-    let i = 0;
-    const interval = setInterval(() => {
-        el.textContent += texto.charAt(i++);
-        if (i >= texto.length) {
-            clearInterval(interval);
-            setTimeout(() => el.classList.remove('typing-cursor'), 2000);
-        }
-    }, 60);
-}
+// iniciarTyping eliminada: ya no se usa desde que el hero
+// es una secuencia de boot (iniciarBootHero). El efecto de
+// typing-cursor también se ha eliminado del CSS.
 
 // ============================================================
 // HERO TERMINAL: secuencia de boot + comandos autoescritos
@@ -499,8 +485,8 @@ async function cargarProyectos() {
                             <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
                             <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
                             <div class="mt-4 flex gap-4 text-sm">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="phosphor hover:underline">[ repo ]</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="phosphor hover:underline">[ demo ]</a>` : ''}
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ repo ]</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ demo ]</a>` : ''}
                             </div>
                         </div>`;
                 } else {
@@ -516,8 +502,8 @@ async function cargarProyectos() {
                             <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
                             <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
                             <div class="mt-4 flex gap-4 text-sm">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" class="phosphor hover:underline">[ repo ]</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" class="phosphor hover:underline">[ demo ]</a>` : ''}
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ repo ]</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ demo ]</a>` : ''}
                             </div>
                         </div>`;
                 }
@@ -623,7 +609,7 @@ async function cargarExperiencia() {
                 <div style="color: var(--amber-dim)">Date:   ${ini} - ${fin}</div>
                 <div class="mt-2 phosphor font-semibold">${exp.puesto}</div>
                 ${exp.descripcion ? `<div class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</div>` : ''}
-                ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" class="text-sm phosphor hover:underline">[ github ]</a>` : ''}`;
+                ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="text-sm phosphor hover:underline">[ github ]</a>` : ''}`;
             contenedor.appendChild(item);
         });
     } catch (error) {
@@ -666,13 +652,13 @@ async function cargarCertificados() {
 
             // Enlace al PDF del certificado (condicional)
             const enlaceAbrir = cert.url_archivo
-                ? `<a href="${cert.url_archivo}" target="_blank"
+                ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer"
                       class="text-sm phosphor hover:underline mt-3 inline-block mr-4">[ abrir ]</a>`
                 : '';
 
             // Enlace de verificación online (condicional)
             const enlaceOnline = cert.url_externa
-                ? `<a href="${cert.url_externa}" target="_blank"
+                ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer"
                       class="text-sm phosphor hover:underline mt-3 inline-block">[ ver online ]</a>`
                 : '';
 

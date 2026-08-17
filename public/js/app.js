@@ -5,7 +5,6 @@
  *
  * Funciones nuevas en v2:
  *   iniciarScrollProgress()  → barra de progreso de lectura
- *   iniciarCursor()          → cursor personalizado con glow
  *   mostrarToastBienvenida() → toast primera visita (localStorage)
  *   iniciarActiveNav()       → resalta el link de la sección visible
  *   cargarGithubStats()      → stats en tiempo real desde la API de GitHub
@@ -119,40 +118,6 @@ function iniciarScrollProgress() {
         const current = document.documentElement.scrollTop || document.body.scrollTop;
         bar.style.width = `${(current / total) * 100}%`;
     }, { passive: true }); // passive: true mejora el rendimiento del scroll
-}
-
-// ============================================================
-// CURSOR PERSONALIZADO
-// Seguimos la posición del ratón con dos elementos: un punto
-// pequeño (inmediato) y un anillo más grande (con transición CSS).
-// Al pasar por encima de elementos interactivos, cambia de tamaño.
-// Solo funciona en dispositivos con ratón (pointer: fine).
-// ============================================================
-
-function iniciarCursor() {
-    // En móvil/táctil no tiene sentido mostrar cursor personalizado
-    if (!window.matchMedia('(pointer: fine)').matches) return;
-
-    const dot  = document.getElementById('cursor-dot');
-    const ring = document.getElementById('cursor-ring');
-
-    // Actualizamos la posición del cursor en cada movimiento de ratón
-    document.addEventListener('mousemove', (e) => {
-        dot.style.left  = ring.style.left  = `${e.clientX}px`;
-        dot.style.top   = ring.style.top   = `${e.clientY}px`;
-    });
-
-    // Al pasar por encima de elementos interactivos, el cursor se expande
-    document.querySelectorAll('a, button, [role="button"], input, textarea').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            dot.classList.add('cursor-hover');
-            ring.classList.add('cursor-hover');
-        });
-        el.addEventListener('mouseleave', () => {
-            dot.classList.remove('cursor-hover');
-            ring.classList.remove('cursor-hover');
-        });
-    });
 }
 
 // ============================================================
@@ -907,7 +872,6 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarCopiarEmail();
     iniciarParallax();
     iniciarScrollProgress();
-    iniciarCursor();
     mostrarToastBienvenida();
     iniciarActiveNav();
     iniciarFormContacto();

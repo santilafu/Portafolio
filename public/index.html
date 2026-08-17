@@ -85,39 +85,10 @@
         .accent-text { color: var(--accent); }
         .glow { text-shadow: 0 0 6px rgba(124,140,255,0.55), 0 0 14px rgba(124,140,255,0.25); }
 
-        /* ── CAPA CRT: SCANLINES ─────────────────────────────────
-           Overlay global tenue de líneas horizontales que simula
-           una pantalla de fosforo. z-index 55 (bajo el cursor, alto
-           que la mayoría del contenido). pointer-events:none para
-           no bloquear clics. */
-        .crt-scanlines::before {
-            content: ''; position: fixed; inset: 0; z-index: 55; pointer-events: none;
-            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.10) 3px);
-            mix-blend-mode: multiply;
-        }
-
-        /* ── CAPA CRT: VIÑETA ────────────────────────────────────
-           Oscurece los bordes del viewport imitando el curvado
-           de los tubos CRT clasicos. */
-        .crt-vignette { position: relative; }
-        .crt-vignette::after {
-            content: ''; position: absolute; inset: 0; pointer-events: none;
-            box-shadow: inset 0 0 160px 40px rgba(0,0,0,0.55);
-        }
-
-        /* ── CAPA CRT: FLICKER ───────────────────────────────────
-           Opacidad que cae brevemente cada 6s simulando la
-           inestabilidad de la señal de fosforo. steps(1) hace
-           el corte instantaneo, sin interpolacion. */
-        @keyframes crt-flicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:.85} 94%{opacity:1} }
-        .crt-flicker { animation: crt-flicker 6s infinite steps(1); }
-
         /* ── ACCESIBILIDAD: MOVIMIENTO REDUCIDO ──────────────────
            Usuarios con prefers-reduced-motion desactivan el flicker
            y las scanlines animadas sin perder el contenido. */
         @media (prefers-reduced-motion: reduce) {
-            .crt-flicker { animation: none; }
-            .crt-scanlines::before { display: none; }
             /* Desactivamos tambien el resto de movimiento no esencial:
                entradas fade-up, flotacion de iconos y el spin del loader. */
             .fade-up { opacity: 1 !important; transform: none !important; transition: none !important; }
@@ -136,20 +107,6 @@
            Clase CSS en lugar de handlers inline onmouseover/onmouseout. */
         .btn-contact { color: var(--accent); transition: background 0.15s; }
         .btn-contact:hover { background: rgba(124,140,255,0.1); }
-
-        /* ── CURSOR PERSONALIZADO ────────────────────────────────
-           Ocultamos el cursor nativo y mostramos uno propio.
-           Solo en dispositivos con ratón (pointer: fine). */
-        @media (pointer: fine) {
-            * { cursor: none !important; }
-        }
-        /* Cursor bloque ámbar — imita el caret de terminal (rect, no círculo).
-           cursor-ring sigue en el DOM (display:none) para que iniciarCursor()
-           no reciba null al buscarlo por ID. */
-        .cursor-dot { width:10px; height:16px; background: var(--accent); position:fixed; pointer-events:none; z-index:9999; transform: translate(-50%,-50%); box-shadow: 0 0 8px rgba(124,140,255,0.7); transition: opacity .3s, transform .1s; }
-        .cursor-ring { display:none; }
-        /* Al pasar por encima de links y botones el bloque se agranda ligeramente */
-        .cursor-dot.cursor-hover { transform: translate(-50%,-50%) scale(1.4); }
 
         /* ── LOADER ──────────────────────────────────────────────*/
         /* border-top era morado (#8b5cf6); ahora usa el token ámbar del tema */
@@ -228,89 +185,6 @@
         }
         /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
         [data-theme="light"] .glow { text-shadow: none; }
-        /* Sin halo en el cursor personalizado para modo papel */
-        [data-theme="light"] .cursor-dot { box-shadow: none; }
-
-        /* ── HERO TERMINAL: CARET PARPADEANTE ───────────────────
-           Bloque ámbar que simula el cursor de terminal.
-           step-end hace el parpadeo instantáneo (sin fade).
-           prefers-reduced-motion: desactiva la animación. */
-        .term-caret {
-            display: inline-block; width: 0.6em; height: 1.1em;
-            background: var(--accent);
-            box-shadow: 0 0 8px rgba(124,140,255,0.7);
-            animation: caret-blink 1s step-end infinite;
-            vertical-align: text-bottom;
-        }
-        @keyframes caret-blink { 50% { opacity: 0; } }
-        @media (prefers-reduced-motion: reduce) { .term-caret { animation: none; } }
-
-        /* ── FOTO ENMARCADA (HERO V1) ────────────────────────────
-           Marco ámbar con glow, scanlines superpuestas (::after) y
-           filtro sepia leve para integrar la foto en la estética CRT. */
-        .photo-frame { position: relative; display: inline-block; border: 2px solid var(--accent); border-radius: 6px; overflow: hidden; box-shadow: 0 0 18px rgba(124,140,255,0.25); }
-        .photo-frame img { filter: saturate(0.92) contrast(1.05); }
-        /* Overlay de scanlines sobre la foto — pointer-events:none para no bloquear clics */
-        .photo-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.14) 3px); }
-
-        /* ── BADGE OPEN TO WORK ──────────────────────────────────
-           Pastilla verde con punto pulsante. Indica búsqueda activa.
-           La animación se desactiva con prefers-reduced-motion. */
-        .otw-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border: 1px solid var(--ok); border-radius: 9999px; color: var(--ok); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; }
-        .otw-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(95,206,122,0.6); animation: otw-pulse 2s infinite; }
-        @keyframes otw-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(95,206,122,0.5); } 50% { box-shadow: 0 0 0 7px rgba(95,206,122,0); } }
-
-        /* ── STATS LINE ──────────────────────────────────────────
-           Línea de datos clave debajo de la terminal: media, titulación,
-           prácticas y disponibilidad. Separa con bordes --line tenues. */
-        .stats-line { font-size: 0.85rem; color: var(--muted); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.6rem 0; }
-
-        @media (prefers-reduced-motion: reduce) { .otw-dot { animation: none; } }
-
-        /* ── HERO V2: POWER-ON CRT ───────────────────────────────
-           Simula el encendido de un monitor CRT: la imagen empieza
-           como una línea horizontal (scaleY muy pequeño) con brillo
-           exagerado, luego se expande y estabiliza en 0.7 s.
-           transform-origin center garantiza que el "desplegado" salga
-           del centro, no de la esquina superior. */
-        @keyframes crt-power-on {
-            0%   { transform: scaleY(0.004); filter: brightness(3); opacity: 0.3; }
-            12%  { transform: scaleY(0.02);  filter: brightness(3); opacity: 1; }
-            45%  { transform: scaleY(1);     filter: brightness(1.5); }
-            65%  { filter: brightness(0.75); }
-            100% { transform: scaleY(1);     filter: brightness(1); }
-        }
-        .term-window { animation: crt-power-on 0.7s ease-out both; transform-origin: center center; }
-        @media (prefers-reduced-motion: reduce) { .term-window { animation: none; } }
-
-        /* ── HERO V2: BRASAS AMBIENTALES ─────────────────────────
-           Partículas ámbar que ascienden lentamente de fondo en el
-           hero. Cada <span> tiene posición, duración y retraso
-           distintos para que el movimiento parezca orgánico.
-           position:absolute + inset:0 en .embers cubre todo el header;
-           z-index:0 lo mantiene bajo el contenido (que va en z-10). */
-        .embers { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
-        .embers span {
-            position: absolute; bottom: -12px; width: 3px; height: 3px;
-            border-radius: 50%; background: var(--accent);
-            box-shadow: 0 0 6px var(--accent); opacity: 0;
-            animation: ember-rise linear infinite;
-        }
-        @keyframes ember-rise {
-            0%   { transform: translateY(0) translateX(0); opacity: 0; }
-            12%  { opacity: 0.7; }
-            100% { transform: translateY(-360px) translateX(24px); opacity: 0; }
-        }
-        .embers span:nth-child(1){ left: 6%;  animation-duration: 7s;   animation-delay: 0s; }
-        .embers span:nth-child(2){ left: 18%; animation-duration: 9s;   animation-delay: 1.5s; }
-        .embers span:nth-child(3){ left: 30%; animation-duration: 6.5s; animation-delay: 3s; }
-        .embers span:nth-child(4){ left: 44%; animation-duration: 8.5s; animation-delay: 0.8s; }
-        .embers span:nth-child(5){ left: 58%; animation-duration: 7.5s; animation-delay: 2.2s; }
-        .embers span:nth-child(6){ left: 70%; animation-duration: 10s;  animation-delay: 4s; }
-        .embers span:nth-child(7){ left: 82%; animation-duration: 6.8s; animation-delay: 1.2s; }
-        .embers span:nth-child(8){ left: 92%; animation-duration: 9.5s; animation-delay: 3.5s; }
-        @media (prefers-reduced-motion: reduce) { .embers { display: none; } }
 
         /* ── SR-ONLY: oculta visualmente pero accesible ──────────
            Tailwind CDN lo incluye, pero lo definimos explícitamente
@@ -361,7 +235,7 @@
     </style>
 </head>
 
-<body class="crt-scanlines" style="background: var(--bg); color: var(--fg);">
+<body style="background: var(--bg); color: var(--fg);">
 
 <!-- Panel de stats secreto (se activa con 5 clics en el logo S.L.H.) -->
 <!-- Panel de stats secreto — reskinado a clave terminal ámbar -->
@@ -383,10 +257,6 @@
 
 <!-- Barra de progreso de lectura (se llena al hacer scroll) -->
 <div id="scroll-progress"></div>
-
-<!-- Cursor personalizado (solo visible con ratón, no en móvil) -->
-<div class="cursor-dot" id="cursor-dot"></div>
-<div class="cursor-ring" id="cursor-ring"></div>
 
 <!-- Toast de bienvenida (primera visita) — estética terminal ámbar -->
 <div id="toast">

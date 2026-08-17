@@ -95,6 +95,9 @@
             .float-1, .float-2, .float-3 { animation: none !important; }
             .loader { animation-duration: 0s !important; }
             .hero-line { opacity: 1 !important; transform: none !important; transition: none !important; }
+            /* Los "lifts" al pasar el ratón por tarjetas de proyectos/certificados
+               y por los iconos de tech-stack también son movimiento no esencial. */
+            .card-hover, .card-hover:hover, .skill-card, .skill-card:hover { transform: none !important; transition: none !important; }
         }
 
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
@@ -233,6 +236,14 @@
         .hero-status { margin-top: 1.5rem; font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: .5rem; }
         .hero-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
         .hero-meta { margin-top: .75rem; font-size: .8rem; color: var(--muted); }
+
+        /* ── HERO: AJUSTE MÓVIL ──────────────────────────────────
+           En pantallas muy estrechas (iPhone SE y similares) reducimos
+           el tamaño del título y de la foto para evitar desbordes. */
+        @media (max-width: 420px) {
+            .hero-title { font-size: 2rem; }
+            .hero-photo { width: 96px; height: 96px; }
+        }
 
         /* ── TOAST ───────────────────────────────────────────────
            Notificación que aparece abajo a la derecha la primera vez

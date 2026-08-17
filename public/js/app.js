@@ -166,8 +166,14 @@ function iniciarActiveNav() {
             }
         });
     }, {
-        threshold: 0.4,       // sección activa cuando el 40% es visible
-        rootMargin: '-80px 0px -40% 0px' // compensamos la navbar fija
+        // threshold 0 + una franja fina (rootMargin) justo debajo de la
+        // navbar: con secciones más altas que el viewport (p.ej. la
+        // grid de proyectos) un threshold alto (ej. 0.4) nunca llega a
+        // cumplirse porque el "40% visible" del target jamás cabe en la
+        // franja recortada, y esa sección nunca se marca como activa.
+        // Con threshold 0 basta con que la sección toque la franja.
+        threshold: 0,
+        rootMargin: '-80px 0px -70% 0px' // franja fina justo bajo la navbar fija
     });
 
     secciones.forEach(sec => navObserver.observe(sec));

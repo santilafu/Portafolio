@@ -274,8 +274,6 @@ async function cargarPerfil() {
             document.getElementById('nombre').textContent   = p.nombre;
             document.getElementById('sobre_mi').textContent = p.sobre_mi;
             document.getElementById('titular').textContent  = p.titular;
-            // iniciarBootHero rellena la ventana de terminal con los datos del perfil
-            iniciarBootHero(p);
 
             if (p.foto_perfil) {
                 const img  = document.getElementById('foto_perfil');
@@ -284,23 +282,17 @@ async function cargarPerfil() {
                 img.src = ruta;
             }
 
-            document.getElementById('enlaces').innerHTML = buildEnlaces(p, 'text-gray-400 hover:text-white');
             const footerEnlaces = document.getElementById('footer-enlaces');
             if (footerEnlaces) footerEnlaces.innerHTML = buildEnlacesFooter(p);
             const emailText = document.getElementById('email-text');
             if (emailText && p.email) emailText.textContent = p.email;
+
+            // Revela el hero con fundido escalonado una vez los datos estan listos
+            document.getElementById('hero-content').classList.add('hero-ready');
         }
     } catch (error) {
         console.error('Error al cargar perfil:', error);
     }
-}
-
-function buildEnlaces(p, classes) {
-    return `
-        ${p.email          ? `<a href="mailto:${p.email}" title="Email" class="${classes} transition-colors"><i class="fa-solid fa-envelope"></i></a>` : ''}
-        ${p.enlace_github  ? `<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" title="GitHub" class="${classes} transition-colors"><i class="fa-brands fa-github"></i></a>` : ''}
-        ${p.enlace_linkedin ? `<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="${classes} transition-colors"><i class="fa-brands fa-linkedin"></i></a>` : ''}
-    `;
 }
 
 function buildEnlacesFooter(p) {
@@ -348,114 +340,6 @@ function iniciarCopiarEmail() {
             btn.innerHTML = '<i class="fa-regular fa-copy"></i>';
         }, 2000);
     });
-}
-
-// iniciarTyping eliminada: ya no se usa desde que el hero
-// es una secuencia de boot (iniciarBootHero). El efecto de
-// typing-cursor también se ha eliminado del CSS.
-
-// ============================================================
-// HERO TERMINAL: secuencia de boot tecleada caracter a caracter
-// ============================================================
-// Timer del tecleo: lo guardamos a nivel de modulo para poder cancelar
-// una animacion en curso si iniciarBootHero se llamara dos veces (evita
-// que dos cadenas de tecleo escriban a la vez en #term-typed).
-let _bootTimer = null;
-
-// Escapa texto para interpolarlo en innerHTML de forma segura.
-function escHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function iniciarBootHero(perfil) {
-    const typed = document.getElementById('term-typed');
-    if (!typed) return;
-    if (_bootTimer) { clearTimeout(_bootTimer); _bootTimer = null; } // cancela un tecleo previo
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const nombre  = perfil.nombre  || 'Santiago Lafuente';
-    const titular = perfil.titular || 'Desarrollador Multiplataforma';
-    const bio     = perfil.sobre_mi || '';
-
-    // Secuencia de lineas que se teclean en orden.
-    const seq = [
-        { text: '> initializing portfolio... [OK]', cls: 'boot-ok' },
-        { text: '> loading profile.............. [OK]', cls: 'boot-ok' },
-        { text: '$ whoami', cls: 'cmd' },
-        { text: nombre, cls: 'name' },
-        { text: 'Titulado en DAM (9.0) - ' + titular, cls: 'dim' },
-        { text: '$ cat about.txt', cls: 'cmd' },
-        { text: bio, cls: 'fg' },
-        { text: '$ status', cls: 'cmd' },
-    ];
-
-    // Bloque final estatico (badge de estado + CTAs + prompt final).
-    const finalStatic = `
-        <div class="mt-1 flex items-center gap-2" style="color: var(--ok)">
-            <span class="inline-block w-2 h-2 rounded-full" style="background: var(--ok); box-shadow: 0 0 8px var(--ok)"></span>
-            available for hire - busco empleo activamente
-        </div>
-        <div class="mt-4 flex flex-wrap gap-3 items-center">
-            <a href="/cv/cv-santiago-lafuente.pdf" download class="btn-contact px-4 py-2 border rounded accent-text" style="border-color: var(--accent)">[ descargar CV ]</a>
-            <a href="#contacto" class="btn-contact px-4 py-2 border rounded accent-text" style="border-color: var(--accent)">[ ./contact.sh ]</a>
-        </div>
-        <div class="mt-3"><span class="accent-text">$</span> <span class="term-caret">&nbsp;</span></div>`;
-
-    // Estilo inline segun tipo de linea.
-    function styleFor(cls) {
-        if (cls === 'boot-ok') return 'color: var(--ok)';
-        if (cls === 'cmd')     return 'color: var(--accent)';
-        if (cls === 'dim')     return 'color: var(--muted)';
-        if (cls === 'fg')      return 'color: var(--fg)';
-        return '';
-    }
-    function claseLinea(cls) {
-        if (cls === 'name')    return 'glow accent-text text-2xl md:text-3xl font-bold mt-1';
-        if (cls === 'cmd')     return 'mt-4';
-        if (cls === 'boot-ok') return '';
-        return 'mt-1';
-    }
-
-    // Sin animacion: se pinta todo de golpe (accesibilidad).
-    if (reduce) {
-        typed.innerHTML = seq.map(l =>
-            `<div class="${claseLinea(l.cls)}" style="${styleFor(l.cls)}">${escHtml(l.text)}</div>`
-        ).join('') + finalStatic;
-        return;
-    }
-
-    // Con animacion: teclea linea por linea, con caret temporal al final de cada una.
-    typed.innerHTML = '';
-    let li = 0;
-    function typeLine() {
-        if (li >= seq.length) { typed.insertAdjacentHTML('beforeend', finalStatic); return; }
-        const l = seq[li];
-        const div = document.createElement('div');
-        div.className = claseLinea(l.cls);
-        if (styleFor(l.cls)) div.setAttribute('style', styleFor(l.cls));
-        const caret = document.createElement('span');
-        caret.className = 'term-caret';
-        caret.innerHTML = '&nbsp;';
-        div.appendChild(caret);
-        typed.appendChild(div);
-        let ci = 0;
-        // La bio (fg) y el boot van rapidos para no hacer esperar los CTAs;
-        // comandos/titulo algo mas lentos por dramatismo.
-        const speed = (l.cls === 'boot-ok' || l.cls === 'fg') ? 9 : 18; // ms por caracter
-        (function typeChar() {
-            if (ci < l.text.length) {
-                // insertAdjacentText es seguro: no parsea HTML, no rompe con < > en la bio
-                caret.insertAdjacentText('beforebegin', l.text.charAt(ci));
-                ci++;
-                _bootTimer = setTimeout(typeChar, speed);
-            } else {
-                caret.remove();
-                li++;
-                _bootTimer = setTimeout(typeLine, l.cls === 'cmd' ? 90 : 160);
-            }
-        })();
-    }
-    typeLine();
 }
 
 // ============================================================

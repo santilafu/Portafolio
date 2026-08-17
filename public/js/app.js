@@ -354,56 +354,34 @@ async function cargarProyectos() {
         contenedor.innerHTML = '';
         if (proyectos.length > 0) {
             proyectos.forEach((proyecto, idx) => {
-                // Los proyectos destacados ocupan las 2 columnas y muestran banner + icono
-                const esDestacado = proyecto.destacado == 1 || proyecto.destacado === true;
-                // Si el proyecto esta en desarrollo mostramos badge [WIP] en estilo terminal
+                const esDestacado  = proyecto.destacado == 1 || proyecto.destacado === true;
                 const enDesarrollo = proyecto.estado === 'en_desarrollo';
                 const tarjeta = document.createElement('div');
                 tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
-                // Badge [WIP] en rojo terminal para proyectos en desarrollo
-                const wipBadge = enDesarrollo
-                    ? '<span class="ml-2 text-xs" style="color: var(--err)">[WIP]</span>'
-                    : '';
-                // Número de tarjeta formateado como nombre de archivo de terminal
-                const numArchivo = `proyecto_${String(idx + 1).padStart(2, '0')}.md`;
+                const badge = enDesarrollo
+                    ? '<span class="pill pill-dev">En desarrollo</span>'
+                    : (esDestacado ? '<span class="pill pill-featured">Destacado</span>' : '');
 
-                if (esDestacado) {
-                    // El destacado ocupa ambas columnas y muestra el banner sobre el panel
-                    tarjeta.className = 'lg:col-span-2 border rounded overflow-hidden card-hover fade-up';
-                    tarjeta.style.borderColor = 'var(--line)';
-                    tarjeta.style.background  = 'var(--surface)';
-                    tarjeta.innerHTML = `
-                        ${proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-48 object-cover" alt="${proyecto.titulo}">` : ''}
-                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--muted)">
-                            <span>${numArchivo} <span class="accent-text">★ featured</span></span>${wipBadge}
-                        </div>
-                        <div class="p-5">
+                const enlaces = `
+                    <div class="mt-4 flex gap-4 text-sm">
+                        ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
+                        ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
+                    </div>`;
+
+                tarjeta.className = (esDestacado ? 'lg:col-span-2 ' : '') + 'border rounded-xl overflow-hidden card-hover fade-up';
+                tarjeta.style.borderColor = 'var(--line)';
+                tarjeta.style.background  = 'var(--surface)';
+                tarjeta.innerHTML = `
+                    ${esDestacado && proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-48 object-cover" alt="${proyecto.titulo}">` : ''}
+                    <div class="p-5">
+                        <div class="flex items-center gap-2 mb-1">
                             <h4 class="accent-text font-bold text-lg">${proyecto.titulo}</h4>
-                            <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
-                            <div class="mt-4 flex gap-4 text-sm">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="accent-text hover:underline">[ repo ]</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="accent-text hover:underline">[ demo ]</a>` : ''}
-                            </div>
-                        </div>`;
-                } else {
-                    // Tarjeta normal: panel de terminal con cabecera de archivo
-                    tarjeta.className = 'border rounded overflow-hidden card-hover fade-up';
-                    tarjeta.style.borderColor = 'var(--line)';
-                    tarjeta.style.background  = 'var(--surface)';
-                    tarjeta.innerHTML = `
-                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--muted)">
-                            <span>${numArchivo}</span>${wipBadge}
+                            ${badge}
                         </div>
-                        <div class="p-5">
-                            <h4 class="accent-text font-bold text-lg">${proyecto.titulo}</h4>
-                            <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
-                            <div class="mt-4 flex gap-4 text-sm">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="accent-text hover:underline">[ repo ]</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="accent-text hover:underline">[ demo ]</a>` : ''}
-                            </div>
-                        </div>`;
-                }
+                        <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
+                        ${enlaces}
+                    </div>`;
                 contenedor.appendChild(tarjeta);
             });
             setTimeout(reobservarAnimaciones, 100);

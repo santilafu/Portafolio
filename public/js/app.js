@@ -234,28 +234,28 @@ async function cargarGithubStats() {
         const topLang = Object.entries(langs).sort((a, b) => b[1] - a[1])[0];
 
         // Prefijo de prompt y ítems con tokens CSS del tema terminal ámbar.
-        // Los valores numéricos usan .phosphor para el brillo característico.
+        // Los valores numéricos usan .accent-text para el brillo característico.
         contenedor.innerHTML = `
-            <span style="color: var(--amber-dim)">$ git stats</span>
+            <span style="color: var(--muted)">$ git stats</span>
             <a href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-colors"
                style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-brands fa-github phosphor"></i>
-                <span class="phosphor font-semibold">${user.public_repos}</span>
-                <span style="color: var(--amber-dim)">repos publicos</span>
+                <i class="fa-brands fa-github accent-text"></i>
+                <span class="accent-text font-semibold">${user.public_repos}</span>
+                <span style="color: var(--muted)">repos publicos</span>
             </a>
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
                  style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-solid fa-users" style="color: var(--amber)"></i>
-                <span class="phosphor font-semibold">${user.followers}</span>
-                <span style="color: var(--amber-dim)">seguidores</span>
+                <i class="fa-solid fa-users" style="color: var(--accent)"></i>
+                <span class="accent-text font-semibold">${user.followers}</span>
+                <span style="color: var(--muted)">seguidores</span>
             </div>
             ${topLang ? `
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
                  style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-solid fa-code" style="color: var(--amber)"></i>
-                <span class="phosphor font-semibold">${topLang[0]}</span>
-                <span style="color: var(--amber-dim)">lenguaje top</span>
+                <i class="fa-solid fa-code" style="color: var(--accent)"></i>
+                <span class="accent-text font-semibold">${topLang[0]}</span>
+                <span style="color: var(--muted)">lenguaje top</span>
             </div>` : ''}
         `;
     } catch {
@@ -339,15 +339,15 @@ function buildEnlaces(p, classes) {
 }
 
 function buildEnlacesFooter(p) {
-    // Estilo terminal ámbar: icono con .phosphor, etiqueta en --amber-dim
-    const base = 'flex flex-col items-center gap-2 phosphor transition-all duration-300 hover:-translate-y-1';
+    // Estilo terminal ámbar: icono con .accent-text, etiqueta en --muted
+    const base = 'flex flex-col items-center gap-2 accent-text transition-all duration-300 hover:-translate-y-1';
     const items = [];
     if (p.email)
-        items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">Email</span></a>`);
+        items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs" style="color: var(--muted)">Email</span></a>`);
     if (p.enlace_github)
-        items.push(`<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">GitHub</span></a>`);
+        items.push(`<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--muted)">GitHub</span></a>`);
     if (p.enlace_linkedin)
-        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">LinkedIn</span></a>`);
+        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--muted)">LinkedIn</span></a>`);
     return items.join('');
 }
 
@@ -431,21 +431,21 @@ function iniciarBootHero(perfil) {
             available for hire - busco empleo activamente
         </div>
         <div class="mt-4 flex flex-wrap gap-3 items-center">
-            <a href="/cv/cv-santiago-lafuente.pdf" download class="btn-contact px-4 py-2 border rounded phosphor" style="border-color: var(--amber)">[ descargar CV ]</a>
-            <a href="#contacto" class="btn-contact px-4 py-2 border rounded phosphor" style="border-color: var(--amber)">[ ./contact.sh ]</a>
+            <a href="/cv/cv-santiago-lafuente.pdf" download class="btn-contact px-4 py-2 border rounded accent-text" style="border-color: var(--accent)">[ descargar CV ]</a>
+            <a href="#contacto" class="btn-contact px-4 py-2 border rounded accent-text" style="border-color: var(--accent)">[ ./contact.sh ]</a>
         </div>
-        <div class="mt-3"><span class="phosphor">$</span> <span class="term-caret">&nbsp;</span></div>`;
+        <div class="mt-3"><span class="accent-text">$</span> <span class="term-caret">&nbsp;</span></div>`;
 
     // Estilo inline segun tipo de linea.
     function styleFor(cls) {
         if (cls === 'boot-ok') return 'color: var(--ok)';
-        if (cls === 'cmd')     return 'color: var(--amber)';
-        if (cls === 'dim')     return 'color: var(--amber-dim)';
+        if (cls === 'cmd')     return 'color: var(--accent)';
+        if (cls === 'dim')     return 'color: var(--muted)';
         if (cls === 'fg')      return 'color: var(--fg)';
         return '';
     }
     function claseLinea(cls) {
-        if (cls === 'name')    return 'glow phosphor text-2xl md:text-3xl font-bold mt-1';
+        if (cls === 'name')    return 'glow accent-text text-2xl md:text-3xl font-bold mt-1';
         if (cls === 'cmd')     return 'mt-4';
         if (cls === 'boot-ok') return '';
         return 'mt-1';
@@ -526,15 +526,15 @@ async function cargarProyectos() {
                     tarjeta.style.background  = 'var(--surface)';
                     tarjeta.innerHTML = `
                         ${proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-48 object-cover" alt="${proyecto.titulo}">` : ''}
-                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--amber-dim)">
-                            <span>${numArchivo} <span class="phosphor">★ featured</span></span>${wipBadge}
+                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--muted)">
+                            <span>${numArchivo} <span class="accent-text">★ featured</span></span>${wipBadge}
                         </div>
                         <div class="p-5">
-                            <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
+                            <h4 class="accent-text font-bold text-lg">${proyecto.titulo}</h4>
                             <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
                             <div class="mt-4 flex gap-4 text-sm">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ repo ]</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ demo ]</a>` : ''}
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="accent-text hover:underline">[ repo ]</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="accent-text hover:underline">[ demo ]</a>` : ''}
                             </div>
                         </div>`;
                 } else {
@@ -543,15 +543,15 @@ async function cargarProyectos() {
                     tarjeta.style.borderColor = 'var(--line)';
                     tarjeta.style.background  = 'var(--surface)';
                     tarjeta.innerHTML = `
-                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--amber-dim)">
+                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--muted)">
                             <span>${numArchivo}</span>${wipBadge}
                         </div>
                         <div class="p-5">
-                            <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
+                            <h4 class="accent-text font-bold text-lg">${proyecto.titulo}</h4>
                             <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
                             <div class="mt-4 flex gap-4 text-sm">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ repo ]</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ demo ]</a>` : ''}
+                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="accent-text hover:underline">[ repo ]</a>` : ''}
+                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="accent-text hover:underline">[ demo ]</a>` : ''}
                             </div>
                         </div>`;
                 }
@@ -559,7 +559,7 @@ async function cargarProyectos() {
             });
             setTimeout(reobservarAnimaciones, 100);
         } else {
-            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--amber-dim)">Aun no hay proyectos para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--muted)">Aun no hay proyectos para mostrar.</p>';
         }
     } catch (error) {
         console.error('Error al cargar proyectos:', error);
@@ -586,14 +586,14 @@ async function cargarHabilidades() {
                 // padEnd a 12 chars para alinear la columna de barras (white-space:pre lo respeta)
                 const nombre = h.nombre.padEnd(12, ' ');
                 return `<div class="flex items-center gap-3 py-0.5">
-        <span class="phosphor" style="white-space:pre">${nombre}</span>
-        <span style="color: var(--amber)">[${barra}]</span>
-        <span style="color: var(--amber-dim)">${h.nivel}</span>
+        <span class="accent-text" style="white-space:pre">${nombre}</span>
+        <span style="color: var(--accent)">[${barra}]</span>
+        <span style="color: var(--muted)">${h.nivel}</span>
     </div>`;
             }).join('');
             contenedor.innerHTML = filas;
         } else {
-            contenedor.innerHTML = '<span class="phosphor" style="color: var(--amber-dim)">-- sin habilidades registradas --</span>';
+            contenedor.innerHTML = '<span class="accent-text" style="color: var(--muted)">-- sin habilidades registradas --</span>';
         }
     } catch (error) {
         console.error('Error al cargar habilidades:', error);
@@ -652,12 +652,12 @@ async function cargarExperiencia() {
             item.className = 'pl-4 border-l pb-6';
             item.style.borderColor = 'var(--line)';
             item.innerHTML = `
-                <div style="color: var(--amber)">commit ${hash}${rama}</div>
-                <div style="color: var(--amber-dim)">Author: ${exp.empresa}</div>
-                <div style="color: var(--amber-dim)">Date:   ${ini} - ${fin}</div>
-                <div class="mt-2 phosphor font-semibold">${exp.puesto}</div>
+                <div style="color: var(--accent)">commit ${hash}${rama}</div>
+                <div style="color: var(--muted)">Author: ${exp.empresa}</div>
+                <div style="color: var(--muted)">Date:   ${ini} - ${fin}</div>
+                <div class="mt-2 accent-text font-semibold">${exp.puesto}</div>
                 ${exp.descripcion ? `<div class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</div>` : ''}
-                ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="text-sm phosphor hover:underline">[ github ]</a>` : ''}`;
+                ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="text-sm accent-text hover:underline">[ github ]</a>` : ''}`;
             contenedor.appendChild(item);
         });
     } catch (error) {
@@ -686,7 +686,7 @@ async function cargarCertificados() {
         contenedor.innerHTML = '';
 
         if (certificados.length === 0) {
-            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--amber-dim)">Aun no hay certificados para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--muted)">Aun no hay certificados para mostrar.</p>';
             return;
         }
 
@@ -701,23 +701,23 @@ async function cargarCertificados() {
             // Enlace al PDF del certificado (condicional)
             const enlaceAbrir = cert.url_archivo
                 ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer"
-                      class="text-sm phosphor hover:underline mt-3 inline-block mr-4">[ abrir ]</a>`
+                      class="text-sm accent-text hover:underline mt-3 inline-block mr-4">[ abrir ]</a>`
                 : '';
 
             // Enlace de verificación online (condicional)
             const enlaceOnline = cert.url_externa
                 ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer"
-                      class="text-sm phosphor hover:underline mt-3 inline-block">[ ver online ]</a>`
+                      class="text-sm accent-text hover:underline mt-3 inline-block">[ ver online ]</a>`
                 : '';
 
             tarjeta.innerHTML = `
                 <div class="px-4 py-2 border-b text-xs"
-                     style="border-color: var(--line); color: var(--amber-dim)">
+                     style="border-color: var(--line); color: var(--muted)">
                     <i class="fa-solid fa-file-lines mr-1"></i> cert_${String(idx + 1).padStart(2, '0')}.pdf
                 </div>
                 <div class="p-5">
-                    <h4 class="phosphor font-bold">${cert.titulo}</h4>
-                    <p class="text-sm mt-1" style="color: var(--amber-dim)">
+                    <h4 class="accent-text font-bold">${cert.titulo}</h4>
+                    <p class="text-sm mt-1" style="color: var(--muted)">
                         ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
                     </p>
                     ${cert.descripcion ? `<p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>` : ''}

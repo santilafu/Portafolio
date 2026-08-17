@@ -516,36 +516,23 @@ async function cargarCertificados() {
 
         certificados.forEach((cert, idx) => {
             const tarjeta = document.createElement('div');
-            // Estilo "archivo de terminal": borde sutil + superficie del tema ámbar
-            tarjeta.className            = 'border rounded overflow-hidden card-hover fade-up';
+            // Tarjeta limpia de certificado: borde sutil + superficie del tema
+            tarjeta.className            = 'border rounded-xl overflow-hidden card-hover fade-up';
             tarjeta.style.borderColor    = 'var(--line)';
             tarjeta.style.background     = 'var(--surface)';
             tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
-            // Enlace al PDF del certificado (condicional)
-            const enlaceAbrir = cert.url_archivo
-                ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer"
-                      class="text-sm accent-text hover:underline mt-3 inline-block mr-4">[ abrir ]</a>`
-                : '';
-
-            // Enlace de verificación online (condicional)
-            const enlaceOnline = cert.url_externa
-                ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer"
-                      class="text-sm accent-text hover:underline mt-3 inline-block">[ ver online ]</a>`
-                : '';
-
             tarjeta.innerHTML = `
-                <div class="px-4 py-2 border-b text-xs"
-                     style="border-color: var(--line); color: var(--muted)">
-                    <i class="fa-solid fa-file-lines mr-1"></i> cert_${String(idx + 1).padStart(2, '0')}.pdf
-                </div>
                 <div class="p-5">
                     <h4 class="accent-text font-bold">${cert.titulo}</h4>
                     <p class="text-sm mt-1" style="color: var(--muted)">
                         ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
                     </p>
                     ${cert.descripcion ? `<p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>` : ''}
-                    ${enlaceAbrir}${enlaceOnline}
+                    <div class="mt-3 flex gap-4">
+                        ${cert.url_archivo ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-file-arrow-down"></i> Ver PDF</a>` : ''}
+                        ${cert.url_externa ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Verificar</a>` : ''}
+                    </div>
                 </div>`;
 
             contenedor.appendChild(tarjeta);

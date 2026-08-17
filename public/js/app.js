@@ -402,29 +402,39 @@ async function cargarHabilidades() {
         const respuesta   = await fetch(`${API_URL}/habilidades`);
         const habilidades = await respuesta.json();
         const contenedor  = document.getElementById('lista-habilidades');
-        // Bloques llenos por nivel (escala de 8 caracteres)
-        const nivelBloques = { 'Basico': 3, 'Intermedio': 6, 'Avanzado': 8 };
+        const nivelPct = { 'Basico': 40, 'Intermedio': 70, 'Avanzado': 95 };
 
         if (habilidades.length > 0) {
-            const filas = habilidades.map(h => {
-                const llenos = nivelBloques[h.nivel] || 4;
-                // Barra de 8 bloques: █ llenos + ░ vacíos
-                const barra  = '█'.repeat(llenos) + '░'.repeat(8 - llenos);
-                // padEnd a 12 chars para alinear la columna de barras (white-space:pre lo respeta)
-                const nombre = h.nombre.padEnd(12, ' ');
-                return `<div class="flex items-center gap-3 py-0.5">
-        <span class="accent-text" style="white-space:pre">${nombre}</span>
-        <span style="color: var(--accent)">[${barra}]</span>
-        <span style="color: var(--muted)">${h.nivel}</span>
+            contenedor.innerHTML = habilidades.map(h => {
+                const pct = nivelPct[h.nivel] || 50;
+                return `<div class="skill-row">
+        <div class="flex items-center justify-between text-sm mb-1">
+            <span style="color: var(--fg)">${h.nombre}</span>
+            <span style="color: var(--muted)">${h.nivel}</span>
+        </div>
+        <div class="skill-track"><div class="skill-fill" style="--pct:${pct}%"></div></div>
     </div>`;
             }).join('');
-            contenedor.innerHTML = filas;
+            animarHabilidades();
         } else {
-            contenedor.innerHTML = '<span class="accent-text" style="color: var(--muted)">-- sin habilidades registradas --</span>';
+            contenedor.innerHTML = '<span style="color: var(--muted)">Sin habilidades registradas</span>';
         }
     } catch (error) {
         console.error('Error al cargar habilidades:', error);
     }
+}
+
+function animarHabilidades() {
+    const fills = document.querySelectorAll('.skill-fill');
+    const skillObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.width = 'var(--pct)';
+                skillObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+    fills.forEach(f => skillObserver.observe(f));
 }
 
 // ============================================================

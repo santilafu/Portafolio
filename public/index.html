@@ -306,6 +306,14 @@
            Enlaces en tarjetas de proyectos con icono y hover. */
         .proyecto-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); }
         .proyecto-link:hover { color: var(--accent-hi); }
+
+        /* ── SKILL BARS — ANIMATED PROGRESS ─────────────────────
+           Barras de progreso animadas que se rellenan al entrar
+           en viewport (reemplaza los bloques ASCII █░). */
+        .skill-row { margin-bottom: .9rem; }
+        .skill-track { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+        .skill-fill { height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-hi)); transition: width 1s ease-out; }
+        @media (prefers-reduced-motion: reduce) { .skill-fill { transition: none; } }
     </style>
 </head>
 
@@ -469,7 +477,7 @@
         <div class="mb-8">
             <p class="section-eyebrow">Habilidades</p>
         </div>
-        <div id="lista-habilidades" class="max-w-2xl border rounded p-5 text-sm overflow-x-auto" style="border-color: var(--line); background: var(--surface);"></div>
+        <div id="lista-habilidades" class="max-w-2xl border rounded-xl p-5 text-sm" style="border-color: var(--line); background: var(--surface);"></div>
     </section>
 
     <!-- EXPERIENCIA -->

@@ -441,14 +441,6 @@ function animarHabilidades() {
 // EXPERIENCIA
 // ============================================================
 
-// Genera un "hash" corto y estable a partir de un texto (estilo commit git).
-// Usamos un hash determinista para que cada experiencia tenga siempre el mismo hash
-// sin depender de Math.random (que cambia en cada recarga).
-function pseudoHash(str) {
-    let h = 0; for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) >>> 0; }
-    return h.toString(16).padStart(7, '0').slice(0, 7);
-}
-
 async function cargarExperiencia() {
     try {
         const respuesta = await fetch(`${API_URL}/experiencia`);
@@ -456,7 +448,6 @@ async function cargarExperiencia() {
         const contenedor = document.getElementById('lista-experiencia');
         contenedor.innerHTML = '';
 
-        // Deduplicar con Set
         const vistos = new Set();
         experiencias = experiencias.filter(exp => {
             const clave = `${exp.empresa}-${exp.puesto}-${exp.fecha_inicio}`;
@@ -465,7 +456,6 @@ async function cargarExperiencia() {
             return true;
         });
 
-        // Entrada extra de proyectos personales
         experiencias.push({
             puesto: 'Desarrollador de Proyectos Personales',
             empresa: 'GitHub - santilafu',
@@ -475,28 +465,25 @@ async function cargarExperiencia() {
             enlace_github: 'https://github.com/santilafu'
         });
 
-        // Cada experiencia se renderiza como un commit de git log:
-        // commit <hash>  (HEAD -> activo) si sigue en curso
-        // Author: <empresa>
-        // Date:   <inicio> - <fin|HEAD>
         experiencias.forEach(exp => {
-            const fin  = exp.fecha_fin ? formatearFecha(exp.fecha_fin) : 'HEAD';
-            const ini  = formatearFecha(exp.fecha_inicio);
-            // Las experiencias sin fecha_fin están en curso → etiqueta "(HEAD -> activo)" en verde
-            const rama = exp.fecha_fin ? '' : '<span style="color: var(--ok)"> (HEAD -> activo)</span>';
-            const hash = pseudoHash(exp.empresa + exp.puesto);
+            const fin    = exp.fecha_fin ? formatearFecha(exp.fecha_fin) : 'Actualidad';
+            const ini    = formatearFecha(exp.fecha_inicio);
+            const activo = !exp.fecha_fin ? '<span class="pill pill-featured">Actual</span>' : '';
             const item = document.createElement('div');
-            item.className = 'pl-4 border-l pb-6';
-            item.style.borderColor = 'var(--line)';
+            item.className = 'timeline-item fade-up';
             item.innerHTML = `
-                <div style="color: var(--accent)">commit ${hash}${rama}</div>
-                <div style="color: var(--muted)">Author: ${exp.empresa}</div>
-                <div style="color: var(--muted)">Date:   ${ini} - ${fin}</div>
-                <div class="mt-2 accent-text font-semibold">${exp.puesto}</div>
-                ${exp.descripcion ? `<div class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</div>` : ''}
-                ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="text-sm accent-text hover:underline">[ github ]</a>` : ''}`;
+                <div class="timeline-dot"></div>
+                <div class="timeline-body">
+                    <div class="flex items-center gap-2">
+                        <h4 class="accent-text font-semibold">${exp.puesto}</h4>${activo}
+                    </div>
+                    <p class="text-sm" style="color: var(--muted)">${exp.empresa} &middot; ${ini} &ndash; ${fin}</p>
+                    ${exp.descripcion ? `<p class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</p>` : ''}
+                    ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="proyecto-link mt-1"><i class="fa-brands fa-github"></i> GitHub</a>` : ''}
+                </div>`;
             contenedor.appendChild(item);
         });
+        setTimeout(reobservarAnimaciones, 100);
     } catch (error) {
         console.error('Error al cargar experiencia:', error);
     }

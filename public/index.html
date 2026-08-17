@@ -307,6 +307,13 @@
         .proyecto-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); }
         .proyecto-link:hover { color: var(--accent-hi); }
 
+        /* ── TIMELINE EXPERIENCIA ────────────────────────────────
+           Línea de tiempo vertical limpia. Cada .timeline-item
+           tiene un punto de acento y una línea vertical. */
+        .timeline-item { position: relative; padding-left: 1.75rem; padding-bottom: 1.75rem; border-left: 2px solid var(--line); }
+        .timeline-item:last-child { border-left-color: transparent; }
+        .timeline-dot { position: absolute; left: -7px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--surface); }
+
         /* ── SKILL BARS — ANIMATED PROGRESS ─────────────────────
            Barras de progreso animadas que se rellenan al entrar
            en viewport (reemplaza los bloques ASCII █░). */

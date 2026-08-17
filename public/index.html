@@ -259,12 +259,11 @@
         /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
         [data-theme="light"] .glow { text-shadow: none; }
 
-        /* ── CABECERAS DE SECCIÓN COMO COMANDOS DE TERMINAL ─────
-           .section-cmd envuelve el h3 con estilo ámbar.
-           .prompt es el símbolo "$" en tono más tenue para
-           imitar el prompt del shell sin opacar el comando. */
-        .section-cmd { color: var(--accent); font-weight: 600; }
-        .section-cmd .prompt { color: var(--muted); }
+        /* ── CABECERAS DE SECCIÓN COMO ETIQUETA + ACENTO ─────────
+           .section-eyebrow: etiqueta en mayúsculas con línea de
+           acento corta. Reemplaza el estilo de comandos de terminal. */
+        .section-eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--fg); }
+        .section-eyebrow::after { content: ''; display: block; width: 2.5rem; height: 2px; background: var(--accent); margin-top: .6rem; }
 
         /* ── FORM CONTACTO ───────────────────────────────────────
            Inputs con tokens del sistema de diseño terminal ámbar.
@@ -423,8 +422,7 @@
     <!-- TECH STACK -->
     <section class="fade-up">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> cat tech_stack.txt</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <p class="section-eyebrow">Stack tecnico</p>
         </div>
         <div id="tech-parallax" class="parallax-container">
             <div class="parallax-layer">
@@ -445,8 +443,7 @@
     <!-- PROYECTOS -->
     <section id="proyectos" class="fade-up scroll-mt-24">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> ls ~/proyectos</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <p class="section-eyebrow">Proyectos</p>
         </div>
         <div id="lista-proyectos" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="flex items-center gap-3 justify-center col-span-1 lg:col-span-2 py-10">
@@ -458,8 +455,7 @@
     <!-- HABILIDADES -->
     <section id="habilidades" class="fade-up scroll-mt-24">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> skills --list</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <p class="section-eyebrow">Habilidades</p>
         </div>
         <div id="lista-habilidades" class="max-w-2xl border rounded p-5 text-sm overflow-x-auto" style="border-color: var(--line); background: var(--surface);"></div>
     </section>
@@ -467,8 +463,7 @@
     <!-- EXPERIENCIA -->
     <section id="experiencia" class="fade-up scroll-mt-24">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> git log --experiencia</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <p class="section-eyebrow">Experiencia</p>
         </div>
         <div id="lista-experiencia" class="max-w-3xl mx-auto">
             <div class="flex items-center gap-3 justify-center w-full py-6">
@@ -480,9 +475,7 @@
     <!-- CERTIFICADOS -->
     <section id="certificados" class="fade-up scroll-mt-24">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> cat certificados/</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
-            <!-- Descripción conservada; recoloreada a ámbar tenue en lugar de gray-400 -->
+            <p class="section-eyebrow">Certificados</p>
             <p class="mt-3 max-w-xl" style="color: var(--muted)">Cursos completados para mantenerme al dia con las ultimas tecnologias.</p>
         </div>
         <div id="lista-certificados" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -502,9 +495,7 @@
 <section id="contacto" class="relative overflow-hidden mt-16 scroll-mt-24">
     <div class="relative max-w-6xl mx-auto px-6 py-20">
         <div class="mb-12">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> ./contact.sh</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
-            <!-- Descripción conservada; recoloreada a ámbar tenue en lugar de gray-400 -->
+            <p class="section-eyebrow">Contacto</p>
             <p class="mt-3 max-w-lg text-lg" style="color: var(--muted)">Estoy buscando oportunidades para crecer como desarrollador. Si buscas a alguien con ganas de aprender y aportar, hablemos.</p>
         </div>
 

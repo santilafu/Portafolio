@@ -5,7 +5,6 @@
  *
  * Funciones nuevas en v2:
  *   iniciarScrollProgress()  → barra de progreso de lectura
- *   iniciarCursor()          → cursor personalizado con glow
  *   mostrarToastBienvenida() → toast primera visita (localStorage)
  *   iniciarActiveNav()       → resalta el link de la sección visible
  *   cargarGithubStats()      → stats en tiempo real desde la API de GitHub
@@ -122,40 +121,6 @@ function iniciarScrollProgress() {
 }
 
 // ============================================================
-// CURSOR PERSONALIZADO
-// Seguimos la posición del ratón con dos elementos: un punto
-// pequeño (inmediato) y un anillo más grande (con transición CSS).
-// Al pasar por encima de elementos interactivos, cambia de tamaño.
-// Solo funciona en dispositivos con ratón (pointer: fine).
-// ============================================================
-
-function iniciarCursor() {
-    // En móvil/táctil no tiene sentido mostrar cursor personalizado
-    if (!window.matchMedia('(pointer: fine)').matches) return;
-
-    const dot  = document.getElementById('cursor-dot');
-    const ring = document.getElementById('cursor-ring');
-
-    // Actualizamos la posición del cursor en cada movimiento de ratón
-    document.addEventListener('mousemove', (e) => {
-        dot.style.left  = ring.style.left  = `${e.clientX}px`;
-        dot.style.top   = ring.style.top   = `${e.clientY}px`;
-    });
-
-    // Al pasar por encima de elementos interactivos, el cursor se expande
-    document.querySelectorAll('a, button, [role="button"], input, textarea').forEach(el => {
-        el.addEventListener('mouseenter', () => {
-            dot.classList.add('cursor-hover');
-            ring.classList.add('cursor-hover');
-        });
-        el.addEventListener('mouseleave', () => {
-            dot.classList.remove('cursor-hover');
-            ring.classList.remove('cursor-hover');
-        });
-    });
-}
-
-// ============================================================
 // TOAST DE BIENVENIDA
 // Usamos localStorage para recordar si el usuario ya visitó
 // la página. Si no, mostramos el toast y guardamos la visita.
@@ -201,8 +166,14 @@ function iniciarActiveNav() {
             }
         });
     }, {
-        threshold: 0.4,       // sección activa cuando el 40% es visible
-        rootMargin: '-80px 0px -40% 0px' // compensamos la navbar fija
+        // threshold 0 + una franja fina (rootMargin) justo debajo de la
+        // navbar: con secciones más altas que el viewport (p.ej. la
+        // grid de proyectos) un threshold alto (ej. 0.4) nunca llega a
+        // cumplirse porque el "40% visible" del target jamás cabe en la
+        // franja recortada, y esa sección nunca se marca como activa.
+        // Con threshold 0 basta con que la sección toque la franja.
+        threshold: 0,
+        rootMargin: '-80px 0px -70% 0px' // franja fina justo bajo la navbar fija
     });
 
     secciones.forEach(sec => navObserver.observe(sec));
@@ -234,28 +205,27 @@ async function cargarGithubStats() {
         const topLang = Object.entries(langs).sort((a, b) => b[1] - a[1])[0];
 
         // Prefijo de prompt y ítems con tokens CSS del tema terminal ámbar.
-        // Los valores numéricos usan .phosphor para el brillo característico.
+        // Los valores numéricos usan .accent-text para el brillo característico.
         contenedor.innerHTML = `
-            <span style="color: var(--amber-dim)">$ git stats</span>
             <a href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-colors"
                style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-brands fa-github phosphor"></i>
-                <span class="phosphor font-semibold">${user.public_repos}</span>
-                <span style="color: var(--amber-dim)">repos publicos</span>
+                <i class="fa-brands fa-github accent-text"></i>
+                <span class="accent-text font-semibold">${user.public_repos}</span>
+                <span style="color: var(--muted)">repos publicos</span>
             </a>
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
                  style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-solid fa-users" style="color: var(--amber)"></i>
-                <span class="phosphor font-semibold">${user.followers}</span>
-                <span style="color: var(--amber-dim)">seguidores</span>
+                <i class="fa-solid fa-users" style="color: var(--accent)"></i>
+                <span class="accent-text font-semibold">${user.followers}</span>
+                <span style="color: var(--muted)">seguidores</span>
             </div>
             ${topLang ? `
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
                  style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-solid fa-code" style="color: var(--amber)"></i>
-                <span class="phosphor font-semibold">${topLang[0]}</span>
-                <span style="color: var(--amber-dim)">lenguaje top</span>
+                <i class="fa-solid fa-code" style="color: var(--accent)"></i>
+                <span class="accent-text font-semibold">${topLang[0]}</span>
+                <span style="color: var(--muted)">lenguaje top</span>
             </div>` : ''}
         `;
     } catch {
@@ -309,8 +279,6 @@ async function cargarPerfil() {
             document.getElementById('nombre').textContent   = p.nombre;
             document.getElementById('sobre_mi').textContent = p.sobre_mi;
             document.getElementById('titular').textContent  = p.titular;
-            // iniciarBootHero rellena la ventana de terminal con los datos del perfil
-            iniciarBootHero(p);
 
             if (p.foto_perfil) {
                 const img  = document.getElementById('foto_perfil');
@@ -319,35 +287,29 @@ async function cargarPerfil() {
                 img.src = ruta;
             }
 
-            document.getElementById('enlaces').innerHTML = buildEnlaces(p, 'text-gray-400 hover:text-white');
             const footerEnlaces = document.getElementById('footer-enlaces');
             if (footerEnlaces) footerEnlaces.innerHTML = buildEnlacesFooter(p);
             const emailText = document.getElementById('email-text');
             if (emailText && p.email) emailText.textContent = p.email;
+
+            // Revela el hero con fundido escalonado una vez los datos estan listos
+            document.getElementById('hero-content').classList.add('hero-ready');
         }
     } catch (error) {
         console.error('Error al cargar perfil:', error);
     }
 }
 
-function buildEnlaces(p, classes) {
-    return `
-        ${p.email          ? `<a href="mailto:${p.email}" title="Email" class="${classes} transition-colors"><i class="fa-solid fa-envelope"></i></a>` : ''}
-        ${p.enlace_github  ? `<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" title="GitHub" class="${classes} transition-colors"><i class="fa-brands fa-github"></i></a>` : ''}
-        ${p.enlace_linkedin ? `<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" title="LinkedIn" class="${classes} transition-colors"><i class="fa-brands fa-linkedin"></i></a>` : ''}
-    `;
-}
-
 function buildEnlacesFooter(p) {
-    // Estilo terminal ámbar: icono con .phosphor, etiqueta en --amber-dim
-    const base = 'flex flex-col items-center gap-2 phosphor transition-all duration-300 hover:-translate-y-1';
+    // Estilo terminal ámbar: icono con .accent-text, etiqueta en --muted
+    const base = 'flex flex-col items-center gap-2 accent-text transition-all duration-300 hover:-translate-y-1';
     const items = [];
     if (p.email)
-        items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">Email</span></a>`);
+        items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs" style="color: var(--muted)">Email</span></a>`);
     if (p.enlace_github)
-        items.push(`<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">GitHub</span></a>`);
+        items.push(`<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--muted)">GitHub</span></a>`);
     if (p.enlace_linkedin)
-        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--amber-dim)">LinkedIn</span></a>`);
+        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--muted)">LinkedIn</span></a>`);
     return items.join('');
 }
 
@@ -385,114 +347,6 @@ function iniciarCopiarEmail() {
     });
 }
 
-// iniciarTyping eliminada: ya no se usa desde que el hero
-// es una secuencia de boot (iniciarBootHero). El efecto de
-// typing-cursor también se ha eliminado del CSS.
-
-// ============================================================
-// HERO TERMINAL: secuencia de boot tecleada caracter a caracter
-// ============================================================
-// Timer del tecleo: lo guardamos a nivel de modulo para poder cancelar
-// una animacion en curso si iniciarBootHero se llamara dos veces (evita
-// que dos cadenas de tecleo escriban a la vez en #term-typed).
-let _bootTimer = null;
-
-// Escapa texto para interpolarlo en innerHTML de forma segura.
-function escHtml(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-function iniciarBootHero(perfil) {
-    const typed = document.getElementById('term-typed');
-    if (!typed) return;
-    if (_bootTimer) { clearTimeout(_bootTimer); _bootTimer = null; } // cancela un tecleo previo
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const nombre  = perfil.nombre  || 'Santiago Lafuente';
-    const titular = perfil.titular || 'Desarrollador Multiplataforma';
-    const bio     = perfil.sobre_mi || '';
-
-    // Secuencia de lineas que se teclean en orden.
-    const seq = [
-        { text: '> initializing portfolio... [OK]', cls: 'boot-ok' },
-        { text: '> loading profile.............. [OK]', cls: 'boot-ok' },
-        { text: '$ whoami', cls: 'cmd' },
-        { text: nombre, cls: 'name' },
-        { text: 'Titulado en DAM (9.0) - ' + titular, cls: 'dim' },
-        { text: '$ cat about.txt', cls: 'cmd' },
-        { text: bio, cls: 'fg' },
-        { text: '$ status', cls: 'cmd' },
-    ];
-
-    // Bloque final estatico (badge de estado + CTAs + prompt final).
-    const finalStatic = `
-        <div class="mt-1 flex items-center gap-2" style="color: var(--ok)">
-            <span class="inline-block w-2 h-2 rounded-full" style="background: var(--ok); box-shadow: 0 0 8px var(--ok)"></span>
-            available for hire - busco empleo activamente
-        </div>
-        <div class="mt-4 flex flex-wrap gap-3 items-center">
-            <a href="/cv/cv-santiago-lafuente.pdf" download class="btn-contact px-4 py-2 border rounded phosphor" style="border-color: var(--amber)">[ descargar CV ]</a>
-            <a href="#contacto" class="btn-contact px-4 py-2 border rounded phosphor" style="border-color: var(--amber)">[ ./contact.sh ]</a>
-        </div>
-        <div class="mt-3"><span class="phosphor">$</span> <span class="term-caret">&nbsp;</span></div>`;
-
-    // Estilo inline segun tipo de linea.
-    function styleFor(cls) {
-        if (cls === 'boot-ok') return 'color: var(--ok)';
-        if (cls === 'cmd')     return 'color: var(--amber)';
-        if (cls === 'dim')     return 'color: var(--amber-dim)';
-        if (cls === 'fg')      return 'color: var(--fg)';
-        return '';
-    }
-    function claseLinea(cls) {
-        if (cls === 'name')    return 'glow phosphor text-2xl md:text-3xl font-bold mt-1';
-        if (cls === 'cmd')     return 'mt-4';
-        if (cls === 'boot-ok') return '';
-        return 'mt-1';
-    }
-
-    // Sin animacion: se pinta todo de golpe (accesibilidad).
-    if (reduce) {
-        typed.innerHTML = seq.map(l =>
-            `<div class="${claseLinea(l.cls)}" style="${styleFor(l.cls)}">${escHtml(l.text)}</div>`
-        ).join('') + finalStatic;
-        return;
-    }
-
-    // Con animacion: teclea linea por linea, con caret temporal al final de cada una.
-    typed.innerHTML = '';
-    let li = 0;
-    function typeLine() {
-        if (li >= seq.length) { typed.insertAdjacentHTML('beforeend', finalStatic); return; }
-        const l = seq[li];
-        const div = document.createElement('div');
-        div.className = claseLinea(l.cls);
-        if (styleFor(l.cls)) div.setAttribute('style', styleFor(l.cls));
-        const caret = document.createElement('span');
-        caret.className = 'term-caret';
-        caret.innerHTML = '&nbsp;';
-        div.appendChild(caret);
-        typed.appendChild(div);
-        let ci = 0;
-        // La bio (fg) y el boot van rapidos para no hacer esperar los CTAs;
-        // comandos/titulo algo mas lentos por dramatismo.
-        const speed = (l.cls === 'boot-ok' || l.cls === 'fg') ? 9 : 18; // ms por caracter
-        (function typeChar() {
-            if (ci < l.text.length) {
-                // insertAdjacentText es seguro: no parsea HTML, no rompe con < > en la bio
-                caret.insertAdjacentText('beforebegin', l.text.charAt(ci));
-                ci++;
-                _bootTimer = setTimeout(typeChar, speed);
-            } else {
-                caret.remove();
-                li++;
-                _bootTimer = setTimeout(typeLine, l.cls === 'cmd' ? 90 : 160);
-            }
-        })();
-    }
-    typeLine();
-}
-
 // ============================================================
 // PROYECTOS
 // ============================================================
@@ -505,61 +359,39 @@ async function cargarProyectos() {
         contenedor.innerHTML = '';
         if (proyectos.length > 0) {
             proyectos.forEach((proyecto, idx) => {
-                // Los proyectos destacados ocupan las 2 columnas y muestran banner + icono
-                const esDestacado = proyecto.destacado == 1 || proyecto.destacado === true;
-                // Si el proyecto esta en desarrollo mostramos badge [WIP] en estilo terminal
+                const esDestacado  = proyecto.destacado == 1 || proyecto.destacado === true;
                 const enDesarrollo = proyecto.estado === 'en_desarrollo';
                 const tarjeta = document.createElement('div');
                 tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
-                // Badge [WIP] en rojo terminal para proyectos en desarrollo
-                const wipBadge = enDesarrollo
-                    ? '<span class="ml-2 text-xs" style="color: var(--err)">[WIP]</span>'
-                    : '';
-                // Número de tarjeta formateado como nombre de archivo de terminal
-                const numArchivo = `proyecto_${String(idx + 1).padStart(2, '0')}.md`;
+                const badge = enDesarrollo
+                    ? '<span class="pill pill-dev">En desarrollo</span>'
+                    : (esDestacado ? '<span class="pill pill-featured">Destacado</span>' : '');
 
-                if (esDestacado) {
-                    // El destacado ocupa ambas columnas y muestra el banner sobre el panel
-                    tarjeta.className = 'lg:col-span-2 border rounded overflow-hidden card-hover fade-up';
-                    tarjeta.style.borderColor = 'var(--line)';
-                    tarjeta.style.background  = 'var(--surface)';
-                    tarjeta.innerHTML = `
-                        ${proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-48 object-cover" alt="${proyecto.titulo}">` : ''}
-                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--amber-dim)">
-                            <span>${numArchivo} <span class="phosphor">★ featured</span></span>${wipBadge}
+                const enlaces = `
+                    <div class="mt-4 flex gap-4 text-sm">
+                        ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
+                        ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
+                    </div>`;
+
+                tarjeta.className = (esDestacado ? 'lg:col-span-2 ' : '') + 'border rounded-xl overflow-hidden card-hover fade-up';
+                tarjeta.style.borderColor = 'var(--line)';
+                tarjeta.style.background  = 'var(--surface)';
+                tarjeta.innerHTML = `
+                    ${esDestacado && proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-48 object-cover" alt="${proyecto.titulo}">` : ''}
+                    <div class="p-5">
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="accent-text font-bold text-lg">${proyecto.titulo}</h4>
+                            ${badge}
                         </div>
-                        <div class="p-5">
-                            <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
-                            <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
-                            <div class="mt-4 flex gap-4 text-sm">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ repo ]</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ demo ]</a>` : ''}
-                            </div>
-                        </div>`;
-                } else {
-                    // Tarjeta normal: panel de terminal con cabecera de archivo
-                    tarjeta.className = 'border rounded overflow-hidden card-hover fade-up';
-                    tarjeta.style.borderColor = 'var(--line)';
-                    tarjeta.style.background  = 'var(--surface)';
-                    tarjeta.innerHTML = `
-                        <div class="px-4 py-2 border-b text-xs flex items-center justify-between" style="border-color: var(--line); color: var(--amber-dim)">
-                            <span>${numArchivo}</span>${wipBadge}
-                        </div>
-                        <div class="p-5">
-                            <h4 class="phosphor font-bold text-lg">${proyecto.titulo}</h4>
-                            <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
-                            <div class="mt-4 flex gap-4 text-sm">
-                                ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ repo ]</a>` : ''}
-                                ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="phosphor hover:underline">[ demo ]</a>` : ''}
-                            </div>
-                        </div>`;
-                }
+                        <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
+                        ${enlaces}
+                    </div>`;
                 contenedor.appendChild(tarjeta);
             });
             setTimeout(reobservarAnimaciones, 100);
         } else {
-            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--amber-dim)">Aun no hay proyectos para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--muted)">Aun no hay proyectos para mostrar.</p>';
         }
     } catch (error) {
         console.error('Error al cargar proyectos:', error);
@@ -575,42 +407,44 @@ async function cargarHabilidades() {
         const respuesta   = await fetch(`${API_URL}/habilidades`);
         const habilidades = await respuesta.json();
         const contenedor  = document.getElementById('lista-habilidades');
-        // Bloques llenos por nivel (escala de 8 caracteres)
-        const nivelBloques = { 'Basico': 3, 'Intermedio': 6, 'Avanzado': 8 };
+        const nivelPct = { 'Basico': 40, 'Intermedio': 70, 'Avanzado': 95 };
 
         if (habilidades.length > 0) {
-            const filas = habilidades.map(h => {
-                const llenos = nivelBloques[h.nivel] || 4;
-                // Barra de 8 bloques: █ llenos + ░ vacíos
-                const barra  = '█'.repeat(llenos) + '░'.repeat(8 - llenos);
-                // padEnd a 12 chars para alinear la columna de barras (white-space:pre lo respeta)
-                const nombre = h.nombre.padEnd(12, ' ');
-                return `<div class="flex items-center gap-3 py-0.5">
-        <span class="phosphor" style="white-space:pre">${nombre}</span>
-        <span style="color: var(--amber)">[${barra}]</span>
-        <span style="color: var(--amber-dim)">${h.nivel}</span>
+            contenedor.innerHTML = habilidades.map(h => {
+                const pct = nivelPct[h.nivel] || 50;
+                return `<div class="skill-row">
+        <div class="flex items-center justify-between text-sm mb-1">
+            <span style="color: var(--fg)">${h.nombre}</span>
+            <span style="color: var(--muted)">${h.nivel}</span>
+        </div>
+        <div class="skill-track"><div class="skill-fill" style="--pct:${pct}%"></div></div>
     </div>`;
             }).join('');
-            contenedor.innerHTML = filas;
+            animarHabilidades();
         } else {
-            contenedor.innerHTML = '<span class="phosphor" style="color: var(--amber-dim)">-- sin habilidades registradas --</span>';
+            contenedor.innerHTML = '<span style="color: var(--muted)">Sin habilidades registradas</span>';
         }
     } catch (error) {
         console.error('Error al cargar habilidades:', error);
     }
 }
 
+function animarHabilidades() {
+    const fills = document.querySelectorAll('.skill-fill');
+    const skillObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.width = 'var(--pct)';
+                skillObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+    fills.forEach(f => skillObserver.observe(f));
+}
+
 // ============================================================
 // EXPERIENCIA
 // ============================================================
-
-// Genera un "hash" corto y estable a partir de un texto (estilo commit git).
-// Usamos un hash determinista para que cada experiencia tenga siempre el mismo hash
-// sin depender de Math.random (que cambia en cada recarga).
-function pseudoHash(str) {
-    let h = 0; for (let i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) >>> 0; }
-    return h.toString(16).padStart(7, '0').slice(0, 7);
-}
 
 async function cargarExperiencia() {
     try {
@@ -619,7 +453,6 @@ async function cargarExperiencia() {
         const contenedor = document.getElementById('lista-experiencia');
         contenedor.innerHTML = '';
 
-        // Deduplicar con Set
         const vistos = new Set();
         experiencias = experiencias.filter(exp => {
             const clave = `${exp.empresa}-${exp.puesto}-${exp.fecha_inicio}`;
@@ -628,7 +461,6 @@ async function cargarExperiencia() {
             return true;
         });
 
-        // Entrada extra de proyectos personales
         experiencias.push({
             puesto: 'Desarrollador de Proyectos Personales',
             empresa: 'GitHub - santilafu',
@@ -638,28 +470,25 @@ async function cargarExperiencia() {
             enlace_github: 'https://github.com/santilafu'
         });
 
-        // Cada experiencia se renderiza como un commit de git log:
-        // commit <hash>  (HEAD -> activo) si sigue en curso
-        // Author: <empresa>
-        // Date:   <inicio> - <fin|HEAD>
         experiencias.forEach(exp => {
-            const fin  = exp.fecha_fin ? formatearFecha(exp.fecha_fin) : 'HEAD';
-            const ini  = formatearFecha(exp.fecha_inicio);
-            // Las experiencias sin fecha_fin están en curso → etiqueta "(HEAD -> activo)" en verde
-            const rama = exp.fecha_fin ? '' : '<span style="color: var(--ok)"> (HEAD -> activo)</span>';
-            const hash = pseudoHash(exp.empresa + exp.puesto);
+            const fin    = exp.fecha_fin ? formatearFecha(exp.fecha_fin) : 'Actualidad';
+            const ini    = formatearFecha(exp.fecha_inicio);
+            const activo = !exp.fecha_fin ? '<span class="pill pill-featured">Actual</span>' : '';
             const item = document.createElement('div');
-            item.className = 'pl-4 border-l pb-6';
-            item.style.borderColor = 'var(--line)';
+            item.className = 'timeline-item fade-up';
             item.innerHTML = `
-                <div style="color: var(--amber)">commit ${hash}${rama}</div>
-                <div style="color: var(--amber-dim)">Author: ${exp.empresa}</div>
-                <div style="color: var(--amber-dim)">Date:   ${ini} - ${fin}</div>
-                <div class="mt-2 phosphor font-semibold">${exp.puesto}</div>
-                ${exp.descripcion ? `<div class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</div>` : ''}
-                ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="text-sm phosphor hover:underline">[ github ]</a>` : ''}`;
+                <div class="timeline-dot"></div>
+                <div class="timeline-body">
+                    <div class="flex items-center gap-2">
+                        <h4 class="accent-text font-semibold">${exp.puesto}</h4>${activo}
+                    </div>
+                    <p class="text-sm" style="color: var(--muted)">${exp.empresa} &middot; ${ini} &ndash; ${fin}</p>
+                    ${exp.descripcion ? `<p class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</p>` : ''}
+                    ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="proyecto-link mt-1"><i class="fa-brands fa-github"></i> GitHub</a>` : ''}
+                </div>`;
             contenedor.appendChild(item);
         });
+        setTimeout(reobservarAnimaciones, 100);
     } catch (error) {
         console.error('Error al cargar experiencia:', error);
     }
@@ -686,42 +515,29 @@ async function cargarCertificados() {
         contenedor.innerHTML = '';
 
         if (certificados.length === 0) {
-            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--amber-dim)">Aun no hay certificados para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--muted)">Aun no hay certificados para mostrar.</p>';
             return;
         }
 
         certificados.forEach((cert, idx) => {
             const tarjeta = document.createElement('div');
-            // Estilo "archivo de terminal": borde sutil + superficie del tema ámbar
-            tarjeta.className            = 'border rounded overflow-hidden card-hover fade-up';
+            // Tarjeta limpia de certificado: borde sutil + superficie del tema
+            tarjeta.className            = 'border rounded-xl overflow-hidden card-hover fade-up';
             tarjeta.style.borderColor    = 'var(--line)';
             tarjeta.style.background     = 'var(--surface)';
             tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
-            // Enlace al PDF del certificado (condicional)
-            const enlaceAbrir = cert.url_archivo
-                ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer"
-                      class="text-sm phosphor hover:underline mt-3 inline-block mr-4">[ abrir ]</a>`
-                : '';
-
-            // Enlace de verificación online (condicional)
-            const enlaceOnline = cert.url_externa
-                ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer"
-                      class="text-sm phosphor hover:underline mt-3 inline-block">[ ver online ]</a>`
-                : '';
-
             tarjeta.innerHTML = `
-                <div class="px-4 py-2 border-b text-xs"
-                     style="border-color: var(--line); color: var(--amber-dim)">
-                    <i class="fa-solid fa-file-lines mr-1"></i> cert_${String(idx + 1).padStart(2, '0')}.pdf
-                </div>
                 <div class="p-5">
-                    <h4 class="phosphor font-bold">${cert.titulo}</h4>
-                    <p class="text-sm mt-1" style="color: var(--amber-dim)">
+                    <h4 class="accent-text font-bold">${cert.titulo}</h4>
+                    <p class="text-sm mt-1" style="color: var(--muted)">
                         ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
                     </p>
                     ${cert.descripcion ? `<p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>` : ''}
-                    ${enlaceAbrir}${enlaceOnline}
+                    <div class="mt-3 flex gap-4">
+                        ${cert.url_archivo ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-file-arrow-down"></i> Ver PDF</a>` : ''}
+                        ${cert.url_externa ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Verificar</a>` : ''}
+                    </div>
                 </div>`;
 
             contenedor.appendChild(tarjeta);
@@ -754,7 +570,7 @@ function iniciarFormContacto() {
 
         // Estado de carga en el botón
         btnEnviar.disabled = true;
-        btnEnviar.textContent = '[ enviando... ]';
+        btnEnviar.textContent = 'Enviando...';
 
         try {
             const res = await fetch(`${API_URL}/contacto`, {
@@ -767,18 +583,18 @@ function iniciarFormContacto() {
             if (res.ok) {
                 // Éxito: limpiamos el formulario y mostramos confirmación en verde terminal
                 form.reset();
-                mostrarFeedback(feedback, '[ok] mensaje enviado correctamente', 'var(--ok)');
+                mostrarFeedback(feedback, 'Mensaje enviado correctamente', 'var(--ok)');
             } else {
                 // Error devuelto por el servidor (p.ej. campo vacío, rate limit)
-                mostrarFeedback(feedback, '[error] ' + (data.error || 'Error al enviar'), 'var(--err)');
+                mostrarFeedback(feedback, data.error || 'Error al enviar el mensaje', 'var(--err)');
             }
         } catch {
             // Fallo de red o sin conexión
-            mostrarFeedback(feedback, '[error] Error de conexión. Inténtalo de nuevo.', 'var(--err)');
+            mostrarFeedback(feedback, 'Error de conexion. Intentalo de nuevo.', 'var(--err)');
         } finally {
             // Restauramos el botón independientemente del resultado
             btnEnviar.disabled = false;
-            btnEnviar.textContent = '$ send';
+            btnEnviar.textContent = 'Enviar mensaje';
         }
     });
 }
@@ -907,7 +723,6 @@ document.addEventListener('DOMContentLoaded', () => {
     iniciarCopiarEmail();
     iniciarParallax();
     iniciarScrollProgress();
-    iniciarCursor();
     mostrarToastBienvenida();
     iniciarActiveNav();
     iniciarFormContacto();

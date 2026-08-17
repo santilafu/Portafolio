@@ -67,115 +67,69 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { extend: { fontFamily: { mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'] } } }
-        }
-    </script>
 
     <style>
         /* ── TOKENS TERMINAL (verde menta / teal) ────────────────
            Variables CSS globales del sistema de diseño retro.
            El acento antes era ámbar; ahora es verde menta suave.
-           (Se conservan los nombres --amber* por simplicidad.) */
+           (Se conservan los nombres --accent* por simplicidad.) */
         :root {
-            --bg: #07100e; --surface: #0d1a17;
-            --amber: #5eead4; --amber-hi: #99f6e4; --amber-dim: #7fb3aa;
-            --fg: #cdd6d2; --ok: #5fce7a; --err: #ff5f56;
-            --line: rgba(94,234,212,0.22);
+            --bg: #070b12; --surface: #101527;
+            --accent: #7c8cff; --accent-hi: #a5b4ff; --muted: #9aa2c0;
+            --fg: #f2f3f7; --ok: #5fce7a; --err: #ff5f56;
+            --line: rgba(124,140,255,0.22);
+            --hero-gradient: radial-gradient(120% 100% at 50% -10%, #1c2440 0%, #0a0d1a 45%, #050608 100%);
         }
         html, body { background: var(--bg); color: var(--fg); }
-        body { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
-        .phosphor { color: var(--amber); }
-        .glow { text-shadow: 0 0 6px rgba(94,234,212,0.55), 0 0 14px rgba(94,234,212,0.25); }
-
-        /* ── CAPA CRT: SCANLINES ─────────────────────────────────
-           Overlay global tenue de líneas horizontales que simula
-           una pantalla de fosforo. z-index 55 (bajo el cursor, alto
-           que la mayoría del contenido). pointer-events:none para
-           no bloquear clics. */
-        .crt-scanlines::before {
-            content: ''; position: fixed; inset: 0; z-index: 55; pointer-events: none;
-            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.10) 3px);
-            mix-blend-mode: multiply;
-        }
-
-        /* ── CAPA CRT: VIÑETA ────────────────────────────────────
-           Oscurece los bordes del viewport imitando el curvado
-           de los tubos CRT clasicos. */
-        .crt-vignette { position: relative; }
-        .crt-vignette::after {
-            content: ''; position: absolute; inset: 0; pointer-events: none;
-            box-shadow: inset 0 0 160px 40px rgba(0,0,0,0.55);
-        }
-
-        /* ── CAPA CRT: FLICKER ───────────────────────────────────
-           Opacidad que cae brevemente cada 6s simulando la
-           inestabilidad de la señal de fosforo. steps(1) hace
-           el corte instantaneo, sin interpolacion. */
-        @keyframes crt-flicker { 0%,100%{opacity:1} 92%{opacity:1} 93%{opacity:.85} 94%{opacity:1} }
-        .crt-flicker { animation: crt-flicker 6s infinite steps(1); }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; }
+        .accent-text { color: var(--accent); }
+        .glow { text-shadow: 0 0 6px rgba(124,140,255,0.55), 0 0 14px rgba(124,140,255,0.25); }
 
         /* ── ACCESIBILIDAD: MOVIMIENTO REDUCIDO ──────────────────
            Usuarios con prefers-reduced-motion desactivan el flicker
            y las scanlines animadas sin perder el contenido. */
         @media (prefers-reduced-motion: reduce) {
-            .crt-flicker { animation: none; }
-            .crt-scanlines::before { display: none; }
             /* Desactivamos tambien el resto de movimiento no esencial:
                entradas fade-up, flotacion de iconos y el spin del loader. */
             .fade-up { opacity: 1 !important; transform: none !important; transition: none !important; }
             .float-1, .float-2, .float-3 { animation: none !important; }
             .loader { animation-duration: 0s !important; }
+            .hero-line { opacity: 1 !important; transform: none !important; transition: none !important; }
+            /* Los "lifts" al pasar el ratón por tarjetas de proyectos/certificados
+               y por los iconos de tech-stack también son movimiento no esencial. */
+            .card-hover, .card-hover:hover, .skill-card, .skill-card:hover { transform: none !important; transition: none !important; }
         }
 
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
            Barra fina en el top de la página que crece según el scroll.
            z-[60] para estar por encima de la navbar (z-50).
            Color ámbar con glow fosforo en lugar del gradiente azul/morado. */
-        #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--amber); box-shadow: 0 0 8px rgba(94,234,212,0.7); z-index:60; transition: width 0.1s linear; }
+        #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--accent); box-shadow: 0 0 8px rgba(124,140,255,0.7); z-index:60; transition: width 0.1s linear; }
 
         /* Botón "$ contact" (navbar escritorio + móvil): color base y hover ámbar tenue.
            .btn-contact se usa tanto en la navbar como en los CTAs del hero terminal.
            Clase CSS en lugar de handlers inline onmouseover/onmouseout. */
-        .btn-contact { color: var(--amber); transition: background 0.15s; }
-        .btn-contact:hover { background: rgba(94,234,212,0.1); }
-
-        /* ── CURSOR PERSONALIZADO ────────────────────────────────
-           Ocultamos el cursor nativo y mostramos uno propio.
-           Solo en dispositivos con ratón (pointer: fine). */
-        @media (pointer: fine) {
-            * { cursor: none !important; }
-        }
-        /* Cursor bloque ámbar — imita el caret de terminal (rect, no círculo).
-           cursor-ring sigue en el DOM (display:none) para que iniciarCursor()
-           no reciba null al buscarlo por ID. */
-        .cursor-dot { width:10px; height:16px; background: var(--amber); position:fixed; pointer-events:none; z-index:9999; transform: translate(-50%,-50%); box-shadow: 0 0 8px rgba(94,234,212,0.7); transition: opacity .3s, transform .1s; }
-        .cursor-ring { display:none; }
-        /* Al pasar por encima de links y botones el bloque se agranda ligeramente */
-        .cursor-dot.cursor-hover { transform: translate(-50%,-50%) scale(1.4); }
+        .btn-contact { color: var(--accent); transition: background 0.15s; }
+        .btn-contact:hover { background: rgba(124,140,255,0.1); }
 
         /* ── LOADER ──────────────────────────────────────────────*/
         /* border-top era morado (#8b5cf6); ahora usa el token ámbar del tema */
-        .loader { border: 3px solid var(--line); border-top: 3px solid var(--amber); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
+        .loader { border: 3px solid var(--line); border-top: 3px solid var(--accent); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── FADE-UP ─────────────────────────────────────────────*/
-        .fade-up { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
-        .fade-up.visible { opacity: 1; transform: translateY(0); }
+        .fade-up { opacity: 0; transform: translateY(40px) scale(.98); transition: opacity 0.7s ease-out, transform 0.7s ease-out; }
+        .fade-up.visible { opacity: 1; transform: none; }
         .fade-up:nth-child(2) { transition-delay: 0.1s; }
         .fade-up:nth-child(3) { transition-delay: 0.2s; }
 
         /* ── CARD HOVER ──────────────────────────────────────────*/
         .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(94, 234, 212, 0.12); }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(124, 140, 255, 0.12); }
 
         /* ── SKILL CARD ──────────────────────────────────────────*/
         .skill-card { transition: all 0.3s ease; }
-        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(94, 234, 212, 0.18); }
+        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(124, 140, 255, 0.18); }
 
         /* ── TECH ENTER ──────────────────────────────────────────*/
         .tech-enter { opacity: 0; transform: scale(0.3) translateY(20px); }
@@ -199,17 +153,97 @@
         /* ── NAVBAR ──────────────────────────────────────────────
            Fondo oscuro ámbar en lugar del slate azulado original.
            Borde inferior con --line (ámbar semitransparente) en vez de box-shadow. */
-        .nav-scrolled { background: rgba(13,11,6,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+        .nav-scrolled { background: rgba(7,11,18,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
         /* Link activo en la navbar según sección visible */
-        .nav-link.active { color: var(--amber); }
-        .nav-link.active::after { content:''; display:block; height:2px; background: var(--amber); margin-top:2px; }
+        .nav-link.active { color: var(--accent); }
+        .nav-link.active::after { content:''; display:block; height:2px; background: var(--accent); margin-top:2px; }
         /* Hover de links e iconos de navbar en clave ámbar (antes hover:text-white). */
-        .nav-link:hover { color: var(--amber); }
-        .nav-icon { color: var(--amber-dim); transition: color .2s; }
-        .nav-icon:hover { color: var(--amber); }
+        .nav-link:hover { color: var(--accent); }
+        .nav-icon { color: var(--muted); transition: color .2s; }
+        .nav-icon:hover { color: var(--accent); }
 
-        /* badge-pulse y @keyframes pulse-glow eliminados:
-           el badge de disponibilidad se eliminó del hero en el reskin. */
+        /* ── HERO CINEMATOGRÁFICO ────────────────────────────────
+           Fondo con degradado radial oscuro, foto circular con halo
+           que respira, motas de profundidad ascendiendo y revelado
+           de texto escalonado cuando los datos del perfil cargan. */
+        .hero-cinema { background: var(--hero-gradient); }
+        .hero-vignette { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 140px 40px rgba(0,0,0,0.55); }
+        [data-theme="light"] .hero-vignette { box-shadow: none; }
+
+        /* Motas de profundidad: ascienden despacio, tenues, con blur leve
+           (sustituyen a las "brasas" del tema anterior por un efecto
+           más sutil de polvo/luz suspendida, validado en mockup). */
+        .hero-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .hero-particles span {
+            position: absolute; bottom: -12px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,.95), rgba(180,195,255,0) 70%);
+            opacity: 0; animation: hero-particle-float linear infinite;
+        }
+        @keyframes hero-particle-float {
+            0%   { transform: translateY(30px) translateX(0) scale(.8); opacity: 0; }
+            12%  { opacity: var(--op, .7); }
+            88%  { opacity: var(--op, .7); }
+            100% { transform: translateY(-420px) translateX(var(--drift, 20px)) scale(1.1); opacity: 0; }
+        }
+        .hero-particles span:nth-child(1){ width:5px; height:5px; left:10%; --op:.85; --drift:18px;  animation-duration:6s;   animation-delay:0s; }
+        .hero-particles span:nth-child(2){ width:3px; height:3px; left:20%; --op:.6;  --drift:-20px;  animation-duration:7.5s; animation-delay:1.2s; }
+        .hero-particles span:nth-child(3){ width:6px; height:6px; left:32%; --op:.9;  --drift:26px;   animation-duration:6.5s; animation-delay:2.4s; }
+        .hero-particles span:nth-child(4){ width:4px; height:4px; left:44%; --op:.55; --drift:-14px;  animation-duration:8s;   animation-delay:.6s; }
+        .hero-particles span:nth-child(5){ width:5px; height:5px; left:57%; --op:.8;  --drift:20px;   animation-duration:6.8s; animation-delay:3s; }
+        .hero-particles span:nth-child(6){ width:3px; height:3px; left:69%; --op:.6;  --drift:-22px;  animation-duration:7.2s; animation-delay:1.8s; }
+        .hero-particles span:nth-child(7){ width:6px; height:6px; left:80%; --op:.85; --drift:16px;   animation-duration:6.2s; animation-delay:3.6s; }
+        .hero-particles span:nth-child(8){ width:4px; height:4px; left:90%; --op:.55; --drift:-18px;  animation-duration:7.8s; animation-delay:2.1s; }
+        @media (prefers-reduced-motion: reduce) { .hero-particles { display: none; } }
+        [data-theme="light"] .hero-particles { opacity: .35; }
+
+        /* Foto circular con halo que "respira" detrás */
+        .hero-photo-wrap { position: relative; display: inline-block; }
+        .hero-photo-glow {
+            position: absolute; inset: -22px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(124,140,255,.45), transparent 72%);
+            filter: blur(2px); animation: hero-breathe 5s ease-in-out infinite;
+        }
+        @keyframes hero-breathe { 0%,100% { opacity:.7; transform: scale(1); } 50% { opacity:1; transform: scale(1.06); } }
+        .hero-photo {
+            position: relative; display: block; width: 120px; height: 120px;
+            border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(242,243,247,.5);
+        }
+        @media (prefers-reduced-motion: reduce) { .hero-photo-glow { animation: none; } }
+
+        /* Revelado escalonado: cada .hero-line entra con fundido + desplazamiento
+           cuando #hero-content recibe .hero-ready (tras cargar el perfil, ver app.js). */
+        .hero-line { opacity: 0; transform: translateY(18px); transition: opacity .6s ease-out, transform .6s ease-out; }
+        .hero-ready .hero-line { opacity: 1; transform: none; }
+        .hero-line:nth-child(1) { transition-delay: .05s; }
+        .hero-line:nth-child(2) { transition-delay: .15s; }
+        .hero-line:nth-child(3) { transition-delay: .25s; }
+        .hero-line:nth-child(4) { transition-delay: .35s; }
+        .hero-line:nth-child(5) { transition-delay: .45s; }
+        .hero-line:nth-child(6) { transition-delay: .55s; }
+        .hero-line:nth-child(7) { transition-delay: .65s; }
+        .hero-line:nth-child(8) { transition-delay: .75s; }
+
+        .hero-eyebrow { font-size: .75rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-top: 1.25rem; }
+        .hero-title { font-size: 2.5rem; font-weight: 700; letter-spacing: -0.02em; margin-top: .5rem; line-height: 1.05; }
+        .hero-subtitle { font-size: 1.1rem; color: var(--muted); margin-top: .5rem; }
+        .hero-bio { max-width: 40rem; margin: .75rem auto 0; color: var(--fg); opacity: .9; }
+        .hero-ctas { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-top: 1.5rem; }
+        .hero-btn { padding: .65rem 1.4rem; border-radius: 999px; font-size: .875rem; font-weight: 600; transition: transform .2s, opacity .2s; }
+        .hero-btn:hover { transform: translateY(-2px); }
+        .hero-btn-primary { background: var(--fg); color: var(--bg); }
+        .hero-btn-ghost { border: 1px solid rgba(242,243,247,.35); color: var(--fg); }
+        .hero-status { margin-top: 1.5rem; font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: .5rem; }
+        .hero-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+        .hero-meta { margin-top: .75rem; font-size: .8rem; color: var(--muted); }
+
+        /* ── HERO: AJUSTE MÓVIL ──────────────────────────────────
+           En pantallas muy estrechas (iPhone SE y similares) reducimos
+           el tamaño del título y de la foto para evitar desbordes. */
+        @media (max-width: 420px) {
+            .hero-title { font-size: 2rem; }
+            .hero-photo { width: 96px; height: 96px; }
+        }
 
         /* ── TOAST ───────────────────────────────────────────────
            Notificación que aparece abajo a la derecha la primera vez
@@ -229,111 +263,18 @@
            por lo que [data-theme="light"] es el elemento raiz y las variables
            heredan a todo el arbol del DOM. */
         [data-theme="light"] {
-            --bg: #eef3f0; --surface: #dde7e2; --fg: #1c2b27;
-            --amber: #0f766e; --amber-hi: #115e56; --amber-dim: #3f6b64; --line: rgba(15,118,110,0.30);
+            --bg: #f7f7fb; --surface: #ffffff; --fg: #14161f;
+            --accent: #5865f2; --accent-hi: #4550c9; --muted: #5b6178; --line: rgba(88,101,242,0.22);
+            --hero-gradient: radial-gradient(120% 100% at 50% -10%, #eef0ff 0%, #f7f7fb 60%, #ffffff 100%);
         }
         /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
         [data-theme="light"] .glow { text-shadow: none; }
-        /* Sin halo en el cursor personalizado para modo papel */
-        [data-theme="light"] .cursor-dot { box-shadow: none; }
 
-        /* ── HERO TERMINAL: CARET PARPADEANTE ───────────────────
-           Bloque ámbar que simula el cursor de terminal.
-           step-end hace el parpadeo instantáneo (sin fade).
-           prefers-reduced-motion: desactiva la animación. */
-        .term-caret {
-            display: inline-block; width: 0.6em; height: 1.1em;
-            background: var(--amber);
-            box-shadow: 0 0 8px rgba(94,234,212,0.7);
-            animation: caret-blink 1s step-end infinite;
-            vertical-align: text-bottom;
-        }
-        @keyframes caret-blink { 50% { opacity: 0; } }
-        @media (prefers-reduced-motion: reduce) { .term-caret { animation: none; } }
-
-        /* ── FOTO ENMARCADA (HERO V1) ────────────────────────────
-           Marco ámbar con glow, scanlines superpuestas (::after) y
-           filtro sepia leve para integrar la foto en la estética CRT. */
-        .photo-frame { position: relative; display: inline-block; border: 2px solid var(--amber); border-radius: 6px; overflow: hidden; box-shadow: 0 0 18px rgba(94,234,212,0.25); }
-        .photo-frame img { filter: saturate(0.92) contrast(1.05); }
-        /* Overlay de scanlines sobre la foto — pointer-events:none para no bloquear clics */
-        .photo-frame::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,0.14) 3px); }
-
-        /* ── BADGE OPEN TO WORK ──────────────────────────────────
-           Pastilla verde con punto pulsante. Indica búsqueda activa.
-           La animación se desactiva con prefers-reduced-motion. */
-        .otw-badge { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border: 1px solid var(--ok); border-radius: 9999px; color: var(--ok); font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; }
-        .otw-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 0 rgba(95,206,122,0.6); animation: otw-pulse 2s infinite; }
-        @keyframes otw-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(95,206,122,0.5); } 50% { box-shadow: 0 0 0 7px rgba(95,206,122,0); } }
-
-        /* ── STATS LINE ──────────────────────────────────────────
-           Línea de datos clave debajo de la terminal: media, titulación,
-           prácticas y disponibilidad. Separa con bordes --line tenues. */
-        .stats-line { font-size: 0.85rem; color: var(--amber-dim); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 0.6rem 0; }
-
-        @media (prefers-reduced-motion: reduce) { .otw-dot { animation: none; } }
-
-        /* ── HERO V2: POWER-ON CRT ───────────────────────────────
-           Simula el encendido de un monitor CRT: la imagen empieza
-           como una línea horizontal (scaleY muy pequeño) con brillo
-           exagerado, luego se expande y estabiliza en 0.7 s.
-           transform-origin center garantiza que el "desplegado" salga
-           del centro, no de la esquina superior. */
-        @keyframes crt-power-on {
-            0%   { transform: scaleY(0.004); filter: brightness(3); opacity: 0.3; }
-            12%  { transform: scaleY(0.02);  filter: brightness(3); opacity: 1; }
-            45%  { transform: scaleY(1);     filter: brightness(1.5); }
-            65%  { filter: brightness(0.75); }
-            100% { transform: scaleY(1);     filter: brightness(1); }
-        }
-        .term-window { animation: crt-power-on 0.7s ease-out both; transform-origin: center center; }
-        @media (prefers-reduced-motion: reduce) { .term-window { animation: none; } }
-
-        /* ── HERO V2: BRASAS AMBIENTALES ─────────────────────────
-           Partículas ámbar que ascienden lentamente de fondo en el
-           hero. Cada <span> tiene posición, duración y retraso
-           distintos para que el movimiento parezca orgánico.
-           position:absolute + inset:0 en .embers cubre todo el header;
-           z-index:0 lo mantiene bajo el contenido (que va en z-10). */
-        .embers { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
-        .embers span {
-            position: absolute; bottom: -12px; width: 3px; height: 3px;
-            border-radius: 50%; background: var(--amber);
-            box-shadow: 0 0 6px var(--amber); opacity: 0;
-            animation: ember-rise linear infinite;
-        }
-        @keyframes ember-rise {
-            0%   { transform: translateY(0) translateX(0); opacity: 0; }
-            12%  { opacity: 0.7; }
-            100% { transform: translateY(-360px) translateX(24px); opacity: 0; }
-        }
-        .embers span:nth-child(1){ left: 6%;  animation-duration: 7s;   animation-delay: 0s; }
-        .embers span:nth-child(2){ left: 18%; animation-duration: 9s;   animation-delay: 1.5s; }
-        .embers span:nth-child(3){ left: 30%; animation-duration: 6.5s; animation-delay: 3s; }
-        .embers span:nth-child(4){ left: 44%; animation-duration: 8.5s; animation-delay: 0.8s; }
-        .embers span:nth-child(5){ left: 58%; animation-duration: 7.5s; animation-delay: 2.2s; }
-        .embers span:nth-child(6){ left: 70%; animation-duration: 10s;  animation-delay: 4s; }
-        .embers span:nth-child(7){ left: 82%; animation-duration: 6.8s; animation-delay: 1.2s; }
-        .embers span:nth-child(8){ left: 92%; animation-duration: 9.5s; animation-delay: 3.5s; }
-        @media (prefers-reduced-motion: reduce) { .embers { display: none; } }
-
-        /* ── SR-ONLY: oculta visualmente pero accesible ──────────
-           Tailwind CDN lo incluye, pero lo definimos explícitamente
-           para garantizar que los IDs requeridos por app.js existan
-           en el DOM sin aparecer en la ventana de terminal. */
-        .sr-only {
-            position: absolute; width: 1px; height: 1px;
-            padding: 0; margin: -1px; overflow: hidden;
-            clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-        }
-
-        /* ── CABECERAS DE SECCIÓN COMO COMANDOS DE TERMINAL ─────
-           .section-cmd envuelve el h3 con estilo ámbar.
-           .prompt es el símbolo "$" en tono más tenue para
-           imitar el prompt del shell sin opacar el comando. */
-        .section-cmd { color: var(--amber); font-weight: 600; }
-        .section-cmd .prompt { color: var(--amber-dim); }
+        /* ── CABECERAS DE SECCIÓN COMO ETIQUETA + ACENTO ─────────
+           .section-eyebrow: etiqueta en mayúsculas con línea de
+           acento corta. Reemplaza el estilo de comandos de terminal. */
+        .section-eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--fg); }
+        .section-eyebrow::after { content: ''; display: block; width: 2.5rem; height: 2px; background: var(--accent); margin-top: .6rem; }
 
         /* ── FORM CONTACTO ───────────────────────────────────────
            Inputs con tokens del sistema de diseño terminal ámbar.
@@ -347,9 +288,9 @@
             transition: border-color .2s;
         }
         /* Placeholder en ámbar tenue para coherencia con el tema */
-        .form-input::placeholder { color: var(--amber-dim); }
+        .form-input::placeholder { color: var(--muted); }
         /* Focus: borde + sombra ámbar en lugar del morado anterior */
-        .form-input:focus { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber); }
+        .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
         /* Modo paper: .form-input ya usa var(--bg)/var(--line)/var(--fg),
            que toman los valores crema/marron al redefinir las variables en
            [data-theme="light"]. No hace falta regla por-componente. */
@@ -361,28 +302,55 @@
         a:focus-visible,
         button:focus-visible,
         .form-input:focus-visible {
-            outline: 2px solid var(--amber);
+            outline: 2px solid var(--accent);
             outline-offset: 2px;
         }
+
+        /* ── BADGES (PILLS) ──────────────────────────────────────
+           Pequeños badges pill-shaped para proyectos, experiencia
+           y certificados. Se reutilizan en Tareas 8 y 9. */
+        .pill { font-size: .7rem; font-weight: 600; padding: .15rem .55rem; border-radius: 999px; }
+        .pill-dev { background: rgba(255,95,86,.12); color: var(--err); }
+        .pill-featured { background: rgba(124,140,255,.14); color: var(--accent); }
+
+        /* ── PROYECTO LINKS ──────────────────────────────────────
+           Enlaces en tarjetas de proyectos con icono y hover. */
+        .proyecto-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); }
+        .proyecto-link:hover { color: var(--accent-hi); }
+
+        /* ── TIMELINE EXPERIENCIA ────────────────────────────────
+           Línea de tiempo vertical limpia. Cada .timeline-item
+           tiene un punto de acento y una línea vertical. */
+        .timeline-item { position: relative; padding-left: 1.75rem; padding-bottom: 1.75rem; border-left: 2px solid var(--line); }
+        .timeline-item:last-child { border-left-color: transparent; }
+        .timeline-dot { position: absolute; left: -7px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--surface); }
+
+        /* ── SKILL BARS — ANIMATED PROGRESS ─────────────────────
+           Barras de progreso animadas que se rellenan al entrar
+           en viewport (reemplaza los bloques ASCII █░). */
+        .skill-row { margin-bottom: .9rem; }
+        .skill-track { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+        .skill-fill { height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-hi)); transition: width 1s ease-out; }
+        @media (prefers-reduced-motion: reduce) { .skill-fill { transition: none; } }
     </style>
 </head>
 
-<body class="crt-scanlines font-mono" style="background: var(--bg); color: var(--fg);">
+<body style="background: var(--bg); color: var(--fg);">
 
 <!-- Panel de stats secreto (se activa con 5 clics en el logo S.L.H.) -->
 <!-- Panel de stats secreto — reskinado a clave terminal ámbar -->
 <div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] rounded-2xl p-5 shadow-2xl min-w-[200px]"
      style="background: var(--surface); border: 1px solid var(--line);">
     <div class="flex items-center justify-between mb-3">
-        <span class="text-xs uppercase tracking-widest phosphor font-semibold">$ sudo stats</span>
+        <span class="text-xs uppercase tracking-widest accent-text font-semibold">Estadisticas</span>
         <button onclick="document.getElementById('stats-panel').classList.add('hidden')"
                 class="text-lg leading-none transition-colors"
-                style="color: var(--amber-dim)">×</button>
+                style="color: var(--muted)">×</button>
     </div>
     <div class="space-y-2 text-sm">
         <div class="flex items-center justify-between gap-6">
-            <span style="color: var(--amber-dim)">Visitas totales</span>
-            <span id="stats-visitas" class="phosphor font-bold">...</span>
+            <span style="color: var(--muted)">Visitas totales</span>
+            <span id="stats-visitas" class="accent-text font-bold">...</span>
         </div>
     </div>
 </div>
@@ -390,19 +358,15 @@
 <!-- Barra de progreso de lectura (se llena al hacer scroll) -->
 <div id="scroll-progress"></div>
 
-<!-- Cursor personalizado (solo visible con ratón, no en móvil) -->
-<div class="cursor-dot" id="cursor-dot"></div>
-<div class="cursor-ring" id="cursor-ring"></div>
-
 <!-- Toast de bienvenida (primera visita) — estética terminal ámbar -->
 <div id="toast">
-    <div class="flex items-center gap-3 px-5 py-4 border rounded" style="background: var(--surface); border-color: var(--line);">
-        <span class="phosphor">[system]</span>
+    <div class="flex items-center gap-3 px-5 py-4 border rounded-xl" style="background: var(--surface); border-color: var(--line);">
+        <i class="fa-solid fa-circle-check accent-text text-lg"></i>
         <div>
-            <p class="phosphor text-sm font-semibold">welcome</p>
-            <p class="text-xs mt-0.5" style="color: var(--amber-dim)">gracias por visitar mi portafolio</p>
+            <p class="text-sm font-semibold" style="color: var(--fg)">Bienvenido</p>
+            <p class="text-xs mt-0.5" style="color: var(--muted)">gracias por visitar mi portafolio</p>
         </div>
-        <button onclick="cerrarToast()" class="ml-2 hover:opacity-70 text-lg leading-none" style="color: var(--amber-dim)">×</button>
+        <button onclick="cerrarToast()" class="ml-2 hover:opacity-70 text-lg leading-none" style="color: var(--muted)">×</button>
     </div>
 </div>
 
@@ -415,12 +379,12 @@
             <img src="/img/logo.svg" alt="SL Logo" class="h-20 w-auto object-contain">
         </a>
 
-        <div class="hidden md:flex items-center gap-8 text-sm font-medium" style="color: var(--amber-dim)">
+        <div class="hidden md:flex items-center gap-8 text-sm font-medium" style="color: var(--muted)">
             <a href="#proyectos"    class="nav-link transition-colors" data-section="proyectos">Proyectos</a>
             <a href="#habilidades"  class="nav-link transition-colors" data-section="habilidades">Habilidades</a>
             <a href="#experiencia"  class="nav-link transition-colors" data-section="experiencia">Experiencia</a>
             <a href="#certificados" class="nav-link transition-colors" data-section="certificados">Certificados</a>
-            <a href="#contacto" class="btn-contact px-4 py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);">$ contact</a>
+            <a href="#contacto" class="btn-contact px-4 py-2 border rounded-full text-sm transition-colors" style="border-color: var(--line); color: var(--accent);">Contacto</a>
             <!-- Toggle modo claro/oscuro -->
             <button id="theme-toggle" title="Cambiar tema" class="nav-icon transition-colors text-lg">
                 <i class="fa-solid fa-moon"></i>
@@ -442,74 +406,48 @@
     <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
         <div class="flex flex-col gap-3 text-sm font-medium rounded-xl p-4"
              style="background: var(--surface); color: var(--fg); border: 1px solid var(--line)">
-            <a href="#proyectos"    class="phosphor hover:opacity-75 transition-opacity py-1">Proyectos</a>
-            <a href="#habilidades"  class="phosphor hover:opacity-75 transition-opacity py-1">Habilidades</a>
-            <a href="#experiencia"  class="phosphor hover:opacity-75 transition-opacity py-1">Experiencia</a>
-            <a href="#certificados" class="phosphor hover:opacity-75 transition-opacity py-1">Certificados</a>
-            <a href="#contacto" class="btn-contact text-center py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--amber);">$ contact</a>
+            <a href="#proyectos"    class="accent-text hover:opacity-75 transition-opacity py-1">Proyectos</a>
+            <a href="#habilidades"  class="accent-text hover:opacity-75 transition-opacity py-1">Habilidades</a>
+            <a href="#experiencia"  class="accent-text hover:opacity-75 transition-opacity py-1">Experiencia</a>
+            <a href="#certificados" class="accent-text hover:opacity-75 transition-opacity py-1">Certificados</a>
+            <a href="#contacto" class="btn-contact text-center py-2 border rounded-full text-sm transition-colors" style="border-color: var(--line); color: var(--accent);">Contacto</a>
         </div>
     </div>
 </nav>
 
 <!-- ============================================================
-     HERO — ventana de terminal con boot y comandos autoescritos
-     (Task 2 del rediseño terminal ámbar)
-     IMPORTANTE: los IDs #nombre #titular #sobre_mi #foto_perfil
-     #enlaces #btn-cv siguen en el DOM (ocultos con .sr-only) para
-     que cargarPerfil() en app.js los siga encontrando.
+     HERO CINEMATOGRÁFICO — foto circular con halo, motas de
+     profundidad y revelado de texto escalonado (Tarea 3 del
+     rediseño cinematográfico).
+     Los IDs #hero-content #nombre #titular #sobre_mi #foto_perfil
+     #btn-cv #github-stats son consumidos por app.js (cargarPerfil()
+     añade la clase .hero-ready a #hero-content cuando el perfil
+     termina de cargar, ver Tarea 4).
 ============================================================ -->
-<header id="inicio" class="relative overflow-hidden pt-28 pb-10 crt-vignette crt-flicker">
-    <!-- Brasas ambientales V2: partículas ámbar que ascienden de fondo.
-         aria-hidden evita que los lectores de pantalla las anuncien. -->
-    <div class="embers" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-    <div class="relative z-10 max-w-4xl mx-auto px-6">
-        <!-- Badge OPEN TO WORK: punto verde pulsante + texto. Indica búsqueda activa de empleo. -->
-        <div class="mb-4">
-            <span class="otw-badge"><span class="otw-dot"></span> OPEN TO WORK &mdash; busco empleo activamente</span>
-        </div>
+<header id="inicio" class="relative overflow-hidden pt-24 pb-16 hero-cinema">
+    <div class="hero-particles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="hero-vignette" aria-hidden="true"></div>
 
-        <!-- Ventana de terminal con barra de título estilo macOS/Linux -->
-        <div class="term-window border rounded-lg overflow-hidden" style="border-color: var(--line); background: var(--surface);">
-            <div class="term-titlebar flex items-center gap-2 px-4 py-2 border-b" style="border-color: var(--line);">
-                <!-- Círculos decorativos de ventana (rojo/amarillo/verde) -->
-                <span class="w-3 h-3 rounded-full" style="background:#ff5f56"></span>
-                <span class="w-3 h-3 rounded-full" style="background:#ffbd2e"></span>
-                <span class="w-3 h-3 rounded-full" style="background:#27c93f"></span>
-                <span class="ml-3 text-xs" style="color: var(--amber-dim)">santiago@portfolio:~</span>
-            </div>
-            <!-- Cuerpo de la terminal: dos columnas (foto + texto tecleado).
-                 En móvil apila verticalmente. iniciarBootHero() escribe en #term-typed. -->
-            <div class="term-content flex flex-col md:flex-row gap-6 p-4 md:p-6">
-                <div class="shrink-0 mx-auto md:mx-0">
-                    <div class="photo-frame">
-                        <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente" class="block w-40 h-40 md:w-48 md:h-48 object-cover">
-                    </div>
-                    <p class="text-xs mt-2 text-center md:text-left" style="color: var(--amber-dim)">~/perfil.jpg</p>
-                </div>
-                <div id="term-typed" class="flex-1 min-h-[260px] md:min-h-[320px] text-sm md:text-base leading-relaxed break-words overflow-x-auto"></div>
-            </div>
+    <div id="hero-content" class="relative z-10 max-w-2xl mx-auto px-6 text-center">
+        <div class="hero-line hero-photo-wrap">
+            <div class="hero-photo-glow"></div>
+            <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente" class="hero-photo">
         </div>
-
-        <!-- Línea de stats de impacto: datos clave visibles de un vistazo. -->
-        <div class="mt-4 stats-line">
-            <span class="phosphor">&gt;</span> 9.0 media &nbsp;&middot;&nbsp; Titulado DAM &nbsp;&middot;&nbsp; Practicas en GDES &nbsp;&middot;&nbsp; <span style="color: var(--ok)">disponible</span>
+        <p class="hero-line hero-eyebrow">Portfolio &middot; 2026</p>
+        <h1 id="nombre" class="hero-line hero-title"></h1>
+        <p id="titular" class="hero-line hero-subtitle"></p>
+        <p id="sobre_mi" class="hero-line hero-bio"></p>
+        <div class="hero-line hero-ctas">
+            <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download class="hero-btn hero-btn-primary">Descargar CV</a>
+            <a href="#proyectos" class="hero-btn hero-btn-ghost">Ver proyectos</a>
         </div>
-
-        <!-- #foto_perfil se movió a la columna izquierda de la terminal (visible).
-             Los demás IDs siguen aquí para que cargarPerfil() los encuentre. -->
-        <div class="sr-only">
-            <h1 id="nombre"></h1>
-            <span id="titular"></span>
-            <span id="sobre_mi"></span>
-            <div id="enlaces"></div>
-            <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download>CV</a>
-        </div>
+        <p class="hero-line hero-status"><span class="hero-status-dot"></span> Disponible para trabajar</p>
+        <p class="hero-line hero-meta">9.0 de media &middot; Titulado en DAM &middot; Practicas en GDES</p>
     </div>
 
-    <!-- GitHub Stats bar — se rellena desde app.js con la API pública de GitHub -->
-    <div class="relative max-w-4xl mx-auto px-6 pt-8">
-        <div id="github-stats" class="flex flex-wrap gap-4 text-sm" style="color: var(--amber-dim)">
-            <span>$ loading github stats...</span>
+    <div class="relative max-w-4xl mx-auto px-6 pt-10">
+        <div id="github-stats" class="flex flex-wrap gap-4 text-sm justify-center" style="color: var(--muted)">
+            <span>Cargando estadisticas de GitHub...</span>
         </div>
     </div>
 </header>
@@ -522,19 +460,18 @@
     <!-- TECH STACK -->
     <section class="fade-up">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> cat tech_stack.txt</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <h2 class="section-eyebrow">Stack tecnico</h2>
         </div>
         <div id="tech-parallax" class="parallax-container">
             <div class="parallax-layer">
                 <div id="tech-stack-main" class="mb-8">
                     <!-- Sub-label "Uso frecuente" recoloreado a ámbar tenue para coherencia con el tema terminal -->
-                    <p class="text-sm font-medium mb-4 text-center" style="color: var(--amber-dim)"><i class="fa-solid fa-star text-yellow-500 mr-1"></i> Uso frecuente</p>
+                    <p class="text-sm font-medium mb-4 text-center" style="color: var(--muted)"><i class="fa-solid fa-star text-yellow-500 mr-1"></i> Uso frecuente</p>
                     <div id="tech-main" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-3xl mx-auto"></div>
                 </div>
                 <div id="tech-stack-other">
                     <!-- Sub-label "Conocimientos basicos" recoloreado a ámbar tenue -->
-                    <p class="text-sm font-medium mb-4 text-center" style="color: var(--amber-dim)"><i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos basicos</p>
+                    <p class="text-sm font-medium mb-4 text-center" style="color: var(--muted)"><i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos basicos</p>
                     <div id="tech-other" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3 max-w-4xl mx-auto"></div>
                 </div>
             </div>
@@ -544,8 +481,7 @@
     <!-- PROYECTOS -->
     <section id="proyectos" class="fade-up scroll-mt-24">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> ls ~/proyectos</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <h2 class="section-eyebrow">Proyectos</h2>
         </div>
         <div id="lista-proyectos" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div class="flex items-center gap-3 justify-center col-span-1 lg:col-span-2 py-10">
@@ -557,17 +493,15 @@
     <!-- HABILIDADES -->
     <section id="habilidades" class="fade-up scroll-mt-24">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> skills --list</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <h2 class="section-eyebrow">Habilidades</h2>
         </div>
-        <div id="lista-habilidades" class="max-w-2xl border rounded p-5 text-sm overflow-x-auto" style="border-color: var(--line); background: var(--surface);"></div>
+        <div id="lista-habilidades" class="max-w-2xl border rounded-xl p-5 text-sm" style="border-color: var(--line); background: var(--surface);"></div>
     </section>
 
     <!-- EXPERIENCIA -->
     <section id="experiencia" class="fade-up scroll-mt-24">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> git log --experiencia</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
+            <h2 class="section-eyebrow">Experiencia</h2>
         </div>
         <div id="lista-experiencia" class="max-w-3xl mx-auto">
             <div class="flex items-center gap-3 justify-center w-full py-6">
@@ -579,10 +513,8 @@
     <!-- CERTIFICADOS -->
     <section id="certificados" class="fade-up scroll-mt-24">
         <div class="mb-8">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> cat certificados/</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
-            <!-- Descripción conservada; recoloreada a ámbar tenue en lugar de gray-400 -->
-            <p class="mt-3 max-w-xl" style="color: var(--amber-dim)">Cursos completados para mantenerme al dia con las ultimas tecnologias.</p>
+            <h2 class="section-eyebrow">Certificados</h2>
+            <p class="mt-3 max-w-xl" style="color: var(--muted)">Cursos completados para mantenerme al dia con las ultimas tecnologias.</p>
         </div>
         <div id="lista-certificados" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="flex items-center gap-3 justify-center col-span-1 md:col-span-2 py-10">
@@ -601,10 +533,8 @@
 <section id="contacto" class="relative overflow-hidden mt-16 scroll-mt-24">
     <div class="relative max-w-6xl mx-auto px-6 py-20">
         <div class="mb-12">
-            <h3 class="section-cmd text-xl md:text-2xl"><span class="prompt">$</span> ./contact.sh</h3>
-            <div class="mt-1 h-px" style="background: var(--line)"></div>
-            <!-- Descripción conservada; recoloreada a ámbar tenue en lugar de gray-400 -->
-            <p class="mt-3 max-w-lg text-lg" style="color: var(--amber-dim)">Estoy buscando oportunidades para crecer como desarrollador. Si buscas a alguien con ganas de aprender y aportar, hablemos.</p>
+            <h2 class="section-eyebrow">Contacto</h2>
+            <p class="mt-3 max-w-lg text-lg" style="color: var(--muted)">Estoy buscando oportunidades para crecer como desarrollador. Si buscas a alguien con ganas de aprender y aportar, hablemos.</p>
         </div>
 
         <!-- Formulario de contacto -->
@@ -613,7 +543,7 @@
             <input  type="email" id="contacto-email"   placeholder="Tu email"    class="form-input" required>
             <textarea            id="contacto-mensaje" placeholder="Tu mensaje"  class="form-input resize-none" rows="4" required></textarea>
             <!-- Botón estilo terminal ámbar: sin gradiente, borde y hover sutil -->
-            <button id="btn-enviar" type="submit" class="btn-contact px-5 py-2.5 border rounded phosphor transition-colors" style="border-color: var(--amber)">$ send</button>
+            <button id="btn-enviar" type="submit" class="btn-contact px-5 py-2.5 border rounded-full accent-text font-semibold transition-colors" style="border-color: var(--accent)">Enviar mensaje</button>
             <!-- Feedback del envío: éxito o error -->
             <p id="form-feedback" class="text-center text-sm hidden"></p>
         </form>
@@ -621,10 +551,10 @@
         <div class="text-center space-y-6">
             <!-- Email con botón copiar -->
             <div id="email-display" class="inline-flex items-center gap-3 px-6 py-4 border rounded-2xl" style="background: var(--surface); border-color: var(--line)">
-                <i class="fa-solid fa-envelope phosphor text-xl"></i>
-                <span id="email-text" class="text-lg font-mono phosphor">cargando...</span>
+                <i class="fa-solid fa-envelope accent-text text-xl"></i>
+                <span id="email-text" class="text-lg font-mono accent-text">cargando...</span>
                 <button id="btn-copiar-email" title="Copiar email"
-                    class="btn-contact ml-2 px-3 py-1.5 border rounded-lg phosphor transition-all text-sm" style="border-color: var(--line)">
+                    class="btn-contact ml-2 px-3 py-1.5 border rounded-lg accent-text transition-all text-sm" style="border-color: var(--line)">
                     <i class="fa-regular fa-copy"></i>
                 </button>
             </div>
@@ -637,8 +567,8 @@
 <!-- FOOTER — clave terminal ámbar, sin gradientes slate/morado -->
 <footer class="border-t" style="border-color: var(--line)">
     <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-2">
-        <p style="color: var(--amber-dim)">// EOF &mdash; Santiago Lafuente 2026 <span class="term-caret">&nbsp;</span></p>
-        <p class="text-xs" style="color: var(--amber-dim)"><span id="visitas-counter"></span></p>
+        <p style="color: var(--muted)">&copy; 2026 Santiago Lafuente</p>
+        <p class="text-xs" style="color: var(--muted)"><span id="visitas-counter"></span></p>
     </div>
 </footer>
 

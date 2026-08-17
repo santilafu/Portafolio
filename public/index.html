@@ -94,6 +94,7 @@
             .fade-up { opacity: 1 !important; transform: none !important; transition: none !important; }
             .float-1, .float-2, .float-3 { animation: none !important; }
             .loader { animation-duration: 0s !important; }
+            .hero-line { opacity: 1 !important; transform: none !important; transition: none !important; }
         }
 
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
@@ -158,8 +159,79 @@
         .nav-icon { color: var(--muted); transition: color .2s; }
         .nav-icon:hover { color: var(--accent); }
 
-        /* badge-pulse y @keyframes pulse-glow eliminados:
-           el badge de disponibilidad se eliminó del hero en el reskin. */
+        /* ── HERO CINEMATOGRÁFICO ────────────────────────────────
+           Fondo con degradado radial oscuro, foto circular con halo
+           que respira, motas de profundidad ascendiendo y revelado
+           de texto escalonado cuando los datos del perfil cargan. */
+        .hero-cinema { background: var(--hero-gradient); }
+        .hero-vignette { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 140px 40px rgba(0,0,0,0.55); }
+        [data-theme="light"] .hero-vignette { box-shadow: none; }
+
+        /* Motas de profundidad: ascienden despacio, tenues, con blur leve
+           (sustituyen a las "brasas" del tema anterior por un efecto
+           más sutil de polvo/luz suspendida, validado en mockup). */
+        .hero-particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .hero-particles span {
+            position: absolute; bottom: -12px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,.95), rgba(180,195,255,0) 70%);
+            opacity: 0; animation: hero-particle-float linear infinite;
+        }
+        @keyframes hero-particle-float {
+            0%   { transform: translateY(30px) translateX(0) scale(.8); opacity: 0; }
+            12%  { opacity: var(--op, .7); }
+            88%  { opacity: var(--op, .7); }
+            100% { transform: translateY(-420px) translateX(var(--drift, 20px)) scale(1.1); opacity: 0; }
+        }
+        .hero-particles span:nth-child(1){ width:5px; height:5px; left:10%; --op:.85; --drift:18px;  animation-duration:6s;   animation-delay:0s; }
+        .hero-particles span:nth-child(2){ width:3px; height:3px; left:20%; --op:.6;  --drift:-20px;  animation-duration:7.5s; animation-delay:1.2s; }
+        .hero-particles span:nth-child(3){ width:6px; height:6px; left:32%; --op:.9;  --drift:26px;   animation-duration:6.5s; animation-delay:2.4s; }
+        .hero-particles span:nth-child(4){ width:4px; height:4px; left:44%; --op:.55; --drift:-14px;  animation-duration:8s;   animation-delay:.6s; }
+        .hero-particles span:nth-child(5){ width:5px; height:5px; left:57%; --op:.8;  --drift:20px;   animation-duration:6.8s; animation-delay:3s; }
+        .hero-particles span:nth-child(6){ width:3px; height:3px; left:69%; --op:.6;  --drift:-22px;  animation-duration:7.2s; animation-delay:1.8s; }
+        .hero-particles span:nth-child(7){ width:6px; height:6px; left:80%; --op:.85; --drift:16px;   animation-duration:6.2s; animation-delay:3.6s; }
+        .hero-particles span:nth-child(8){ width:4px; height:4px; left:90%; --op:.55; --drift:-18px;  animation-duration:7.8s; animation-delay:2.1s; }
+        @media (prefers-reduced-motion: reduce) { .hero-particles { display: none; } }
+        [data-theme="light"] .hero-particles { opacity: .35; }
+
+        /* Foto circular con halo que "respira" detrás */
+        .hero-photo-wrap { position: relative; display: inline-block; }
+        .hero-photo-glow {
+            position: absolute; inset: -22px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(124,140,255,.45), transparent 72%);
+            filter: blur(2px); animation: hero-breathe 5s ease-in-out infinite;
+        }
+        @keyframes hero-breathe { 0%,100% { opacity:.7; transform: scale(1); } 50% { opacity:1; transform: scale(1.06); } }
+        .hero-photo {
+            position: relative; display: block; width: 120px; height: 120px;
+            border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(242,243,247,.5);
+        }
+        @media (prefers-reduced-motion: reduce) { .hero-photo-glow { animation: none; } }
+
+        /* Revelado escalonado: cada .hero-line entra con fundido + desplazamiento
+           cuando #hero-content recibe .hero-ready (tras cargar el perfil, ver app.js). */
+        .hero-line { opacity: 0; transform: translateY(18px); transition: opacity .6s ease-out, transform .6s ease-out; }
+        .hero-ready .hero-line { opacity: 1; transform: none; }
+        .hero-line:nth-child(1) { transition-delay: .05s; }
+        .hero-line:nth-child(2) { transition-delay: .15s; }
+        .hero-line:nth-child(3) { transition-delay: .25s; }
+        .hero-line:nth-child(4) { transition-delay: .35s; }
+        .hero-line:nth-child(5) { transition-delay: .45s; }
+        .hero-line:nth-child(6) { transition-delay: .55s; }
+        .hero-line:nth-child(7) { transition-delay: .65s; }
+
+        .hero-eyebrow { font-size: .75rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-top: 1.25rem; }
+        .hero-title { font-size: 2.5rem; font-weight: 700; letter-spacing: -0.02em; margin-top: .5rem; line-height: 1.05; }
+        .hero-subtitle { font-size: 1.1rem; color: var(--muted); margin-top: .5rem; }
+        .hero-bio { max-width: 40rem; margin: .75rem auto 0; color: var(--fg); opacity: .9; }
+        .hero-ctas { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-top: 1.5rem; }
+        .hero-btn { padding: .65rem 1.4rem; border-radius: 999px; font-size: .875rem; font-weight: 600; transition: transform .2s, opacity .2s; }
+        .hero-btn:hover { transform: translateY(-2px); }
+        .hero-btn-primary { background: var(--fg); color: var(--bg); }
+        .hero-btn-ghost { border: 1px solid rgba(242,243,247,.35); color: var(--fg); }
+        .hero-status { margin-top: 1.5rem; font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: .5rem; }
+        .hero-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+        .hero-meta { margin-top: .75rem; font-size: .8rem; color: var(--muted); }
 
         /* ── TOAST ───────────────────────────────────────────────
            Notificación que aparece abajo a la derecha la primera vez
@@ -185,16 +257,6 @@
         }
         /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
         [data-theme="light"] .glow { text-shadow: none; }
-
-        /* ── SR-ONLY: oculta visualmente pero accesible ──────────
-           Tailwind CDN lo incluye, pero lo definimos explícitamente
-           para garantizar que los IDs requeridos por app.js existan
-           en el DOM sin aparecer en la ventana de terminal. */
-        .sr-only {
-            position: absolute; width: 1px; height: 1px;
-            padding: 0; margin: -1px; overflow: hidden;
-            clip: rect(0,0,0,0); white-space: nowrap; border: 0;
-        }
 
         /* ── CABECERAS DE SECCIÓN COMO COMANDOS DE TERMINAL ─────
            .section-cmd envuelve el h3 con estilo ámbar.
@@ -316,64 +378,38 @@
 </nav>
 
 <!-- ============================================================
-     HERO — ventana de terminal con boot y comandos autoescritos
-     (Task 2 del rediseño terminal ámbar)
-     IMPORTANTE: los IDs #nombre #titular #sobre_mi #foto_perfil
-     #enlaces #btn-cv siguen en el DOM (ocultos con .sr-only) para
-     que cargarPerfil() en app.js los siga encontrando.
+     HERO CINEMATOGRÁFICO — foto circular con halo, motas de
+     profundidad y revelado de texto escalonado (Tarea 3 del
+     rediseño cinematográfico).
+     Los IDs #hero-content #nombre #titular #sobre_mi #foto_perfil
+     #btn-cv #github-stats son consumidos por app.js (cargarPerfil()
+     añade la clase .hero-ready a #hero-content cuando el perfil
+     termina de cargar, ver Tarea 4).
 ============================================================ -->
-<header id="inicio" class="relative overflow-hidden pt-28 pb-10 crt-vignette crt-flicker">
-    <!-- Brasas ambientales V2: partículas ámbar que ascienden de fondo.
-         aria-hidden evita que los lectores de pantalla las anuncien. -->
-    <div class="embers" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-    <div class="relative z-10 max-w-4xl mx-auto px-6">
-        <!-- Badge OPEN TO WORK: punto verde pulsante + texto. Indica búsqueda activa de empleo. -->
-        <div class="mb-4">
-            <span class="otw-badge"><span class="otw-dot"></span> OPEN TO WORK &mdash; busco empleo activamente</span>
-        </div>
+<header id="inicio" class="relative overflow-hidden pt-24 pb-16 hero-cinema">
+    <div class="hero-particles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="hero-vignette" aria-hidden="true"></div>
 
-        <!-- Ventana de terminal con barra de título estilo macOS/Linux -->
-        <div class="term-window border rounded-lg overflow-hidden" style="border-color: var(--line); background: var(--surface);">
-            <div class="term-titlebar flex items-center gap-2 px-4 py-2 border-b" style="border-color: var(--line);">
-                <!-- Círculos decorativos de ventana (rojo/amarillo/verde) -->
-                <span class="w-3 h-3 rounded-full" style="background:#ff5f56"></span>
-                <span class="w-3 h-3 rounded-full" style="background:#ffbd2e"></span>
-                <span class="w-3 h-3 rounded-full" style="background:#27c93f"></span>
-                <span class="ml-3 text-xs" style="color: var(--muted)">santiago@portfolio:~</span>
-            </div>
-            <!-- Cuerpo de la terminal: dos columnas (foto + texto tecleado).
-                 En móvil apila verticalmente. iniciarBootHero() escribe en #term-typed. -->
-            <div class="term-content flex flex-col md:flex-row gap-6 p-4 md:p-6">
-                <div class="shrink-0 mx-auto md:mx-0">
-                    <div class="photo-frame">
-                        <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente" class="block w-40 h-40 md:w-48 md:h-48 object-cover">
-                    </div>
-                    <p class="text-xs mt-2 text-center md:text-left" style="color: var(--muted)">~/perfil.jpg</p>
-                </div>
-                <div id="term-typed" class="flex-1 min-h-[260px] md:min-h-[320px] text-sm md:text-base leading-relaxed break-words overflow-x-auto"></div>
-            </div>
+    <div id="hero-content" class="relative z-10 max-w-2xl mx-auto px-6 text-center">
+        <div class="hero-line hero-photo-wrap">
+            <div class="hero-photo-glow"></div>
+            <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente" class="hero-photo">
         </div>
-
-        <!-- Línea de stats de impacto: datos clave visibles de un vistazo. -->
-        <div class="mt-4 stats-line">
-            <span class="accent-text">&gt;</span> 9.0 media &nbsp;&middot;&nbsp; Titulado DAM &nbsp;&middot;&nbsp; Practicas en GDES &nbsp;&middot;&nbsp; <span style="color: var(--ok)">disponible</span>
+        <p class="hero-line hero-eyebrow">Portfolio &middot; 2026</p>
+        <h1 id="nombre" class="hero-line hero-title"></h1>
+        <p id="titular" class="hero-line hero-subtitle"></p>
+        <p id="sobre_mi" class="hero-line hero-bio"></p>
+        <div class="hero-line hero-ctas">
+            <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download class="hero-btn hero-btn-primary">Descargar CV</a>
+            <a href="#proyectos" class="hero-btn hero-btn-ghost">Ver proyectos</a>
         </div>
-
-        <!-- #foto_perfil se movió a la columna izquierda de la terminal (visible).
-             Los demás IDs siguen aquí para que cargarPerfil() los encuentre. -->
-        <div class="sr-only">
-            <h1 id="nombre"></h1>
-            <span id="titular"></span>
-            <span id="sobre_mi"></span>
-            <div id="enlaces"></div>
-            <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download>CV</a>
-        </div>
+        <p class="hero-line hero-status"><span class="hero-status-dot"></span> Disponible para trabajar</p>
+        <p class="hero-line hero-meta">9.0 de media &middot; Titulado en DAM &middot; Practicas en GDES</p>
     </div>
 
-    <!-- GitHub Stats bar — se rellena desde app.js con la API pública de GitHub -->
-    <div class="relative max-w-4xl mx-auto px-6 pt-8">
-        <div id="github-stats" class="flex flex-wrap gap-4 text-sm" style="color: var(--muted)">
-            <span>$ loading github stats...</span>
+    <div class="relative max-w-4xl mx-auto px-6 pt-10">
+        <div id="github-stats" class="flex flex-wrap gap-4 text-sm justify-center" style="color: var(--muted)">
+            <span>Cargando estadisticas de GitHub...</span>
         </div>
     </div>
 </header>

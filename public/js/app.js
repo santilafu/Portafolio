@@ -201,7 +201,6 @@ async function cargarGithubStats() {
         // Prefijo de prompt y ítems con tokens CSS del tema terminal ámbar.
         // Los valores numéricos usan .accent-text para el brillo característico.
         contenedor.innerHTML = `
-            <span style="color: var(--muted)">$ git stats</span>
             <a href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-colors"
                style="background: var(--surface); border: 1px solid var(--line);">
@@ -565,7 +564,7 @@ function iniciarFormContacto() {
 
         // Estado de carga en el botón
         btnEnviar.disabled = true;
-        btnEnviar.textContent = '[ enviando... ]';
+        btnEnviar.textContent = 'Enviando...';
 
         try {
             const res = await fetch(`${API_URL}/contacto`, {
@@ -578,18 +577,18 @@ function iniciarFormContacto() {
             if (res.ok) {
                 // Éxito: limpiamos el formulario y mostramos confirmación en verde terminal
                 form.reset();
-                mostrarFeedback(feedback, '[ok] mensaje enviado correctamente', 'var(--ok)');
+                mostrarFeedback(feedback, 'Mensaje enviado correctamente', 'var(--ok)');
             } else {
                 // Error devuelto por el servidor (p.ej. campo vacío, rate limit)
-                mostrarFeedback(feedback, '[error] ' + (data.error || 'Error al enviar'), 'var(--err)');
+                mostrarFeedback(feedback, data.error || 'Error al enviar el mensaje', 'var(--err)');
             }
         } catch {
             // Fallo de red o sin conexión
-            mostrarFeedback(feedback, '[error] Error de conexión. Inténtalo de nuevo.', 'var(--err)');
+            mostrarFeedback(feedback, 'Error de conexion. Intentalo de nuevo.', 'var(--err)');
         } finally {
             // Restauramos el botón independientemente del resultado
             btnEnviar.disabled = false;
-            btnEnviar.textContent = '$ send';
+            btnEnviar.textContent = 'Enviar mensaje';
         }
     });
 }

@@ -331,7 +331,7 @@
 <div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] rounded-2xl p-5 shadow-2xl min-w-[200px]"
      style="background: var(--surface); border: 1px solid var(--line);">
     <div class="flex items-center justify-between mb-3">
-        <span class="text-xs uppercase tracking-widest accent-text font-semibold">$ sudo stats</span>
+        <span class="text-xs uppercase tracking-widest accent-text font-semibold">Estadisticas</span>
         <button onclick="document.getElementById('stats-panel').classList.add('hidden')"
                 class="text-lg leading-none transition-colors"
                 style="color: var(--muted)">×</button>
@@ -349,10 +349,10 @@
 
 <!-- Toast de bienvenida (primera visita) — estética terminal ámbar -->
 <div id="toast">
-    <div class="flex items-center gap-3 px-5 py-4 border rounded" style="background: var(--surface); border-color: var(--line);">
-        <span class="accent-text">[system]</span>
+    <div class="flex items-center gap-3 px-5 py-4 border rounded-xl" style="background: var(--surface); border-color: var(--line);">
+        <i class="fa-solid fa-circle-check accent-text text-lg"></i>
         <div>
-            <p class="accent-text text-sm font-semibold">welcome</p>
+            <p class="text-sm font-semibold" style="color: var(--fg)">Bienvenido</p>
             <p class="text-xs mt-0.5" style="color: var(--muted)">gracias por visitar mi portafolio</p>
         </div>
         <button onclick="cerrarToast()" class="ml-2 hover:opacity-70 text-lg leading-none" style="color: var(--muted)">×</button>
@@ -373,7 +373,7 @@
             <a href="#habilidades"  class="nav-link transition-colors" data-section="habilidades">Habilidades</a>
             <a href="#experiencia"  class="nav-link transition-colors" data-section="experiencia">Experiencia</a>
             <a href="#certificados" class="nav-link transition-colors" data-section="certificados">Certificados</a>
-            <a href="#contacto" class="btn-contact px-4 py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--accent);">$ contact</a>
+            <a href="#contacto" class="btn-contact px-4 py-2 border rounded-full text-sm transition-colors" style="border-color: var(--line); color: var(--accent);">Contacto</a>
             <!-- Toggle modo claro/oscuro -->
             <button id="theme-toggle" title="Cambiar tema" class="nav-icon transition-colors text-lg">
                 <i class="fa-solid fa-moon"></i>
@@ -399,7 +399,7 @@
             <a href="#habilidades"  class="accent-text hover:opacity-75 transition-opacity py-1">Habilidades</a>
             <a href="#experiencia"  class="accent-text hover:opacity-75 transition-opacity py-1">Experiencia</a>
             <a href="#certificados" class="accent-text hover:opacity-75 transition-opacity py-1">Certificados</a>
-            <a href="#contacto" class="btn-contact text-center py-2 border rounded text-sm transition-colors" style="border-color: var(--line); color: var(--accent);">$ contact</a>
+            <a href="#contacto" class="btn-contact text-center py-2 border rounded-full text-sm transition-colors" style="border-color: var(--line); color: var(--accent);">Contacto</a>
         </div>
     </div>
 </nav>
@@ -532,7 +532,7 @@
             <input  type="email" id="contacto-email"   placeholder="Tu email"    class="form-input" required>
             <textarea            id="contacto-mensaje" placeholder="Tu mensaje"  class="form-input resize-none" rows="4" required></textarea>
             <!-- Botón estilo terminal ámbar: sin gradiente, borde y hover sutil -->
-            <button id="btn-enviar" type="submit" class="btn-contact px-5 py-2.5 border rounded accent-text transition-colors" style="border-color: var(--accent)">$ send</button>
+            <button id="btn-enviar" type="submit" class="btn-contact px-5 py-2.5 border rounded-full accent-text font-semibold transition-colors" style="border-color: var(--accent)">Enviar mensaje</button>
             <!-- Feedback del envío: éxito o error -->
             <p id="form-feedback" class="text-center text-sm hidden"></p>
         </form>
@@ -556,7 +556,7 @@
 <!-- FOOTER — clave terminal ámbar, sin gradientes slate/morado -->
 <footer class="border-t" style="border-color: var(--line)">
     <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-2">
-        <p style="color: var(--muted)">// EOF &mdash; Santiago Lafuente 2026 <span class="term-caret">&nbsp;</span></p>
+        <p style="color: var(--muted)">&copy; 2026 Santiago Lafuente</p>
         <p class="text-xs" style="color: var(--muted)"><span id="visitas-counter"></span></p>
     </div>
 </footer>

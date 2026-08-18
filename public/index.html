@@ -7,7 +7,6 @@
 
     Novedades v2:
       - Barra de progreso de lectura (scroll progress)
-      - Cursor personalizado con glow púrpura
       - Toast de bienvenida (primera visita)
       - Sección GitHub stats en tiempo real
       - Botón de descarga de CV
@@ -69,25 +68,29 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">
 
     <style>
-        /* ── TOKENS TERMINAL (verde menta / teal) ────────────────
-           Variables CSS globales del sistema de diseño retro.
-           El acento antes era ámbar; ahora es verde menta suave.
-           (Se conservan los nombres --accent* por simplicidad.) */
+        /* ── TOKENS DE DISEÑO (acento azul-violeta) ──────────────
+           Variables CSS globales del sistema de diseño
+           cinematográfico. Reutilizadas en todo el sitio para que
+           el modo claro/oscuro se propague sin reglas por-clase. */
         :root {
             --bg: #070b12; --surface: #101527;
             --accent: #7c8cff; --accent-hi: #a5b4ff; --muted: #9aa2c0;
             --fg: #f2f3f7; --ok: #5fce7a; --err: #ff5f56;
             --line: rgba(124,140,255,0.22);
             --hero-gradient: radial-gradient(120% 100% at 50% -10%, #1c2440 0%, #0a0d1a 45%, #050608 100%);
+            /* Componentes RGB de --accent / --fg (mismo color, sin # ni unidad) para
+               poder aplicarles transparencia con rgba() donde el color solido no sirve. */
+            --accent-rgb: 124,140,255;
+            --fg-rgb: 242,243,247;
         }
         html, body { background: var(--bg); color: var(--fg); }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; }
         .accent-text { color: var(--accent); }
-        .glow { text-shadow: 0 0 6px rgba(124,140,255,0.55), 0 0 14px rgba(124,140,255,0.25); }
+        .glow { text-shadow: 0 0 6px rgba(var(--accent-rgb),0.55), 0 0 14px rgba(var(--accent-rgb),0.25); }
 
         /* ── ACCESIBILIDAD: MOVIMIENTO REDUCIDO ──────────────────
-           Usuarios con prefers-reduced-motion desactivan el flicker
-           y las scanlines animadas sin perder el contenido. */
+           Usuarios con prefers-reduced-motion desactivan las
+           animaciones no esenciales sin perder el contenido. */
         @media (prefers-reduced-motion: reduce) {
             /* Desactivamos tambien el resto de movimiento no esencial:
                entradas fade-up, flotacion de iconos y el spin del loader. */
@@ -103,17 +106,17 @@
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
            Barra fina en el top de la página que crece según el scroll.
            z-[60] para estar por encima de la navbar (z-50).
-           Color ámbar con glow fosforo en lugar del gradiente azul/morado. */
+           Color de acento con glow sutil. */
         #scroll-progress { position: fixed; top:0; left:0; height:3px; width:0%; background: var(--accent); box-shadow: 0 0 8px rgba(124,140,255,0.7); z-index:60; transition: width 0.1s linear; }
 
-        /* Botón "$ contact" (navbar escritorio + móvil): color base y hover ámbar tenue.
-           .btn-contact se usa tanto en la navbar como en los CTAs del hero terminal.
+        /* Botón "Contacto" (navbar escritorio + móvil): color base y hover con acento tenue.
+           .btn-contact se usa tanto en la navbar como en el botón de envío del formulario.
            Clase CSS en lugar de handlers inline onmouseover/onmouseout. */
         .btn-contact { color: var(--accent); transition: background 0.15s; }
         .btn-contact:hover { background: rgba(124,140,255,0.1); }
 
         /* ── LOADER ──────────────────────────────────────────────*/
-        /* border-top era morado (#8b5cf6); ahora usa el token ámbar del tema */
+        /* border-top usa el token de acento del tema (var(--accent)) */
         .loader { border: 3px solid var(--line); border-top: 3px solid var(--accent); border-radius: 50%; width: 28px; height: 28px; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -147,17 +150,17 @@
         .parallax-container { perspective: 800px; }
         .parallax-layer { transition: transform 0.15s ease-out; transform-style: preserve-3d; }
 
-        /* gradient-text, timeline-line y timeline-dot eliminados:
-           el reskin terminal ámbar no los usa (verificado con grep). */
+        /* gradient-text y timeline-line no se usan en el diseño actual
+           (verificado con grep); timeline-dot sí se usa, ver más abajo. */
 
         /* ── NAVBAR ──────────────────────────────────────────────
-           Fondo oscuro ámbar en lugar del slate azulado original.
-           Borde inferior con --line (ámbar semitransparente) en vez de box-shadow. */
+           Fondo oscuro semitransparente con blur, coherente con el
+           resto del sitio. Borde inferior con var(--line). */
         .nav-scrolled { background: rgba(7,11,18,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
         /* Link activo en la navbar según sección visible */
         .nav-link.active { color: var(--accent); }
         .nav-link.active::after { content:''; display:block; height:2px; background: var(--accent); margin-top:2px; }
-        /* Hover de links e iconos de navbar en clave ámbar (antes hover:text-white). */
+        /* Hover de links e iconos de navbar con el color de acento del tema. */
         .nav-link:hover { color: var(--accent); }
         .nav-icon { color: var(--muted); transition: color .2s; }
         .nav-icon:hover { color: var(--accent); }
@@ -232,7 +235,7 @@
         .hero-btn { padding: .65rem 1.4rem; border-radius: 999px; font-size: .875rem; font-weight: 600; transition: transform .2s, opacity .2s; }
         .hero-btn:hover { transform: translateY(-2px); }
         .hero-btn-primary { background: var(--fg); color: var(--bg); }
-        .hero-btn-ghost { border: 1px solid rgba(242,243,247,.35); color: var(--fg); }
+        .hero-btn-ghost { border: 1px solid rgba(var(--fg-rgb),.35); color: var(--fg); }
         .hero-status { margin-top: 1.5rem; font-size: .8rem; color: var(--muted); display: inline-flex; align-items: center; gap: .5rem; }
         .hero-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
         .hero-meta { margin-top: .75rem; font-size: .8rem; color: var(--muted); }
@@ -255,30 +258,30 @@
         }
         #toast.show { transform: translateY(0); }
 
-        /* ── MODO CLARO = "PAPER TERMINAL" ───────────────────────────
-           Tinta marron sobre papel crema (impresora matricial antigua).
-           Como todo el sitio usa var(--...), redefinir las variables aqui
-           propaga el tema a todas las secciones sin reglas por-clase.
-           data-theme="light" se aplica en <html> (document.documentElement),
-           por lo que [data-theme="light"] es el elemento raiz y las variables
-           heredan a todo el arbol del DOM. */
+        /* ── MODO CLARO ───────────────────────────────────────────────
+           Fondo claro con acento azul-violeta más oscuro para mantener
+           el contraste. Como todo el sitio usa var(--...), redefinir las
+           variables aqui propaga el tema a todas las secciones sin reglas
+           por-clase. data-theme="light" se aplica en <html>
+           (document.documentElement), por lo que [data-theme="light"] es
+           el elemento raiz y las variables heredan a todo el arbol del DOM. */
         [data-theme="light"] {
             --bg: #f7f7fb; --surface: #ffffff; --fg: #14161f;
             --accent: #5865f2; --accent-hi: #4550c9; --muted: #5b6178; --line: rgba(88,101,242,0.22);
             --hero-gradient: radial-gradient(120% 100% at 50% -10%, #eef0ff 0%, #f7f7fb 60%, #ffffff 100%);
         }
-        /* Sin glow en modo paper: el neon no tiene sentido sobre papel crema */
+        /* Sin glow en modo claro: el efecto de brillo no aporta sobre fondo claro */
         [data-theme="light"] .glow { text-shadow: none; }
 
         /* ── CABECERAS DE SECCIÓN COMO ETIQUETA + ACENTO ─────────
            .section-eyebrow: etiqueta en mayúsculas con línea de
-           acento corta. Reemplaza el estilo de comandos de terminal. */
+           acento corta debajo. */
         .section-eyebrow { font-size: .75rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--fg); }
         .section-eyebrow::after { content: ''; display: block; width: 2.5rem; height: 2px; background: var(--accent); margin-top: .6rem; }
 
         /* ── FORM CONTACTO ───────────────────────────────────────
-           Inputs con tokens del sistema de diseño terminal ámbar.
-           El radio pequeño (4px) refuerza la estética de terminal. */
+           Inputs con los tokens del sistema de diseño (fondo, borde
+           y color de texto vía variables CSS). */
         .form-input {
             width: 100%; padding: 0.6rem 0.8rem;
             background: var(--bg);
@@ -287,18 +290,18 @@
             font-family: inherit;
             transition: border-color .2s;
         }
-        /* Placeholder en ámbar tenue para coherencia con el tema */
+        /* Placeholder en color atenuado (--muted) para coherencia con el tema */
         .form-input::placeholder { color: var(--muted); }
-        /* Focus: borde + sombra ámbar en lugar del morado anterior */
+        /* Focus: borde + sombra con el color de acento del tema */
         .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
         /* Modo paper: .form-input ya usa var(--bg)/var(--line)/var(--fg),
            que toman los valores crema/marron al redefinir las variables en
            [data-theme="light"]. No hace falta regla por-componente. */
 
         /* ── ACCESIBILIDAD: FOCUS VISIBLE ────────────────────────
-           Anillo ámbar al navegar con teclado. :focus-visible solo
-           se activa con teclado/programático, nunca con clic,
-           por lo que no interfiere con el cursor personalizado. */
+           Anillo con el color de acento al navegar con teclado.
+           :focus-visible solo se activa con teclado/programático,
+           nunca con clic. */
         a:focus-visible,
         button:focus-visible,
         .form-input:focus-visible {
@@ -313,10 +316,11 @@
         .pill-dev { background: rgba(255,95,86,.12); color: var(--err); }
         .pill-featured { background: rgba(124,140,255,.14); color: var(--accent); }
 
-        /* ── PROYECTO LINKS ──────────────────────────────────────
-           Enlaces en tarjetas de proyectos con icono y hover. */
-        .proyecto-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); }
-        .proyecto-link:hover { color: var(--accent-hi); }
+        /* ── CARD LINKS ───────────────────────────────────────────
+           Enlaces con icono y hover, reutilizados en tarjetas de
+           proyectos, experiencia y certificados. */
+        .card-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); }
+        .card-link:hover { color: var(--accent-hi); }
 
         /* ── TIMELINE EXPERIENCIA ────────────────────────────────
            Línea de tiempo vertical limpia. Cada .timeline-item
@@ -338,7 +342,6 @@
 <body style="background: var(--bg); color: var(--fg);">
 
 <!-- Panel de stats secreto (se activa con 5 clics en el logo S.L.H.) -->
-<!-- Panel de stats secreto — reskinado a clave terminal ámbar -->
 <div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] rounded-2xl p-5 shadow-2xl min-w-[200px]"
      style="background: var(--surface); border: 1px solid var(--line);">
     <div class="flex items-center justify-between mb-3">
@@ -358,8 +361,7 @@
 <!-- Barra de progreso de lectura (se llena al hacer scroll) -->
 <div id="scroll-progress"></div>
 
-<!-- Toast de bienvenida (primera visita) — estética terminal ámbar -->
-<div id="toast">
+<!-- Toast de bienvenida (primera visita) -->
     <div class="flex items-center gap-3 px-5 py-4 border rounded-xl" style="background: var(--surface); border-color: var(--line);">
         <i class="fa-solid fa-circle-check accent-text text-lg"></i>
         <div>
@@ -401,8 +403,8 @@
         </div>
     </div>
 
-    <!-- bg-slate-900/90 y text-gray-400 reemplazados por tokens CSS del tema ámbar
-         para que el menú móvil sea coherente en modo oscuro y modo paper. -->
+    <!-- bg-slate-900/90 y text-gray-400 reemplazados por tokens CSS del sistema de diseño
+         para que el menú móvil sea coherente en modo oscuro y modo claro. -->
     <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
         <div class="flex flex-col gap-3 text-sm font-medium rounded-xl p-4"
              style="background: var(--surface); color: var(--fg); border: 1px solid var(--line)">
@@ -465,12 +467,12 @@
         <div id="tech-parallax" class="parallax-container">
             <div class="parallax-layer">
                 <div id="tech-stack-main" class="mb-8">
-                    <!-- Sub-label "Uso frecuente" recoloreado a ámbar tenue para coherencia con el tema terminal -->
+                    <!-- Sub-label "Uso frecuente" en color atenuado (--muted) para coherencia con el tema -->
                     <p class="text-sm font-medium mb-4 text-center" style="color: var(--muted)"><i class="fa-solid fa-star text-yellow-500 mr-1"></i> Uso frecuente</p>
                     <div id="tech-main" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 max-w-3xl mx-auto"></div>
                 </div>
                 <div id="tech-stack-other">
-                    <!-- Sub-label "Conocimientos basicos" recoloreado a ámbar tenue -->
+                    <!-- Sub-label "Conocimientos basicos" en color atenuado (--muted) -->
                     <p class="text-sm font-medium mb-4 text-center" style="color: var(--muted)"><i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos basicos</p>
                     <div id="tech-other" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3 max-w-4xl mx-auto"></div>
                 </div>
@@ -542,7 +544,7 @@
             <input  type="text"  id="contacto-nombre"  placeholder="Tu nombre"   class="form-input" required>
             <input  type="email" id="contacto-email"   placeholder="Tu email"    class="form-input" required>
             <textarea            id="contacto-mensaje" placeholder="Tu mensaje"  class="form-input resize-none" rows="4" required></textarea>
-            <!-- Botón estilo terminal ámbar: sin gradiente, borde y hover sutil -->
+            <!-- Botón con borde y hover sutil, sin gradiente -->
             <button id="btn-enviar" type="submit" class="btn-contact px-5 py-2.5 border rounded-full accent-text font-semibold transition-colors" style="border-color: var(--accent)">Enviar mensaje</button>
             <!-- Feedback del envío: éxito o error -->
             <p id="form-feedback" class="text-center text-sm hidden"></p>
@@ -564,7 +566,7 @@
     </div>
 </section>
 
-<!-- FOOTER — clave terminal ámbar, sin gradientes slate/morado -->
+<!-- FOOTER — usa los tokens del sistema de diseño, sin gradientes slate/morado -->
 <footer class="border-t" style="border-color: var(--line)">
     <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col items-center gap-2">
         <p style="color: var(--muted)">&copy; 2026 Santiago Lafuente</p>

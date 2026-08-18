@@ -62,7 +62,7 @@ function crearTechCard(tech, iconSize, index) {
     // La API devuelve icon_color (snake_case); el campo antiguo hardcodeado era iconColor (camelCase)
     const colorClass = tech.icon_color || tech.iconColor || '';
     const card = document.createElement('div');
-    // Caja ámbar uniforme: fondo surface + borde --line en lugar de gradientes por tecnología.
+    // Caja uniforme con los tokens del tema: fondo surface + borde --line en lugar de gradientes por tecnología.
     // cursor-default y rounded-xl se aplican vía Tailwind antes de los estilos inline.
     card.className = 'tech-enter flex flex-col items-center justify-center gap-2 p-4 border rounded skill-card';
     card.style.borderColor = 'var(--line)';
@@ -204,8 +204,8 @@ async function cargarGithubStats() {
         // Lenguaje más repetido
         const topLang = Object.entries(langs).sort((a, b) => b[1] - a[1])[0];
 
-        // Prefijo de prompt y ítems con tokens CSS del tema terminal ámbar.
-        // Los valores numéricos usan .accent-text para el brillo característico.
+        // Los ítems usan los tokens CSS del sistema de diseño.
+        // Los valores numéricos usan .accent-text para el color de acento.
         contenedor.innerHTML = `
             <a href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-colors"
@@ -301,7 +301,7 @@ async function cargarPerfil() {
 }
 
 function buildEnlacesFooter(p) {
-    // Estilo terminal ámbar: icono con .accent-text, etiqueta en --muted
+    // Icono con .accent-text, etiqueta en color atenuado (--muted)
     const base = 'flex flex-col items-center gap-2 accent-text transition-all duration-300 hover:-translate-y-1';
     const items = [];
     if (p.email)
@@ -370,8 +370,8 @@ async function cargarProyectos() {
 
                 const enlaces = `
                     <div class="mt-4 flex gap-4 text-sm">
-                        ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
-                        ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
+                        ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
+                        ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
                     </div>`;
 
                 tarjeta.className = (esDestacado ? 'lg:col-span-2 ' : '') + 'border rounded-xl overflow-hidden card-hover fade-up';
@@ -484,7 +484,7 @@ async function cargarExperiencia() {
                     </div>
                     <p class="text-sm" style="color: var(--muted)">${exp.empresa} &middot; ${ini} &ndash; ${fin}</p>
                     ${exp.descripcion ? `<p class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</p>` : ''}
-                    ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="proyecto-link mt-1"><i class="fa-brands fa-github"></i> GitHub</a>` : ''}
+                    ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="card-link mt-1"><i class="fa-brands fa-github"></i> GitHub</a>` : ''}
                 </div>`;
             contenedor.appendChild(item);
         });
@@ -535,8 +535,8 @@ async function cargarCertificados() {
                     </p>
                     ${cert.descripcion ? `<p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>` : ''}
                     <div class="mt-3 flex gap-4">
-                        ${cert.url_archivo ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-file-arrow-down"></i> Ver PDF</a>` : ''}
-                        ${cert.url_externa ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer" class="proyecto-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Verificar</a>` : ''}
+                        ${cert.url_archivo ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-solid fa-file-arrow-down"></i> Ver PDF</a>` : ''}
+                        ${cert.url_externa ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Verificar</a>` : ''}
                     </div>
                 </div>`;
 
@@ -581,7 +581,7 @@ function iniciarFormContacto() {
             const data = await res.json();
 
             if (res.ok) {
-                // Éxito: limpiamos el formulario y mostramos confirmación en verde terminal
+                // Éxito: limpiamos el formulario y mostramos confirmación en verde (--ok)
                 form.reset();
                 mostrarFeedback(feedback, 'Mensaje enviado correctamente', 'var(--ok)');
             } else {
@@ -603,7 +603,7 @@ function iniciarFormContacto() {
  * mostrarFeedback(el, texto, color)
  * Muestra un mensaje de feedback durante 4 segundos y lo oculta.
  * Usa tokens CSS (var(--ok) / var(--err)) en vez de clases Tailwind
- * para que respete el sistema de diseño terminal ámbar.
+ * para que respete el sistema de diseño del sitio.
  */
 function mostrarFeedback(el, texto, color) {
     el.textContent = texto;

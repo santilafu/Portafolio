@@ -64,13 +64,13 @@ function crearTechCard(tech, iconSize, index) {
     const card = document.createElement('div');
     // Caja uniforme con los tokens del tema: fondo surface + borde --line en lugar de gradientes por tecnología.
     // cursor-default y rounded-xl se aplican vía Tailwind antes de los estilos inline.
-    card.className = 'tech-enter flex flex-col items-center justify-center gap-2 p-4 border rounded skill-card';
+    card.className = 'tech-enter flex flex-col items-center justify-center gap-3 p-4 md:p-5 border rounded-xl skill-card';
     card.style.borderColor = 'var(--line)';
     card.style.background  = 'var(--surface)';
     card.dataset.index = index;
     card.innerHTML = `
         <div class="${floatClass}"><i class="${tech.icono} ${iconSize} ${colorClass}"></i></div>
-        <span class="text-xs font-medium" style="color: var(--fg)">${tech.nombre}</span>
+        <span class="text-sm md:text-base font-medium text-center" style="color: var(--fg)">${tech.nombre}</span>
     `;
     return card;
 }
@@ -126,23 +126,39 @@ function iniciarScrollProgress() {
 // la página. Si no, mostramos el toast y guardamos la visita.
 // ============================================================
 
+// Temporizadores del toast guardados fuera de la función: si el código
+// se ejecuta dos veces, cancelamos los anteriores en vez de acumularlos.
+let _toastShowTimer = null;
+let _toastHideTimer = null;
+const TOAST_DURACION_MS = 5000; // tiempo visible antes de ocultarse solo
+
 function mostrarToastBienvenida() {
-    if (localStorage.getItem('visited')) return; // ya visitó antes
-
     const toast = document.getElementById('toast');
-    // Pequeño delay para que la página cargue antes de mostrar el toast
-    setTimeout(() => {
-        toast.classList.add('show');
-        // Se cierra automáticamente a los 4 segundos
-        setTimeout(() => cerrarToast(), 4000);
-    }, 1200);
+    if (!toast) return; // sin contenedor no hay nada que mostrar
 
-    localStorage.setItem('visited', 'true');
+    // localStorage puede lanzar excepción (modo privado, cookies bloqueadas)
+    try {
+        if (localStorage.getItem('visited')) return; // ya visitó antes
+        localStorage.setItem('visited', 'true');
+    } catch { /* si falla, simplemente mostramos el saludo */ }
+
+    clearTimeout(_toastShowTimer);
+    clearTimeout(_toastHideTimer);
+
+    // Pequeño delay para que la página cargue antes de mostrar el toast
+    _toastShowTimer = setTimeout(() => {
+        toast.classList.add('show');
+        // Se oculta solo pasados unos segundos (con fundido/deslizamiento CSS)
+        _toastHideTimer = setTimeout(cerrarToast, TOAST_DURACION_MS);
+    }, 1200);
 }
 
 // Función global para cerrar el toast (también la llama el botón ×)
 function cerrarToast() {
-    document.getElementById('toast').classList.remove('show');
+    clearTimeout(_toastShowTimer);
+    clearTimeout(_toastHideTimer);
+    const toast = document.getElementById('toast');
+    if (toast) toast.classList.remove('show');
 }
 
 // ============================================================
@@ -208,7 +224,7 @@ async function cargarGithubStats() {
         // Los valores numéricos usan .accent-text para el color de acento.
         contenedor.innerHTML = `
             <a href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
-               class="inline-flex items-center gap-2 px-4 py-2 rounded-full transition-colors"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full transition-colors"
                style="background: var(--surface); border: 1px solid var(--line);">
                 <i class="fa-brands fa-github accent-text"></i>
                 <span class="accent-text font-semibold">${user.public_repos}</span>
@@ -305,11 +321,11 @@ function buildEnlacesFooter(p) {
     const base = 'flex flex-col items-center gap-2 accent-text transition-all duration-300 hover:-translate-y-1';
     const items = [];
     if (p.email)
-        items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-xs" style="color: var(--muted)">Email</span></a>`);
+        items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-sm" style="color: var(--muted)">Email</span></a>`);
     if (p.enlace_github)
-        items.push(`<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-xs" style="color: var(--muted)">GitHub</span></a>`);
+        items.push(`<a href="${p.enlace_github}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-github text-2xl"></i><span class="text-sm" style="color: var(--muted)">GitHub</span></a>`);
     if (p.enlace_linkedin)
-        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-xs" style="color: var(--muted)">LinkedIn</span></a>`);
+        items.push(`<a href="${fixUrl(p.enlace_linkedin)}" target="_blank" rel="noopener noreferrer" class="${base}"><i class="fa-brands fa-linkedin text-2xl"></i><span class="text-sm" style="color: var(--muted)">LinkedIn</span></a>`);
     return items.join('');
 }
 
@@ -369,7 +385,7 @@ async function cargarProyectos() {
                     : (esDestacado ? '<span class="pill pill-featured">Destacado</span>' : '');
 
                 const enlaces = `
-                    <div class="mt-4 flex gap-4 text-sm">
+                    <div class="mt-5 flex gap-5 text-base font-medium">
                         ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
                         ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
                     </div>`;
@@ -378,13 +394,13 @@ async function cargarProyectos() {
                 tarjeta.style.borderColor = 'var(--line)';
                 tarjeta.style.background  = 'var(--surface)';
                 tarjeta.innerHTML = `
-                    ${esDestacado && proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-48 object-cover" alt="${proyecto.titulo}">` : ''}
-                    <div class="p-5">
-                        <div class="flex items-center gap-2 mb-1">
-                            <h4 class="accent-text font-bold text-lg">${proyecto.titulo}</h4>
+                    ${esDestacado && proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-56 md:h-72 object-cover" alt="${proyecto.titulo}">` : ''}
+                    <div class="p-6 md:p-8">
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-1">
+                            <h4 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${proyecto.titulo}</h4>
                             ${badge}
                         </div>
-                        <p class="mt-2 text-sm" style="color: var(--fg)">${proyecto.descripcion}</p>
+                        <p class="mt-3 text-base leading-relaxed" style="color: var(--fg)">${proyecto.descripcion}</p>
                         ${enlaces}
                     </div>`;
                 contenedor.appendChild(tarjeta);
@@ -413,7 +429,7 @@ async function cargarHabilidades() {
             contenedor.innerHTML = habilidades.map(h => {
                 const pct = nivelPct[h.nivel] || 50;
                 return `<div class="skill-row">
-        <div class="flex items-center justify-between text-sm mb-1">
+        <div class="flex items-center justify-between gap-4 text-base md:text-lg mb-2">
             <span style="color: var(--fg)">${h.nombre}</span>
             <span style="color: var(--muted)">${h.nivel}</span>
         </div>
@@ -479,12 +495,12 @@ async function cargarExperiencia() {
             item.innerHTML = `
                 <div class="timeline-dot"></div>
                 <div class="timeline-body">
-                    <div class="flex items-center gap-2">
-                        <h4 class="accent-text font-semibold">${exp.puesto}</h4>${activo}
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <h4 class="accent-text font-semibold text-xl md:text-2xl tracking-tight">${exp.puesto}</h4>${activo}
                     </div>
-                    <p class="text-sm" style="color: var(--muted)">${exp.empresa} &middot; ${ini} &ndash; ${fin}</p>
-                    ${exp.descripcion ? `<p class="mt-1 text-sm" style="color: var(--fg)">${exp.descripcion}</p>` : ''}
-                    ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="card-link mt-1"><i class="fa-brands fa-github"></i> GitHub</a>` : ''}
+                    <p class="mt-1 text-base" style="color: var(--muted)">${exp.empresa} &middot; ${ini} &ndash; ${fin}</p>
+                    ${exp.descripcion ? `<p class="mt-3 text-base leading-relaxed" style="color: var(--fg)">${exp.descripcion}</p>` : ''}
+                    ${exp.enlace_github ? `<a href="${exp.enlace_github}" target="_blank" rel="noopener noreferrer" class="card-link mt-3 text-base font-medium"><i class="fa-brands fa-github"></i> GitHub</a>` : ''}
                 </div>`;
             contenedor.appendChild(item);
         });
@@ -528,13 +544,13 @@ async function cargarCertificados() {
             tarjeta.style.transitionDelay = `${idx * 0.1}s`;
 
             tarjeta.innerHTML = `
-                <div class="p-5">
-                    <h4 class="accent-text font-bold">${cert.titulo}</h4>
-                    <p class="text-sm mt-1" style="color: var(--muted)">
+                <div class="p-6 md:p-8">
+                    <h4 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${cert.titulo}</h4>
+                    <p class="text-base mt-2" style="color: var(--muted)">
                         ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
                     </p>
-                    ${cert.descripcion ? `<p class="text-sm mt-2" style="color: var(--fg)">${cert.descripcion}</p>` : ''}
-                    <div class="mt-3 flex gap-4">
+                    ${cert.descripcion ? `<p class="text-base mt-3 leading-relaxed" style="color: var(--fg)">${cert.descripcion}</p>` : ''}
+                    <div class="mt-5 flex flex-wrap gap-5 text-base font-medium">
                         ${cert.url_archivo ? `<a href="${cert.url_archivo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-solid fa-file-arrow-down"></i> Ver PDF</a>` : ''}
                         ${cert.url_externa ? `<a href="${cert.url_externa}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Verificar</a>` : ''}
                     </div>
@@ -692,9 +708,11 @@ function reobservarAnimaciones() {
 
 function iniciarNavbar() {
     const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-        navbar.classList.toggle('nav-scrolled', window.scrollY > 50);
-    }, { passive: true });
+    const actualizarNavbar = () => navbar.classList.toggle('nav-scrolled', window.scrollY > 50);
+    window.addEventListener('scroll', actualizarNavbar, { passive: true });
+    // Estado inicial: si el navegador restaura el scroll al recargar,
+    // la navbar ya debe salir con fondo sin esperar al primer scroll.
+    actualizarNavbar();
 
     const toggle = document.getElementById('menu-toggle');
     const menu   = document.getElementById('mobile-menu');

@@ -223,20 +223,21 @@ async function cargarGithubStats() {
         const topLang = Object.entries(langs).sort((a, b) => b[1] - a[1])[0];
 
         // Los ítems usan los tokens CSS del sistema de diseño.
-        // Los valores numéricos usan .accent-text para el color de acento.
+        // Los valores van en el color de texto (--fg): el acento se reserva
+        // para enlaces, CTAs y estados activos.
         contenedor.innerHTML = `
             <a href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full transition-colors"
                style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-brands fa-github accent-text"></i>
-                <span class="accent-text font-semibold">${user.public_repos}</span>
+                <i class="fa-brands fa-github" style="color: var(--muted)" aria-hidden="true"></i>
+                <span class="font-semibold" style="color: var(--fg)">${user.public_repos}</span>
                 <span style="color: var(--muted)">repos públicos</span>
             </a>
             ${topLang ? `
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
                  style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-solid fa-code" style="color: var(--accent)"></i>
-                <span class="accent-text font-semibold">${topLang[0]}</span>
+                <i class="fa-solid fa-code" style="color: var(--muted)" aria-hidden="true"></i>
+                <span class="font-semibold" style="color: var(--fg)">${topLang[0]}</span>
                 <span style="color: var(--muted)">lenguaje top</span>
             </div>` : ''}
         `;
@@ -247,26 +248,45 @@ async function cargarGithubStats() {
 
 // ============================================================
 // TEMA CLARO / OSCURO
-// Guardamos la preferencia en localStorage.
-// Aplicamos el tema con un atributo data-theme en el <html>.
+// El tema inicial lo pone un script en el <head> de index.html
+// (antes de pintar, para que no haya parpadeo): preferencia guardada
+// en localStorage o, si no hay, la del sistema operativo.
+// Aquí solo leemos ese atributo data-theme del <html>, sincronizamos
+// los iconos y gestionamos el botón, que actúa como "override" que
+// se guarda. Mientras no haya elección guardada, seguimos al sistema.
 // ============================================================
+
+// Lee la preferencia guardada (o null). localStorage puede lanzar excepción.
+function leerTemaGuardado() {
+    try {
+        const t = localStorage.getItem('theme');
+        return (t === 'light' || t === 'dark') ? t : null;
+    } catch { return null; }
+}
 
 function iniciarThemeToggle() {
     const html    = document.documentElement;
     const toggles = document.querySelectorAll('#theme-toggle, #theme-toggle-mobile');
 
-    // Recuperamos el tema guardado (por defecto: dark)
-    const temaGuardado = localStorage.getItem('theme') || 'dark';
-    aplicarTema(temaGuardado);
+    // Tema ya aplicado por el script del <head> (respaldo: oscuro)
+    aplicarTema(html.dataset.theme === 'light' ? 'light' : 'dark');
 
     toggles.forEach(btn => {
         btn.addEventListener('click', () => {
             const actual = html.dataset.theme === 'light' ? 'light' : 'dark';
             const nuevo  = actual === 'dark' ? 'light' : 'dark';
             aplicarTema(nuevo);
-            localStorage.setItem('theme', nuevo);
+            try { localStorage.setItem('theme', nuevo); } catch { /* no se puede guardar: solo esta visita */ }
         });
     });
+
+    // Si el usuario no ha elegido tema, seguimos los cambios del sistema en vivo
+    if (window.matchMedia) {
+        const mq = window.matchMedia('(prefers-color-scheme: light)');
+        const alCambiarSistema = (e) => { if (!leerTemaGuardado()) aplicarTema(e.matches ? 'light' : 'dark'); };
+        if (mq.addEventListener) mq.addEventListener('change', alCambiarSistema);
+        else if (mq.addListener) mq.addListener(alCambiarSistema); // Safari antiguo
+    }
 }
 
 function aplicarTema(tema) {
@@ -275,6 +295,10 @@ function aplicarTema(tema) {
     html.dataset.theme = tema;
     iconos.forEach(i => {
         i.className = tema === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+    });
+    // El aria-label indica a qué tema se cambiará al pulsar
+    document.querySelectorAll('#theme-toggle, #theme-toggle-mobile').forEach(btn => {
+        btn.setAttribute('aria-label', tema === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro');
     });
 }
 
@@ -311,6 +335,13 @@ async function cargarPerfil() {
                 img.src = ruta;
             }
 
+            // Enlaces del hero (GitHub / LinkedIn): el HTML trae unos de respaldo;
+            // si la BD tiene valor, lo usamos en su lugar.
+            const heroGithub   = document.getElementById('hero-github');
+            const heroLinkedin = document.getElementById('hero-linkedin');
+            if (heroGithub && p.enlace_github) heroGithub.href = fixUrl(p.enlace_github);
+            if (heroLinkedin && p.enlace_linkedin) heroLinkedin.href = fixUrl(p.enlace_linkedin);
+
             const footerEnlaces = document.getElementById('footer-enlaces');
             if (footerEnlaces) footerEnlaces.innerHTML = buildEnlacesFooter(p);
             const emailText = document.getElementById('email-text');
@@ -326,8 +357,8 @@ async function cargarPerfil() {
 }
 
 function buildEnlacesFooter(p) {
-    // Icono con .accent-text, etiqueta en color atenuado (--muted)
-    const base = 'flex flex-col items-center gap-2 accent-text transition-all duration-300 hover:-translate-y-1';
+    // Icono en color de texto (acento al pasar el ratón), etiqueta en color atenuado (--muted)
+    const base = 'flex flex-col items-center gap-2 mobile-link transition-all duration-300 hover:-translate-y-1';
     const items = [];
     if (p.email)
         items.push(`<a href="mailto:${p.email}" class="${base}"><i class="fa-solid fa-envelope text-2xl"></i><span class="text-sm" style="color: var(--muted)">Email</span></a>`);
@@ -383,6 +414,29 @@ async function cargarProyectos() {
         const contenedor = document.getElementById('lista-proyectos');
         contenedor.innerHTML = '';
         if (proyectos.length > 0) {
+            // ── Reparto de columnas (rejilla de 6 columnas en escritorio) ──
+            // · Destacado y proyectos con imagen → fila completa (span 6).
+            // · Tarjetas sin imagen → se agrupan en "tandas" consecutivas y se
+            //   reparten para que ninguna fila quede coja: con nº par, 2 por fila
+            //   (span 3); con nº impar ≥3, una fila de 3 (span 2) y el resto de
+            //   2 en 2; si solo hay 1, ocupa la fila entera.
+            // Las clases van escritas completas para que Tailwind las detecte.
+            const SPAN = { 2: 'lg:col-span-2', 3: 'lg:col-span-3', 6: 'lg:col-span-6' };
+            const esAncha = (p) => (p.destacado == 1 || p.destacado === true) || !!p.imagen;
+            const spans = new Array(proyectos.length).fill(6);
+            let tanda = [];
+            const repartirTanda = () => {
+                const n = tanda.length;
+                tanda.forEach((i, k) => {
+                    if (n === 1)          spans[i] = 6;
+                    else if (n % 2 === 0) spans[i] = 3;
+                    else                  spans[i] = k < 3 ? 2 : 3;
+                });
+                tanda = [];
+            };
+            proyectos.forEach((p, i) => { if (esAncha(p)) repartirTanda(); else tanda.push(i); });
+            repartirTanda();
+
             proyectos.forEach((proyecto, idx) => {
                 const esDestacado  = proyecto.destacado == 1 || proyecto.destacado === true;
                 const enDesarrollo = proyecto.estado === 'en_desarrollo';
@@ -413,22 +467,25 @@ async function cargarProyectos() {
                 // Si hay demo o web en producción, la imagen también enlaza a ella.
                 const altImagen = `Captura de ${proyecto.titulo}`.replace(/"/g, '&quot;');
                 const imgTarjeta = `<img src="${proyecto.imagen}" alt="${altImagen}" loading="lazy" width="1200" height="630">`;
-                const mediaTarjeta = (!esDestacado && proyecto.imagen)
+                const conImagen = !esDestacado && !!proyecto.imagen;
+                const mediaTarjeta = conImagen
                     ? (proyecto.url_demo
                         ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="proyecto-media" tabindex="-1" aria-hidden="true">${imgTarjeta}</a>`
                         : `<div class="proyecto-media">${imgTarjeta}</div>`)
                     : '';
 
-                // flex-col: el cuerpo crece (flex-1) y los enlaces se alinean abajo
-                tarjeta.className = (esDestacado ? 'lg:col-span-2 ' : '') + 'border rounded-xl overflow-hidden card-hover fade-up flex flex-col';
+                // flex-col: el cuerpo crece (flex-1) y los enlaces se alinean abajo.
+                // Con imagen (no destacado): en escritorio imagen a un lado y texto al otro.
+                tarjeta.className = SPAN[spans[idx]] + ' border rounded-xl overflow-hidden card-hover fade-up flex flex-col'
+                    + (conImagen ? ' proyecto-wide lg:flex-row' : '');
                 tarjeta.style.borderColor = 'var(--line)';
                 tarjeta.style.background  = 'var(--surface)';
                 tarjeta.innerHTML = `
                     ${esDestacado && proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-56 md:h-72 object-cover" alt="${proyecto.titulo}">` : ''}
                     ${mediaTarjeta}
-                    <div class="p-6 md:p-8 flex-1 flex flex-col">
+                    <div class="proyecto-body p-6 md:p-8 flex-1 flex flex-col">
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-1">
-                            <h3 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${proyecto.titulo}</h3>
+                            <h3 class="card-title font-bold text-xl md:text-2xl tracking-tight">${proyecto.titulo}</h3>
                             ${badge}
                         </div>
                         <p class="mt-3 text-base leading-relaxed" style="color: var(--fg)">${proyecto.descripcion}</p>
@@ -438,7 +495,7 @@ async function cargarProyectos() {
             });
             setTimeout(reobservarAnimaciones, 100);
         } else {
-            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--muted)">Aún no hay proyectos para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--muted)">Aún no hay proyectos para mostrar.</p>';
         }
     } catch (error) {
         console.error('Error al cargar proyectos:', error);
@@ -454,18 +511,20 @@ async function cargarHabilidades() {
         const respuesta   = await fetch(`${API_URL}/habilidades`);
         const habilidades = await respuesta.json();
         const contenedor  = document.getElementById('lista-habilidades');
+        // Nivel → nº de segmentos encendidos (de 3). Sin porcentajes: un
+        // "95%" autoevaluado resta credibilidad; el nivel en texto es honesto.
         // 'Basico' (sin tilde) se mantiene por compatibilidad con datos antiguos
-        const nivelPct = { 'Básico': 40, 'Basico': 40, 'Intermedio': 70, 'Avanzado': 95 };
+        const nivelSegs = { 'Básico': 1, 'Basico': 1, 'Intermedio': 2, 'Avanzado': 3 };
 
         if (habilidades.length > 0) {
             contenedor.innerHTML = habilidades.map(h => {
-                const pct = nivelPct[h.nivel] || 50;
-                return `<div class="skill-row">
-        <div class="flex items-center justify-between gap-4 text-base md:text-lg mb-2">
-            <span style="color: var(--fg)">${h.nombre}</span>
-            <span style="color: var(--muted)">${h.nivel}</span>
-        </div>
-        <div class="skill-track"><div class="skill-fill" style="--pct:${pct}%"></div></div>
+                const n = nivelSegs[h.nivel] || 1;
+                // Los segmentos son decorativos (aria-hidden): el nivel ya se lee en texto
+                const segs = [1, 2, 3].map(i => `<span class="skill-seg" data-on="${i <= n ? 1 : 0}"></span>`).join('');
+                return `<div class="skill-row text-base md:text-lg">
+        <span class="skill-name">${h.nombre}</span>
+        <span class="skill-level" aria-hidden="true">${segs}</span>
+        <span class="skill-level-text">${h.nivel}</span>
     </div>`;
             }).join('');
             animarHabilidades();
@@ -477,17 +536,21 @@ async function cargarHabilidades() {
     }
 }
 
+// Enciende los segmentos de cada fila al entrar en viewport (el CSS los
+// escalona; con "reducir movimiento" se encienden sin transición).
 function animarHabilidades() {
-    const fills = document.querySelectorAll('.skill-fill');
+    const filas = document.querySelectorAll('.skill-row');
+    const encender = (fila) => fila.querySelectorAll('.skill-seg[data-on="1"]').forEach(s => s.classList.add('on'));
+    if (!('IntersectionObserver' in window)) { filas.forEach(encender); return; }
     const skillObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.width = 'var(--pct)';
+                encender(entry.target);
                 skillObserver.unobserve(entry.target);
             }
         });
     }, { threshold: 0.3 });
-    fills.forEach(f => skillObserver.observe(f));
+    filas.forEach(f => skillObserver.observe(f));
 }
 
 // ============================================================
@@ -528,7 +591,7 @@ async function cargarExperiencia() {
                 <div class="timeline-dot"></div>
                 <div class="timeline-body">
                     <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <h3 class="accent-text font-semibold text-xl md:text-2xl tracking-tight">${exp.puesto}</h3>${activo}
+                        <h3 class="card-title font-semibold text-xl md:text-2xl tracking-tight">${exp.puesto}</h3>${activo}
                     </div>
                     <p class="mt-1 text-base" style="color: var(--muted)">${exp.empresa} &middot; ${ini} &ndash; ${fin}</p>
                     ${exp.descripcion ? `<p class="mt-3 text-base leading-relaxed" style="color: var(--fg)">${exp.descripcion}</p>` : ''}
@@ -577,7 +640,7 @@ async function cargarCertificados() {
 
             tarjeta.innerHTML = `
                 <div class="p-6 md:p-8">
-                    <h3 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${cert.titulo}</h3>
+                    <h3 class="card-title font-bold text-xl md:text-2xl tracking-tight">${cert.titulo}</h3>
                     <p class="text-base mt-2" style="color: var(--muted)">
                         ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
                     </p>

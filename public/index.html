@@ -18,6 +18,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- ── TEMA INICIAL SIN PARPADEO ───────────────────────────────
+         Se ejecuta ANTES de cargar los estilos: pone data-theme en <html>
+         con la preferencia guardada (localStorage.theme) o, si no hay,
+         con la del sistema operativo (prefers-color-scheme). Así la página
+         se pinta directamente con el tema correcto, sin "flash" oscuro→claro.
+         localStorage va en try/catch (modo privado / cookies bloqueadas). -->
+    <script>
+        (function () {
+            var tema = null;
+            try { tema = localStorage.getItem('theme'); } catch (e) { /* sin acceso a localStorage */ }
+            if (tema !== 'light' && tema !== 'dark') {
+                tema = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+            }
+            document.documentElement.setAttribute('data-theme', tema);
+        })();
+    </script>
     <title>Santiago Lafuente | Desarrollador Multiplataforma</title>
     <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
     <meta name="description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y más.">
@@ -58,7 +74,8 @@
         "url": "https://santiagolafuente.com",
         "image": "https://santiagolafuente.com/img/perfil.jpg",
         "sameAs": [
-            "https://github.com/santilafu"
+            "https://github.com/santilafu",
+            "https://www.linkedin.com/in/santiago-lafuente-hern%C3%A1ndez-796783226/"
         ]
     }
     </script>
@@ -197,6 +214,9 @@
         /* Hover de links e iconos de navbar con el color de acento del tema. */
         .nav-link:hover { color: var(--accent); }
         .nav-icon { color: var(--muted); transition: color .2s; }
+        /* Links del menú móvil: texto normal, acento solo al pasar el ratón */
+        .mobile-link { color: var(--fg); }
+        .mobile-link:hover { color: var(--accent); }
         .nav-icon:hover { color: var(--accent); }
 
         /* ── HERO CINEMATOGRÁFICO ────────────────────────────────
@@ -424,14 +444,46 @@
         .timeline-item:last-child { border-left-color: transparent; }
         .timeline-dot { position: absolute; left: -8px; top: 6px; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--surface); }
 
-        /* ── SKILL BARS — ANIMATED PROGRESS ─────────────────────
-           Barras de progreso animadas que se rellenan al entrar
-           en viewport (reemplaza los bloques ASCII █░). */
-        .skill-row { margin-bottom: 1.25rem; }
-        .skill-row:last-child { margin-bottom: 0; }
-        .skill-track { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
-        .skill-fill { height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-hi)); transition: width 1s ease-out; }
-        @media (prefers-reduced-motion: reduce) { .skill-fill { transition: none; } }
+        /* ── HABILIDADES — NIVEL EN 3 SEGMENTOS ──────────────────
+           Sin porcentajes autoevaluados (restan credibilidad): cada
+           habilidad muestra su nivel en texto (Básico / Intermedio /
+           Avanzado) y un indicador de 3 segmentos (1, 2 o 3 encendidos).
+           Los segmentos se encienden escalonados al entrar en viewport. */
+        .skill-row { display: flex; align-items: center; gap: 1rem; padding: .7rem 0; border-bottom: 1px solid var(--line); }
+        .skill-row:first-child { padding-top: 0; }
+        .skill-row:last-child { padding-bottom: 0; border-bottom: none; }
+        .skill-name { flex: 1 1 auto; min-width: 0; color: var(--fg); }
+        .skill-level { display: inline-flex; gap: 4px; flex: none; }
+        .skill-seg { width: 22px; height: 6px; border-radius: 3px; background: var(--line); transition: background-color .4s ease-out; }
+        .skill-seg.on { background: var(--accent); }
+        .skill-seg:nth-child(2) { transition-delay: .12s; }
+        .skill-seg:nth-child(3) { transition-delay: .24s; }
+        .skill-level-text { flex: none; width: 6.25rem; text-align: right; color: var(--muted); font-size: .95rem; }
+        @media (prefers-reduced-motion: reduce) { .skill-seg { transition: none !important; } }
+
+        /* ── TÍTULOS DE TARJETA ──────────────────────────────────
+           Los títulos (h3) de proyectos/experiencia/certificados van en
+           el color de texto: el acento se reserva para enlaces, CTAs,
+           estado activo, focos y pequeños marcadores. Al pasar el ratón
+           por la tarjeta el título toma el acento como pista sutil. */
+        .card-title { color: var(--fg); transition: color .2s; }
+        .card-hover:hover .card-title { color: var(--accent); }
+
+        /* ── TARJETA DE PROYECTO ANCHA (con imagen) ──────────────
+           Proyectos no destacados con imagen: ocupan toda la fila en
+           escritorio con la imagen a un lado y el texto al otro; en
+           móvil se apilan (imagen arriba). */
+        @media (min-width: 1024px) {
+            .proyecto-wide .proyecto-media { flex: 0 0 55%; aspect-ratio: auto; min-height: 20rem; border-bottom: none; border-right: 1px solid var(--line); }
+            .proyecto-wide .proyecto-body { justify-content: center; }
+        }
+
+        /* ── REDES EN EL HERO (GitHub / LinkedIn) ────────────────
+           Botones fantasma pequeños con icono + texto, área táctil ≥44px. */
+        .hero-social { display: flex; flex-wrap: wrap; gap: .75rem; justify-content: center; margin-top: 1rem; }
+        .hero-social-btn { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .5rem 1.1rem; border-radius: 999px; font-size: 1rem; font-weight: 500; color: var(--muted); border: 1px solid rgba(var(--fg-rgb),.18); transition: color .2s, border-color .2s; }
+        .hero-social-btn:hover { color: var(--fg); border-color: rgba(var(--fg-rgb),.4); }
+        .hero-social-btn i { font-size: 1.15rem; }
     </style>
 </head>
 
@@ -450,7 +502,7 @@
     <div class="space-y-2 text-sm">
         <div class="flex items-center justify-between gap-6">
             <span style="color: var(--muted)">Visitas totales</span>
-            <span id="stats-visitas" class="accent-text font-bold">...</span>
+            <span id="stats-visitas" class="font-bold" style="color: var(--fg)">...</span>
         </div>
     </div>
 </div>
@@ -512,10 +564,10 @@
     <div id="mobile-menu" class="hidden md:hidden px-5 pb-4">
         <div class="flex flex-col gap-3 text-lg font-medium rounded-2xl p-5"
              style="background: var(--surface); color: var(--fg); border: 1px solid var(--line)">
-            <a href="#proyectos"    class="accent-text hover:opacity-75 transition-opacity py-1">Proyectos</a>
-            <a href="#habilidades"  class="accent-text hover:opacity-75 transition-opacity py-1">Habilidades</a>
-            <a href="#experiencia"  class="accent-text hover:opacity-75 transition-opacity py-1">Experiencia</a>
-            <a href="#certificados" class="accent-text hover:opacity-75 transition-opacity py-1">Certificados</a>
+            <a href="#proyectos"    class="mobile-link transition-colors py-1">Proyectos</a>
+            <a href="#habilidades"  class="mobile-link transition-colors py-1">Habilidades</a>
+            <a href="#experiencia"  class="mobile-link transition-colors py-1">Experiencia</a>
+            <a href="#certificados" class="mobile-link transition-colors py-1">Certificados</a>
             <a href="#contacto" class="btn-contact text-center py-2.5 border rounded-full text-base transition-colors" style="border-color: var(--line); color: var(--accent);">Contacto</a>
         </div>
     </div>
@@ -547,6 +599,18 @@
         <div class="hero-line hero-ctas">
             <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download class="hero-btn hero-btn-primary">Descargar CV</a>
             <a href="#proyectos" class="hero-btn hero-btn-ghost">Ver proyectos</a>
+        </div>
+        <!-- Perfiles profesionales a la vista de reclutadores. Los href son de
+             respaldo; cargarPerfil() los actualiza con los datos de la BD. -->
+        <div id="hero-social" class="hero-line hero-social">
+            <a id="hero-github" href="https://github.com/santilafu" target="_blank" rel="noopener noreferrer"
+               class="hero-social-btn" aria-label="GitHub de Santiago Lafuente (se abre en una pestaña nueva)">
+                <i class="fa-brands fa-github" aria-hidden="true"></i><span>GitHub</span>
+            </a>
+            <a id="hero-linkedin" href="https://www.linkedin.com/in/santiago-lafuente-hern%C3%A1ndez-796783226/" target="_blank" rel="noopener noreferrer"
+               class="hero-social-btn" aria-label="LinkedIn de Santiago Lafuente (se abre en una pestaña nueva)">
+                <i class="fa-brands fa-linkedin" aria-hidden="true"></i><span>LinkedIn</span>
+            </a>
         </div>
         <p class="hero-line hero-status"><span class="hero-status-dot"></span> Disponible para trabajar</p>
         <p class="hero-line hero-meta">9.0 de media &middot; Titulado en DAM &middot; Prácticas en GDES</p>
@@ -590,8 +654,8 @@
         <div class="mb-10 md:mb-12">
             <h2 class="section-eyebrow">Proyectos</h2>
         </div>
-        <div id="lista-proyectos" class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
-            <div class="flex items-center gap-3 justify-center col-span-1 lg:col-span-2 py-10">
+        <div id="lista-proyectos" class="grid grid-cols-1 lg:grid-cols-6 gap-6 md:gap-8">
+            <div class="flex items-center gap-3 justify-center col-span-full py-10">
                 <div class="loader"></div><span>Cargando proyectos...</span>
             </div>
         </div>
@@ -669,8 +733,8 @@
             <!-- Email con botón copiar -->
             <div id="email-display" class="inline-flex flex-wrap justify-center items-center gap-3 px-5 sm:px-7 py-4 sm:py-5 border rounded-2xl max-w-full" style="background: var(--surface); border-color: var(--line)">
                 <i class="fa-solid fa-envelope accent-text text-xl"></i>
-                <span id="email-text" class="text-lg sm:text-xl font-mono accent-text break-all">cargando...</span>
-                <button id="btn-copiar-email" title="Copiar email"
+                <span id="email-text" class="text-lg sm:text-xl font-mono break-all" style="color: var(--fg)">cargando...</span>
+                <button id="btn-copiar-email" type="button" title="Copiar email" aria-label="Copiar email"
                     class="btn-contact ml-2 px-3 py-1.5 border rounded-lg accent-text transition-all text-sm" style="border-color: var(--line)">
                     <i class="fa-regular fa-copy"></i>
                 </button>

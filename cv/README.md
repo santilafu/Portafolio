@@ -12,11 +12,22 @@
 ```bash
 "/c/Program Files/Google/Chrome/Application/chrome.exe" --headless=new --disable-gpu \
   --no-pdf-header-footer --virtual-time-budget=10000 \
-  --print-to-pdf="public/cv/cv-santiago-lafuente.pdf" \
-  "file:///C:/Users/santi/mi-portafolio/cv/cv-santiago-lafuente.html"
+  --print-to-pdf="$(pwd -W)/public/cv/cv-santiago-lafuente.pdf" \
+  "file:///$(pwd -W)/cv/cv-santiago-lafuente.html"
 ```
 
-   (En PowerShell: `& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu --no-pdf-header-footer --virtual-time-budget=10000 --print-to-pdf="public\cv\cv-santiago-lafuente.pdf" "file:///C:/Users/santi/mi-portafolio/cv/cv-santiago-lafuente.html"`)
+   En PowerShell:
+
+```powershell
+& "C:\Program Files\Google\Chrome\Application\chrome.exe" --headless=new --disable-gpu `
+  --no-pdf-header-footer --virtual-time-budget=10000 `
+  --print-to-pdf="$PWD\public\cv\cv-santiago-lafuente.pdf" `
+  "file:///$($PWD -replace '\\','/')/cv/cv-santiago-lafuente.html"
+```
+
+   **Las rutas tienen que ser absolutas.** Chrome headless no resuelve `--print-to-pdf` respecto a
+   la carpeta actual: con una ruta relativa (`public/cv/...`) falla con `Failed to write file`. Por
+   eso se construyen a partir de `$(pwd -W)` (Git Bash, devuelve `C:/Users/...`) o `$PWD` (PowerShell).
 
 3. Comprueba que sigue ocupando **una sola página** (si añades contenido y se desborda, la parte
    inferior se recorta: ajusta los márgenes de `.main h2` / `.entry` en el CSS).

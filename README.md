@@ -40,8 +40,7 @@ mi-portafolio/
 │   │   └── app.js           # Logica completa del frontend
 │   ├── img/
 │   │   ├── perfil.jpg       # Foto de perfil
-│   │   ├── logo.svg         # Logo SVG (indigo/cyan, sin fondo)
-│   │   └── logo1.png        # Logo PNG original
+│   │   └── logo.svg         # Logo SVG (indigo/cyan, sin fondo)
 │   └── cv/
 │       └── cv-santiago-lafuente.pdf   # CV descargable
 ├── server/                  # Backend

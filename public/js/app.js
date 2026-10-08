@@ -407,6 +407,20 @@ function iniciarCopiarEmail() {
 // PROYECTOS
 // ============================================================
 
+// Imágenes que tienen versión WebP junto al original (mismo nombre, .webp).
+// Se sirven con <picture>: WebP para navegadores que lo soportan y el
+// PNG/JPG original como respaldo. Solo se listan las que EXISTEN: un
+// <source> con un WebP inexistente no hace "fallback" al <img>.
+const IMAGENES_WEBP = new Set(['/img/suscriptwallet-banner.png', '/img/domelecduke.jpg']);
+
+// Devuelve <picture> con fuente WebP (si la hay) o un <img> simple.
+function imagenResponsive(src, atributos) {
+    const img = `<img src="${src}" ${atributos}>`;
+    if (!IMAGENES_WEBP.has(src)) return img;
+    const webp = src.replace(/\.(png|jpe?g)$/i, '.webp');
+    return `<picture><source srcset="${webp}" type="image/webp">${img}</picture>`;
+}
+
 async function cargarProyectos() {
     try {
         const respuesta  = await fetch(`${API_URL}/proyectos`);
@@ -466,7 +480,9 @@ async function cargarProyectos() {
                 // (El destacado ya pinta su propio banner a todo el ancho.)
                 // Si hay demo o web en producción, la imagen también enlaza a ella.
                 const altImagen = `Captura de ${proyecto.titulo}`.replace(/"/g, '&quot;');
-                const imgTarjeta = `<img src="${proyecto.imagen}" alt="${altImagen}" loading="lazy" width="1200" height="630">`;
+                const imgTarjeta = proyecto.imagen
+                    ? imagenResponsive(proyecto.imagen, `alt="${altImagen}" loading="lazy" width="1200" height="630"`)
+                    : '';
                 const conImagen = !esDestacado && !!proyecto.imagen;
                 const mediaTarjeta = conImagen
                     ? (proyecto.url_demo
@@ -481,7 +497,11 @@ async function cargarProyectos() {
                 tarjeta.style.borderColor = 'var(--line)';
                 tarjeta.style.background  = 'var(--surface)';
                 tarjeta.innerHTML = `
-                    ${esDestacado && proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-56 md:h-72 object-cover" alt="${proyecto.titulo}">` : ''}
+                    ${esDestacado && proyecto.imagen ? `
+                    <div class="banner-destacado h-56 md:h-72">
+                        <div class="banner-fondo" aria-hidden="true">${imagenResponsive(proyecto.imagen, 'alt=""')}</div>
+                        ${imagenResponsive(proyecto.imagen, `class="banner-img" alt="${altImagen}" width="1024" height="500"`)}
+                    </div>` : ''}
                     ${mediaTarjeta}
                     <div class="proyecto-body p-6 md:p-8 flex-1 flex flex-col">
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-1">

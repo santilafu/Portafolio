@@ -436,6 +436,22 @@
         .proyecto-media img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
         .card-hover:hover .proyecto-media img { transform: scale(1.03); }
 
+        /* ── BANNER DEL PROYECTO DESTACADO ───────────────────────
+           La imagen original mide 1024px de ancho: para no estirarla (se
+           veía borrosa) la imagen nítida se limita a su ancho real y se
+           centra; detrás, la misma imagen desenfocada rellena los laterales.
+           En pantallas anchas los bordes de la nítida se funden con el fondo. */
+        .banner-destacado { position: relative; overflow: hidden; background: var(--bg); }
+        /* Fondo: la misma imagen (también vía <picture>/WebP, sin descarga extra) desenfocada */
+        .banner-fondo { position: absolute; inset: 0; filter: blur(28px) saturate(1.1); transform: scale(1.15); opacity: .55; }
+        .banner-fondo picture, .banner-fondo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+        .banner-destacado > picture, .banner-img { display: block; position: relative; height: 100%; width: 100%; max-width: 1024px; margin: 0 auto; }
+        .banner-img { object-fit: cover; }
+        @media (min-width: 1280px) {
+            .banner-img { -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent); }
+        }
+        .proyecto-media picture { display: block; width: 100%; height: 100%; }
+
         /* ── TIMELINE EXPERIENCIA ────────────────────────────────
            Línea de tiempo vertical limpia. Cada .timeline-item
            tiene un punto de acento y una línea vertical. */

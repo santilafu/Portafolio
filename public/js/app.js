@@ -30,6 +30,8 @@ const SKILL_ICONS = {
     'linux': 'devicon-linux-plain',
 };
 
+const FLOAT_CLASSES = ['float-1', 'float-2', 'float-3'];
+
 // Carga el tech stack desde la API y renderiza las tarjetas.
 // Los datos ya no están hardcodeados — vienen de la tabla tech_stack en Aiven.
 async function renderTechStack() {
@@ -56,6 +58,7 @@ async function renderTechStack() {
 }
 
 function crearTechCard(tech, iconSize, index) {
+    const floatClass = FLOAT_CLASSES[index % 3];
     // La API devuelve icon_color (snake_case); el campo antiguo hardcodeado era iconColor (camelCase)
     const colorClass = tech.icon_color || tech.iconColor || '';
     const card = document.createElement('div');
@@ -66,7 +69,7 @@ function crearTechCard(tech, iconSize, index) {
     card.style.background  = 'var(--surface)';
     card.dataset.index = index;
     card.innerHTML = `
-        <div><i class="${tech.icono} ${iconSize} ${colorClass}" aria-hidden="true"></i></div>
+        <div class="${floatClass}"><i class="${tech.icono} ${iconSize} ${colorClass}" aria-hidden="true"></i></div>
         <span class="text-sm md:text-base font-medium text-center" style="color: var(--fg)">${tech.nombre}</span>
     `;
     return card;

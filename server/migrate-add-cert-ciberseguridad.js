@@ -15,10 +15,10 @@ async function migrar() {
         console.log('🚀 Insertando certificado de Ciberseguridad...\n');
 
         const cert = {
-            titulo: 'Curso de Ciberseguridad y Hacking Etico',
+            titulo: 'Curso de Ciberseguridad y Hacking Ético',
             emisor: 'BIG school',
             fecha: '2026-04-11',
-            descripcion: 'Jornadas sobre ciberseguridad y hacking etico: tecnicas de deteccion de vulnerabilidades y defensa digital. 6 horas de formacion impartidas por Romuald Fons y Mario Alvarez (Director del Master de Ciberseguridad).',
+            descripcion: 'Jornadas sobre ciberseguridad y hacking ético: técnicas de detección de vulnerabilidades y defensa digital. 6 horas de formación impartidas por Romuald Fons y Mario Álvarez (Director del Máster de Ciberseguridad).',
             url_archivo: '/certificados/curso-ciberseguridad-bigschool.pdf',
             url_externa: '',
             icono: 'fa-solid fa-shield-halved',

@@ -20,7 +20,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Santiago Lafuente | Desarrollador Multiplataforma</title>
     <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
-    <meta name="description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y mas.">
+    <meta name="description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y más.">
 
     <!-- ── SEO: canonical ──────────────────────────────────────────
          URL canónica del sitio. Evita contenido duplicado (con/sin www,
@@ -34,7 +34,7 @@
     <meta property="og:type"        content="website">
     <meta property="og:site_name"   content="Santiago Lafuente">
     <meta property="og:title"       content="Santiago Lafuente | Desarrollador Multiplataforma">
-    <meta property="og:description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y mas.">
+    <meta property="og:description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y más.">
     <meta property="og:url"         content="https://santiagolafuente.com">
     <meta property="og:image"       content="https://santiagolafuente.com/img/perfil.jpg">
     <meta property="og:image:alt"   content="Santiago Lafuente - Desarrollador Multiplataforma">
@@ -43,7 +43,7 @@
          summary_large_image = tarjeta grande con imagen destacada. -->
     <meta name="twitter:card"        content="summary_large_image">
     <meta name="twitter:title"       content="Santiago Lafuente | Desarrollador Multiplataforma">
-    <meta name="twitter:description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y mas.">
+    <meta name="twitter:description" content="Portafolio de Santiago Lafuente - Desarrollador de Aplicaciones Multiplataforma. Java, Kotlin, Node.js, MySQL y más.">
     <meta name="twitter:image"       content="https://santiagolafuente.com/img/perfil.jpg">
 
     <!-- ── JSON-LD: datos estructurados schema.org (Person) ────────
@@ -107,6 +107,7 @@
             /* Los "lifts" al pasar el ratón por tarjetas de proyectos/certificados
                y por los iconos de tech-stack también son movimiento no esencial. */
             .card-hover, .card-hover:hover, .skill-card, .skill-card:hover { transform: none !important; transition: none !important; }
+            .card-hover:hover .proyecto-media img { transform: none !important; }
         }
 
         /* ── SCROLL PROGRESS BAR ─────────────────────────────────
@@ -379,6 +380,15 @@
         .card-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--accent); }
         .card-link:hover { color: var(--accent-hi); }
 
+        /* ── IMAGEN EN TARJETA DE PROYECTO ───────────────────────
+           Captura de cabecera para proyectos no destacados que tienen
+           imagen (el destacado usa su propio banner a todo el ancho).
+           Proporción 1200x630 (formato Open Graph). Las esquinas
+           superiores las redondea el overflow-hidden de la tarjeta. */
+        .proyecto-media { display: block; aspect-ratio: 1200 / 630; overflow: hidden; background: var(--bg); border-bottom: 1px solid var(--line); }
+        .proyecto-media img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+        .card-hover:hover .proyecto-media img { transform: scale(1.03); }
+
         /* ── TIMELINE EXPERIENCIA ────────────────────────────────
            Línea de tiempo vertical limpia. Cada .timeline-item
            tiene un punto de acento y una línea vertical. */
@@ -403,7 +413,7 @@
 <div id="stats-panel" class="hidden fixed bottom-6 left-6 z-[9999] rounded-2xl p-5 shadow-2xl min-w-[200px]"
      style="background: var(--surface); border: 1px solid var(--line);">
     <div class="flex items-center justify-between mb-3">
-        <span class="text-xs uppercase tracking-widest accent-text font-semibold">Estadisticas</span>
+        <span class="text-xs uppercase tracking-widest accent-text font-semibold">Estadísticas</span>
         <button onclick="document.getElementById('stats-panel').classList.add('hidden')"
                 class="text-lg leading-none transition-colors"
                 style="color: var(--muted)">×</button>
@@ -508,12 +518,12 @@
             <a href="#proyectos" class="hero-btn hero-btn-ghost">Ver proyectos</a>
         </div>
         <p class="hero-line hero-status"><span class="hero-status-dot"></span> Disponible para trabajar</p>
-        <p class="hero-line hero-meta">9.0 de media &middot; Titulado en DAM &middot; Practicas en GDES</p>
+        <p class="hero-line hero-meta">9.0 de media &middot; Titulado en DAM &middot; Prácticas en GDES</p>
     </div>
 
     <div class="relative max-w-4xl mx-auto px-5 sm:px-6 pt-12">
         <div id="github-stats" class="flex flex-wrap gap-4 text-base justify-center" style="color: var(--muted)">
-            <span>Cargando estadisticas de GitHub...</span>
+            <span>Cargando estadísticas de GitHub...</span>
         </div>
     </div>
 </header>
@@ -526,7 +536,7 @@
     <!-- TECH STACK -->
     <section class="fade-up">
         <div class="mb-10 md:mb-12">
-            <h2 class="section-eyebrow">Stack tecnico</h2>
+            <h2 class="section-eyebrow">Stack técnico</h2>
         </div>
         <div id="tech-parallax" class="parallax-container">
             <div class="parallax-layer">
@@ -536,8 +546,8 @@
                     <div id="tech-main" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 md:gap-5 max-w-4xl mx-auto"></div>
                 </div>
                 <div id="tech-stack-other">
-                    <!-- Sub-label "Conocimientos basicos" en color atenuado (--muted) -->
-                    <p class="text-base font-medium mb-5 text-center" style="color: var(--muted)"><i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos basicos</p>
+                    <!-- Sub-label "Conocimientos básicos" en color atenuado (--muted) -->
+                    <p class="text-base font-medium mb-5 text-center" style="color: var(--muted)"><i class="fa-solid fa-seedling text-green-500 mr-1"></i> Conocimientos básicos</p>
                     <div id="tech-other" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3 md:gap-4 max-w-5xl mx-auto"></div>
                 </div>
             </div>
@@ -580,7 +590,7 @@
     <section id="certificados" class="fade-up scroll-mt-24">
         <div class="mb-10 md:mb-12">
             <h2 class="section-eyebrow">Certificados</h2>
-            <p class="section-lead mt-4 max-w-2xl">Cursos completados para mantenerme al dia con las ultimas tecnologias.</p>
+            <p class="section-lead mt-4 max-w-2xl">Cursos completados para mantenerme al día con las últimas tecnologías.</p>
         </div>
         <div id="lista-certificados" class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             <div class="flex items-center gap-3 justify-center col-span-1 md:col-span-2 py-10">

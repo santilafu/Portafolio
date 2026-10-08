@@ -19,10 +19,10 @@
 require('dotenv').config({ override: true });
 const db = require('./db');
 
-// Textos objetivo (sin acentos, siguiendo la convención del seed)
-const SOBRE_MI = 'Titulado en Desarrollo de Aplicaciones Multiplataforma (DAM) con un 9 de nota media. Apasionado por el backend, las bases de datos y la creacion de APIs robustas. Siempre buscando aprender nuevas tecnologias y mejorar mis habilidades.';
+// Textos objetivo (con tildes, igual que el seed tras migrate-corrige-tildes.js)
+const SOBRE_MI = 'Titulado en Desarrollo de Aplicaciones Multiplataforma (DAM) con un 9 de nota media. Apasionado por el backend, las bases de datos y la creación de APIs robustas. Siempre buscando aprender nuevas tecnologías y mejorar mis habilidades.';
 const GDES_FECHA_FIN = '2026-06-20';
-const GDES_DESCRIPCION = 'Practicas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Di soporte tecnico, realice mantenimiento de sistemas y desarrolle herramientas internas para apoyar las operaciones de la empresa.';
+const GDES_DESCRIPCION = 'Prácticas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Di soporte técnico, realicé mantenimiento de sistemas y desarrollé herramientas internas para apoyar las operaciones de la empresa.';
 
 async function migrar() {
     try {

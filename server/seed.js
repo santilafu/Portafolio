@@ -22,9 +22,9 @@ const db = require('./db');
 // ============================================================
 
 const datosPerfil = {
-    nombre: 'Santiago Lafuente Hernandez',
+    nombre: 'Santiago Lafuente Hernández',
     titular: 'Desarrollador Multiplataforma',
-    sobre_mi: 'Titulado en Desarrollo de Aplicaciones Multiplataforma (DAM) con un 9 de nota media. Apasionado por el backend, las bases de datos y la creacion de APIs robustas. Siempre buscando aprender nuevas tecnologias y mejorar mis habilidades.',
+    sobre_mi: 'Titulado en Desarrollo de Aplicaciones Multiplataforma (DAM) con un 9 de nota media. Apasionado por el backend, las bases de datos y la creación de APIs robustas. Siempre buscando aprender nuevas tecnologías y mejorar mis habilidades.',
     email: 'santi10dy@gmail.com',
     enlace_github: 'https://github.com/santilafu',
     enlace_linkedin: 'https://www.linkedin.com/in/santiago-lafuente-hern%C3%A1ndez-796783226/',
@@ -35,7 +35,7 @@ const datosPerfil = {
 const datosProyectos = [
     {
         titulo: 'SuscriptWallet - Gestor de Suscripciones',
-        descripcion: 'Aplicacion full-stack para gestionar todas tus suscripciones de pago en un solo lugar. Backend en Kotlin + Spring Boot 3.3 + PostgreSQL con Spring Security y JWT. App movil multiplataforma con Kotlin Multiplatform y Jetpack Compose. Catalogo de 320+ servicios, dashboard con graficos por categoria, notificaciones de renovacion, modo offline y soporte multi-divisa.',
+        descripcion: 'Aplicación full-stack para gestionar todas tus suscripciones de pago en un solo lugar. Backend en Kotlin + Spring Boot 3.3 + PostgreSQL con Spring Security y JWT. App móvil multiplataforma con Kotlin Multiplatform y Jetpack Compose. Catálogo de 320+ servicios, dashboard con gráficos por categoría, notificaciones de renovación, modo offline y soporte multi-divisa.',
         url_repo: 'https://github.com/santilafu/SuscriptWallet',
         url_demo: '',
         imagen: '/img/suscriptwallet-banner.png',
@@ -55,7 +55,7 @@ const datosProyectos = [
     },
     {
         titulo: 'MoodTrack - Registro de Emociones',
-        descripcion: 'Aplicacion web con Spring Boot y Thymeleaf para registrar emociones diarias, ver historial y estadisticas graficas. Base de datos H2 en memoria. Proyecto de 1er curso DAM.',
+        descripcion: 'Aplicación web con Spring Boot y Thymeleaf para registrar emociones diarias, ver historial y estadísticas gráficas. Base de datos H2 en memoria. Proyecto de 1er curso DAM.',
         url_repo: 'https://github.com/santilafu/App-Moodtrack',
         url_demo: '',
         imagen: null,
@@ -64,8 +64,8 @@ const datosProyectos = [
         estado: 'completado'
     },
     {
-        titulo: 'Gestion Bancaria Segura',
-        descripcion: 'App de escritorio Java Swing con cifrado AES-128, firmas digitales DSA y SHA-256. Gestiona cuentas bancarias con depositos, transferencias y control de acceso criptografico. Proyecto de 2o DAM.',
+        titulo: 'Gestión Bancaria Segura',
+        descripcion: 'App de escritorio Java Swing con cifrado AES-128, firmas digitales DSA y SHA-256. Gestiona cuentas bancarias con depósitos, transferencias y control de acceso criptográfico. Proyecto de 2º DAM.',
         url_repo: 'https://github.com/santilafu/GestionBancaria',
         url_demo: '',
         imagen: null,
@@ -75,7 +75,7 @@ const datosProyectos = [
     },
     {
         titulo: 'Domelec Duke - Web Corporativa',
-        descripcion: 'Web corporativa en produccion para Domelec Duke, empresa de electricidad y domotica de la Comunidad Valenciana. Landing de una sola pagina en React + TypeScript + Vite con Tailwind CSS, logo 3D animado con el scroll (Three.js / React Three Fiber + GSAP) y HTML prerenderizado para SEO. Desplegada en Cloudflare Workers, con un panel de administracion propio desde el que el cliente edita textos, fotos y resenas y publica los cambios.',
+        descripcion: 'Web corporativa en producción para Domelec Duke, empresa de electricidad y domótica de la Comunidad Valenciana. Landing de una sola página en React + TypeScript + Vite con Tailwind CSS, logo 3D animado con el scroll (Three.js / React Three Fiber + GSAP) y HTML prerenderizado para SEO. Desplegada en Cloudflare Workers, con un panel de administración propio desde el que el cliente edita textos, fotos y reseñas y publica los cambios.',
         url_repo: '',
         url_demo: 'https://domelecduke.es',
         imagen: '/img/domelecduke.jpg',
@@ -84,8 +84,8 @@ const datosProyectos = [
         estado: 'completado'
     },
     {
-        titulo: 'Revisa - Mantenimiento de Vehiculos',
-        descripcion: 'Aplicacion web progresiva (PWA) para gestionar el mantenimiento de tus vehiculos. Avisa de ITV, seguro y revisiones por fecha o kilometraje, mostrando de un vistazo que esta al dia, proximo o vencido. Frontend en React + TypeScript + Vite con Tailwind CSS, animaciones con Framer Motion y persistencia local offline con Dexie.js (IndexedDB).',
+        titulo: 'Revisa - Mantenimiento de Vehículos',
+        descripcion: 'Aplicación web progresiva (PWA) para gestionar el mantenimiento de tus vehículos. Avisa de ITV, seguro y revisiones por fecha o kilometraje, mostrando de un vistazo qué está al día, próximo o vencido. Frontend en React + TypeScript + Vite con Tailwind CSS, animaciones con Framer Motion y persistencia local offline con Dexie.js (IndexedDB).',
         url_repo: 'https://github.com/santilafu/App-Revisa',
         url_demo: '',
         imagen: null,
@@ -94,8 +94,8 @@ const datosProyectos = [
         estado: 'en_desarrollo'
     },
     {
-        titulo: 'Rondas - Checklists de Inspeccion Industrial',
-        descripcion: 'Aplicacion web para realizar rondas de mantenimiento e inspecciones desde el movil o el PC. Permite rellenar checklists punto por punto (OK / No OK / N-A con comentarios y fotos), firmar con el dedo y generar un acta en PDF con veredicto Apto/No Apto. Incluye editor de plantillas personalizables, autoguardado y reanudacion de inspecciones a medias, panel de estadisticas con los puntos que mas fallan, filtros y copia de seguridad. Construida en React + Vite con Tailwind CSS, sin backend: toda la persistencia es local en el navegador.',
+        titulo: 'Rondas - Checklists de Inspección Industrial',
+        descripcion: 'Aplicación web para realizar rondas de mantenimiento e inspecciones desde el móvil o el PC. Permite rellenar checklists punto por punto (OK / No OK / N-A con comentarios y fotos), firmar con el dedo y generar un acta en PDF con veredicto Apto/No Apto. Incluye editor de plantillas personalizables, autoguardado y reanudación de inspecciones a medias, panel de estadísticas con los puntos que más fallan, filtros y copia de seguridad. Construida en React + Vite con Tailwind CSS, sin backend: toda la persistencia es local en el navegador.',
         url_repo: 'https://github.com/santilafu/App-CheckList',
         url_demo: '',
         imagen: null,
@@ -105,18 +105,18 @@ const datosProyectos = [
     }
 ];
 
-// nivel puede ser: 'Basico', 'Intermedio', 'Avanzado'
+// nivel puede ser: 'Básico', 'Intermedio', 'Avanzado'
 const datosHabilidades = [
     { nombre: 'Java',    nivel: 'Intermedio' },
     { nombre: 'MySQL',   nivel: 'Intermedio' },
     { nombre: 'HTML',    nivel: 'Intermedio' },
     { nombre: 'CSS',     nivel: 'Intermedio' },
     { nombre: 'Git',     nivel: 'Intermedio' },
-    { nombre: 'Kotlin',  nivel: 'Basico' },
-    { nombre: 'Node.js', nivel: 'Basico' },
-    { nombre: 'Python',  nivel: 'Basico' },
-    { nombre: 'Spring',  nivel: 'Basico' },
-    { nombre: 'C#',      nivel: 'Basico' }
+    { nombre: 'Kotlin',  nivel: 'Básico' },
+    { nombre: 'Node.js', nivel: 'Básico' },
+    { nombre: 'Python',  nivel: 'Básico' },
+    { nombre: 'Spring',  nivel: 'Básico' },
+    { nombre: 'C#',      nivel: 'Básico' }
 ];
 
 // Tecnologías principales (sección destacada)
@@ -151,10 +151,10 @@ const datosTechOther = [
 const datosExperiencia = [
     {
         empresa: 'GD Energy Services',
-        puesto: 'Practicas IT',
+        puesto: 'Prácticas IT',
         fecha_inicio: '2026-03-23',
         fecha_fin: '2026-06-20',
-        descripcion: 'Practicas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Di soporte tecnico, realice mantenimiento de sistemas y desarrolle herramientas internas para apoyar las operaciones de la empresa.',
+        descripcion: 'Prácticas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Di soporte técnico, realicé mantenimiento de sistemas y desarrollé herramientas internas para apoyar las operaciones de la empresa.',
         logo: '/img/gdes-logo.png'
     }
 ];
@@ -165,7 +165,7 @@ const datosCertificados = [
         titulo: 'Curso de Automatizaciones con N8N e IA',
         emisor: 'Raiola Networks',
         fecha: '2026-01-10',
-        descripcion: 'Diseno de flujos de automatizacion combinando N8N con servicios de inteligencia artificial para crear procesos sin codigo.',
+        descripcion: 'Diseño de flujos de automatización combinando N8N con servicios de inteligencia artificial para crear procesos sin código.',
         url_archivo: '/certificados/curso-n8n-ia-raiola.pdf',
         url_externa: '',
         icono: 'fa-solid fa-robot',
@@ -175,10 +175,10 @@ const datosCertificados = [
         orden: 1
     },
     {
-        titulo: 'Curso de Iniciacion al Desarrollo con IA',
+        titulo: 'Curso de Iniciación al Desarrollo con IA',
         emisor: 'BIG school (mouredev)',
         fecha: '2025-11-21',
-        descripcion: 'Jornadas formativas sobre desarrollo de aplicaciones aprovechando inteligencia artificial. 6 horas de formacion impartidas por Romuald Fons y Brais Moure.',
+        descripcion: 'Jornadas formativas sobre desarrollo de aplicaciones aprovechando inteligencia artificial. 6 horas de formación impartidas por Romuald Fons y Brais Moure.',
         url_archivo: '/certificados/curso-iniciacion-ia-bigschool.pdf',
         url_externa: '',
         icono: 'fa-solid fa-brain',
@@ -188,10 +188,10 @@ const datosCertificados = [
         orden: 2
     },
     {
-        titulo: 'Curso de Ciberseguridad y Hacking Etico',
+        titulo: 'Curso de Ciberseguridad y Hacking Ético',
         emisor: 'BIG school',
         fecha: '2026-04-11',
-        descripcion: 'Jornadas sobre ciberseguridad y hacking etico: tecnicas de deteccion de vulnerabilidades y defensa digital. 6 horas de formacion impartidas por Romuald Fons y Mario Alvarez (Director del Master de Ciberseguridad).',
+        descripcion: 'Jornadas sobre ciberseguridad y hacking ético: técnicas de detección de vulnerabilidades y defensa digital. 6 horas de formación impartidas por Romuald Fons y Mario Álvarez (Director del Máster de Ciberseguridad).',
         url_archivo: '/certificados/curso-ciberseguridad-bigschool.pdf',
         url_externa: '',
         icono: 'fa-solid fa-shield-halved',
@@ -204,7 +204,7 @@ const datosCertificados = [
         titulo: 'Curso de Desarrollo con IA - El Nuevo Programador',
         emisor: 'BIG school (mouredev)',
         fecha: '2026-10-03',
-        descripcion: 'Curso de iniciacion al desarrollo de software con inteligencia artificial. 4 horas de formacion impartidas por Romuald Fons (CEO de BIG school) y Brais Moure (Director del Master en Desarrollo con IA).',
+        descripcion: 'Curso de iniciación al desarrollo de software con inteligencia artificial. 4 horas de formación impartidas por Romuald Fons (CEO de BIG school) y Brais Moure (Director del Máster en Desarrollo con IA).',
         url_archivo: '/certificados/curso-desarrollo-ia-nuevo-programador-bigschool.pdf',
         url_externa: '',
         icono: 'fa-solid fa-code',

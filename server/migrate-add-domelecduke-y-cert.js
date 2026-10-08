@@ -21,7 +21,7 @@ const cert = {
     titulo: 'Curso de Desarrollo con IA - El Nuevo Programador',
     emisor: 'BIG school (mouredev)',
     fecha: '2026-10-03',
-    descripcion: 'Curso de iniciacion al desarrollo de software con inteligencia artificial. 4 horas de formacion impartidas por Romuald Fons (CEO de BIG school) y Brais Moure (Director del Master en Desarrollo con IA).',
+    descripcion: 'Curso de iniciación al desarrollo de software con inteligencia artificial. 4 horas de formación impartidas por Romuald Fons (CEO de BIG school) y Brais Moure (Director del Máster en Desarrollo con IA).',
     url_archivo: '/certificados/curso-desarrollo-ia-nuevo-programador-bigschool.pdf',
     url_externa: '',
     icono: 'fa-solid fa-code',
@@ -35,7 +35,7 @@ const cert = {
 // El repositorio es privado (es del cliente), así que no se enlaza.
 const proyecto = {
     titulo: 'Domelec Duke - Web Corporativa',
-    descripcion: 'Web corporativa en produccion para Domelec Duke, empresa de electricidad y domotica de la Comunidad Valenciana. Landing de una sola pagina en React + TypeScript + Vite con Tailwind CSS, logo 3D animado con el scroll (Three.js / React Three Fiber + GSAP) y HTML prerenderizado para SEO. Desplegada en Cloudflare Workers, con un panel de administracion propio desde el que el cliente edita textos, fotos y resenas y publica los cambios.',
+    descripcion: 'Web corporativa en producción para Domelec Duke, empresa de electricidad y domótica de la Comunidad Valenciana. Landing de una sola página en React + TypeScript + Vite con Tailwind CSS, logo 3D animado con el scroll (Three.js / React Three Fiber + GSAP) y HTML prerenderizado para SEO. Desplegada en Cloudflare Workers, con un panel de administración propio desde el que el cliente edita textos, fotos y reseñas y publica los cambios.',
     url_repo: '',
     url_demo: 'https://domelecduke.es',
     imagen: '/img/domelecduke.jpg',

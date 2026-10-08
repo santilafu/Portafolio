@@ -72,7 +72,7 @@ async function migrar() {
         // ── 3. Insertar experiencia GDES (si no existe) ──────────
         const [gdesExistente] = await db.query(
             `SELECT id FROM experiencia WHERE empresa = ? AND puesto = ?`,
-            ['GD Energy Services', 'Practicas IT']
+            ['GD Energy Services', 'Prácticas IT']
         );
         if (gdesExistente.length === 0) {
             await db.query(
@@ -81,10 +81,10 @@ async function migrar() {
                 [
                     perfilId,
                     'GD Energy Services',
-                    'Practicas IT',
+                    'Prácticas IT',
                     '2026-03-23',
                     null,
-                    'Practicas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Soporte tecnico, mantenimiento de sistemas y desarrollo de herramientas internas para apoyar las operaciones de la empresa.',
+                    'Prácticas del ciclo DAM en el departamento de IT del Grupo Dominguis Energy Services. Soporte técnico, mantenimiento de sistemas y desarrollo de herramientas internas para apoyar las operaciones de la empresa.',
                     '/img/gdes-logo.png'
                 ]
             );
@@ -104,7 +104,7 @@ async function migrar() {
                 [
                     perfilId,
                     'SuscriptWallet - Gestor de Suscripciones',
-                    'Aplicacion full-stack para gestionar todas tus suscripciones de pago en un solo lugar. Backend en Kotlin + Spring Boot 3.3 + PostgreSQL con Spring Security y JWT. App movil multiplataforma con Kotlin Multiplatform y Jetpack Compose. Catalogo de 320+ servicios, dashboard con graficos por categoria, notificaciones de renovacion, modo offline y soporte multi-divisa.',
+                    'Aplicación full-stack para gestionar todas tus suscripciones de pago en un solo lugar. Backend en Kotlin + Spring Boot 3.3 + PostgreSQL con Spring Security y JWT. App móvil multiplataforma con Kotlin Multiplatform y Jetpack Compose. Catálogo de 320+ servicios, dashboard con gráficos por categoría, notificaciones de renovación, modo offline y soporte multi-divisa.',
                     'https://github.com/santilafu/SuscriptWallet',
                     ''
                 ]
@@ -120,7 +120,7 @@ async function migrar() {
                 titulo: 'Curso de Automatizaciones con N8N e IA',
                 emisor: 'Raiola Networks',
                 fecha: '2026-01-10',
-                descripcion: 'Diseno de flujos de automatizacion combinando N8N con servicios de inteligencia artificial para crear procesos sin codigo.',
+                descripcion: 'Diseño de flujos de automatización combinando N8N con servicios de inteligencia artificial para crear procesos sin código.',
                 url_archivo: '/certificados/curso-n8n-ia-raiola.pdf',
                 url_externa: '',
                 icono: 'fa-solid fa-robot',
@@ -130,10 +130,10 @@ async function migrar() {
                 orden: 1
             },
             {
-                titulo: 'Curso de Iniciacion al Desarrollo con IA',
+                titulo: 'Curso de Iniciación al Desarrollo con IA',
                 emisor: 'BIG school (mouredev)',
                 fecha: '2025-11-21',
-                descripcion: 'Jornadas formativas sobre desarrollo de aplicaciones aprovechando inteligencia artificial. 6 horas de formacion impartidas por Romuald Fons y Brais Moure.',
+                descripcion: 'Jornadas formativas sobre desarrollo de aplicaciones aprovechando inteligencia artificial. 6 horas de formación impartidas por Romuald Fons y Brais Moure.',
                 url_archivo: '/certificados/curso-iniciacion-ia-bigschool.pdf',
                 url_externa: '',
                 icono: 'fa-solid fa-brain',

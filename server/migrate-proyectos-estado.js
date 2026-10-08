@@ -31,8 +31,8 @@ async function columnaExiste(tabla, columna) {
 // Proyectos nuevos en desarrollo. Sin imagen ni enlaces, no destacados.
 const proyectosNuevos = [
     {
-        titulo: 'Revisa - Mantenimiento de Vehiculos',
-        descripcion: 'Aplicacion web progresiva (PWA) para gestionar el mantenimiento de tus vehiculos. Avisa de ITV, seguro y revisiones por fecha o kilometraje, mostrando de un vistazo que esta al dia, proximo o vencido. Frontend en React + TypeScript + Vite con Tailwind CSS, animaciones con Framer Motion y persistencia local offline con Dexie.js (IndexedDB).',
+        titulo: 'Revisa - Mantenimiento de Vehículos',
+        descripcion: 'Aplicación web progresiva (PWA) para gestionar el mantenimiento de tus vehículos. Avisa de ITV, seguro y revisiones por fecha o kilometraje, mostrando de un vistazo qué está al día, próximo o vencido. Frontend en React + TypeScript + Vite con Tailwind CSS, animaciones con Framer Motion y persistencia local offline con Dexie.js (IndexedDB).',
         url_repo: '',
         url_demo: '',
         imagen: null,
@@ -41,8 +41,8 @@ const proyectosNuevos = [
         estado: 'en_desarrollo'
     },
     {
-        titulo: 'Rondas - Checklists de Inspeccion Industrial',
-        descripcion: 'Aplicacion web para realizar rondas de mantenimiento e inspecciones desde el movil o el PC. Permite rellenar checklists punto por punto (OK / No OK / N-A con comentarios y fotos), firmar con el dedo y generar un acta en PDF con veredicto Apto/No Apto. Incluye editor de plantillas personalizables, autoguardado y reanudacion de inspecciones a medias, panel de estadisticas con los puntos que mas fallan, filtros y copia de seguridad. Construida en React + Vite con Tailwind CSS, sin backend: toda la persistencia es local en el navegador.',
+        titulo: 'Rondas - Checklists de Inspección Industrial',
+        descripcion: 'Aplicación web para realizar rondas de mantenimiento e inspecciones desde el móvil o el PC. Permite rellenar checklists punto por punto (OK / No OK / N-A con comentarios y fotos), firmar con el dedo y generar un acta en PDF con veredicto Apto/No Apto. Incluye editor de plantillas personalizables, autoguardado y reanudación de inspecciones a medias, panel de estadísticas con los puntos que más fallan, filtros y copia de seguridad. Construida en React + Vite con Tailwind CSS, sin backend: toda la persistencia es local en el navegador.',
         url_repo: '',
         url_demo: '',
         imagen: null,

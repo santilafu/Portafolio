@@ -228,7 +228,7 @@ async function cargarGithubStats() {
                style="background: var(--surface); border: 1px solid var(--line);">
                 <i class="fa-brands fa-github accent-text"></i>
                 <span class="accent-text font-semibold">${user.public_repos}</span>
-                <span style="color: var(--muted)">repos publicos</span>
+                <span style="color: var(--muted)">repos públicos</span>
             </a>
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
                  style="background: var(--surface); border: 1px solid var(--line);">
@@ -384,18 +384,34 @@ async function cargarProyectos() {
                     ? '<span class="pill pill-dev">En desarrollo</span>'
                     : (esDestacado ? '<span class="pill pill-featured">Destacado</span>' : '');
 
+                // mt-auto empuja los enlaces al fondo de la tarjeta: así, si una
+                // tarjeta de la misma fila es más alta (p. ej. porque tiene imagen),
+                // los enlaces de ambas quedan alineados abajo.
                 const enlaces = `
-                    <div class="mt-5 flex gap-5 text-base font-medium">
-                        ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-brands fa-github"></i> Codigo</a>` : ''}
+                    <div class="mt-auto pt-5 flex gap-5 text-base font-medium">
+                        ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-brands fa-github"></i> Código</a>` : ''}
                         ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
                     </div>`;
 
-                tarjeta.className = (esDestacado ? 'lg:col-span-2 ' : '') + 'border rounded-xl overflow-hidden card-hover fade-up';
+                // Imagen de cabecera para proyectos NO destacados que tengan `imagen`.
+                // (El destacado ya pinta su propio banner a todo el ancho.)
+                // Si hay demo, la imagen también enlaza a ella.
+                const altImagen = `Captura de ${proyecto.titulo}`.replace(/"/g, '&quot;');
+                const imgTarjeta = `<img src="${proyecto.imagen}" alt="${altImagen}" loading="lazy" width="1200" height="630">`;
+                const mediaTarjeta = (!esDestacado && proyecto.imagen)
+                    ? (proyecto.url_demo
+                        ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="proyecto-media" tabindex="-1" aria-hidden="true">${imgTarjeta}</a>`
+                        : `<div class="proyecto-media">${imgTarjeta}</div>`)
+                    : '';
+
+                // flex-col: el cuerpo crece (flex-1) y los enlaces se alinean abajo
+                tarjeta.className = (esDestacado ? 'lg:col-span-2 ' : '') + 'border rounded-xl overflow-hidden card-hover fade-up flex flex-col';
                 tarjeta.style.borderColor = 'var(--line)';
                 tarjeta.style.background  = 'var(--surface)';
                 tarjeta.innerHTML = `
                     ${esDestacado && proyecto.imagen ? `<img src="${proyecto.imagen}" class="w-full h-56 md:h-72 object-cover" alt="${proyecto.titulo}">` : ''}
-                    <div class="p-6 md:p-8">
+                    ${mediaTarjeta}
+                    <div class="p-6 md:p-8 flex-1 flex flex-col">
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-1">
                             <h4 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${proyecto.titulo}</h4>
                             ${badge}
@@ -407,7 +423,7 @@ async function cargarProyectos() {
             });
             setTimeout(reobservarAnimaciones, 100);
         } else {
-            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--muted)">Aun no hay proyectos para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-2 text-center py-10" style="color: var(--muted)">Aún no hay proyectos para mostrar.</p>';
         }
     } catch (error) {
         console.error('Error al cargar proyectos:', error);
@@ -423,7 +439,8 @@ async function cargarHabilidades() {
         const respuesta   = await fetch(`${API_URL}/habilidades`);
         const habilidades = await respuesta.json();
         const contenedor  = document.getElementById('lista-habilidades');
-        const nivelPct = { 'Basico': 40, 'Intermedio': 70, 'Avanzado': 95 };
+        // 'Basico' (sin tilde) se mantiene por compatibilidad con datos antiguos
+        const nivelPct = { 'Básico': 40, 'Basico': 40, 'Intermedio': 70, 'Avanzado': 95 };
 
         if (habilidades.length > 0) {
             contenedor.innerHTML = habilidades.map(h => {
@@ -482,7 +499,7 @@ async function cargarExperiencia() {
             empresa: 'GitHub - santilafu',
             fecha_inicio: '2024-01-01',
             fecha_fin: null,
-            descripcion: 'Desarrollo continuo de proyectos propios para reforzar conocimientos: APIs REST con Node.js y Express, aplicaciones Java con JDBC y Spring, apps moviles con Kotlin, y este mismo portafolio full-stack.',
+            descripcion: 'Desarrollo continuo de proyectos propios para reforzar conocimientos: APIs REST con Node.js y Express, aplicaciones Java con JDBC y Spring, apps móviles con Kotlin, y este mismo portafolio full-stack.',
             enlace_github: 'https://github.com/santilafu'
         });
 
@@ -531,7 +548,7 @@ async function cargarCertificados() {
         contenedor.innerHTML = '';
 
         if (certificados.length === 0) {
-            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--muted)">Aun no hay certificados para mostrar.</p>';
+            contenedor.innerHTML = '<p class="italic col-span-full text-center py-10" style="color: var(--muted)">Aún no hay certificados para mostrar.</p>';
             return;
         }
 
@@ -606,7 +623,7 @@ function iniciarFormContacto() {
             }
         } catch {
             // Fallo de red o sin conexión
-            mostrarFeedback(feedback, 'Error de conexion. Intentalo de nuevo.', 'var(--err)');
+            mostrarFeedback(feedback, 'Error de conexión. Inténtalo de nuevo.', 'var(--err)');
         } finally {
             // Restauramos el botón independientemente del resultado
             btnEnviar.disabled = false;

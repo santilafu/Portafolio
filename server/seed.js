@@ -74,6 +74,16 @@ const datosProyectos = [
         estado: 'completado'
     },
     {
+        titulo: 'Domelec Duke - Web Corporativa',
+        descripcion: 'Web corporativa en produccion para Domelec Duke, empresa de electricidad y domotica de la Comunidad Valenciana. Landing de una sola pagina en React + TypeScript + Vite con Tailwind CSS, logo 3D animado con el scroll (Three.js / React Three Fiber + GSAP) y HTML prerenderizado para SEO. Desplegada en Cloudflare Workers, con un panel de administracion propio desde el que el cliente edita textos, fotos y resenas y publica los cambios.',
+        url_repo: '',
+        url_demo: 'https://domelecduke.es',
+        imagen: '/img/domelecduke.jpg',
+        destacado: false,
+        orden: 2,
+        estado: 'completado'
+    },
+    {
         titulo: 'Revisa - Mantenimiento de Vehiculos',
         descripcion: 'Aplicacion web progresiva (PWA) para gestionar el mantenimiento de tus vehiculos. Avisa de ITV, seguro y revisiones por fecha o kilometraje, mostrando de un vistazo que esta al dia, proximo o vencido. Frontend en React + TypeScript + Vite con Tailwind CSS, animaciones con Framer Motion y persistencia local offline con Dexie.js (IndexedDB).',
         url_repo: 'https://github.com/santilafu/App-Revisa',
@@ -189,6 +199,19 @@ const datosCertificados = [
         border: 'border-emerald-500/30',
         icon_color: 'text-emerald-400',
         orden: 3
+    },
+    {
+        titulo: 'Curso de Desarrollo con IA - El Nuevo Programador',
+        emisor: 'BIG school (mouredev)',
+        fecha: '2026-10-03',
+        descripcion: 'Curso de iniciacion al desarrollo de software con inteligencia artificial. 4 horas de formacion impartidas por Romuald Fons (CEO de BIG school) y Brais Moure (Director del Master en Desarrollo con IA).',
+        url_archivo: '/certificados/curso-desarrollo-ia-nuevo-programador-bigschool.pdf',
+        url_externa: '',
+        icono: 'fa-solid fa-code',
+        color: 'from-sky-500/20 to-indigo-500/20',
+        border: 'border-sky-500/30',
+        icon_color: 'text-sky-400',
+        orden: 4
     }
 ];
 

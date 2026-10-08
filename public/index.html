@@ -170,10 +170,16 @@
         [data-theme="light"] .nav-scrolled { background: rgba(247,247,251,0.92); }
         /* Barra interior de altura fija: logo, links y botones quedan
            centrados verticalmente dentro de ella (flex + align-items). */
-        .nav-bar { height: 4.5rem; }
+        .nav-bar { height: 4.75rem; }
         /* El logo se limita a la altura de la barra (con aire arriba y abajo)
-           para que nunca sobresalga ni cruce el borde inferior de la navbar. */
-        .nav-logo { height: 3rem; width: auto; display: block; }
+           para que nunca sobresalga ni cruce el borde inferior de la navbar.
+           Móvil: 3.5rem en barra de 4.75rem; escritorio (md+): 4rem en barra de 5.25rem
+           (siempre ~0.6rem de aire arriba y abajo). */
+        .nav-logo { height: 3.5rem; width: auto; display: block; }
+        @media (min-width: 768px) {
+            .nav-bar  { height: 5.25rem; }
+            .nav-logo { height: 4rem; }
+        }
         .nav-link { font-size: 1rem; }
         /* Link activo en la navbar según sección visible */
         .nav-link.active { color: var(--accent); }

@@ -80,8 +80,8 @@ const datosProyectos = [
         url_demo: 'https://domelecduke.es',
         imagen: '/img/domelecduke.jpg',
         destacado: false,
-        orden: 2,
-        estado: 'completado'
+        orden: 1,
+        estado: 'en_produccion'
     },
     {
         titulo: 'Revisa - Mantenimiento de Vehículos',

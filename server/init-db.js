@@ -56,7 +56,7 @@ async function crearTablas() {
                 imagen      VARCHAR(255),                    -- ruta a imagen banner del proyecto
                 destacado   BOOLEAN DEFAULT FALSE,           -- si es true se renderiza en grande con banner
                 orden       INT DEFAULT 0,                   -- orden de aparición
-                estado      VARCHAR(20) DEFAULT 'completado',-- 'completado' o 'en_desarrollo' (badge "En desarrollo")
+                estado      VARCHAR(20) DEFAULT 'completado',-- 'completado', 'en_desarrollo' (badge) o 'en_produccion' ("Ver web")
                 -- Si se borra el perfil, sus proyectos se borran también (CASCADE)
                 FOREIGN KEY (perfil_id) REFERENCES perfil(id) ON DELETE CASCADE
             )

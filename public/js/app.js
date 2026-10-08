@@ -387,15 +387,21 @@ async function cargarProyectos() {
                 // mt-auto empuja los enlaces al fondo de la tarjeta: así, si una
                 // tarjeta de la misma fila es más alta (p. ej. porque tiene imagen),
                 // los enlaces de ambas quedan alineados abajo.
+                // Enlace a la web: si el proyecto está en producción (web real de un
+                // cliente) no es una "demo", así que cambiamos texto e icono.
+                const enProduccion = proyecto.estado === 'en_produccion';
+                const textoWeb = enProduccion
+                    ? '<i class="fa-solid fa-globe"></i> Ver web'
+                    : '<i class="fa-solid fa-arrow-up-right-from-square"></i> Demo';
                 const enlaces = `
                     <div class="mt-auto pt-5 flex gap-5 text-base font-medium">
                         ${proyecto.url_repo ? `<a href="${proyecto.url_repo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-brands fa-github"></i> Código</a>` : ''}
-                        ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="card-link"><i class="fa-solid fa-arrow-up-right-from-square"></i> Demo</a>` : ''}
+                        ${proyecto.url_demo ? `<a href="${proyecto.url_demo}" target="_blank" rel="noopener noreferrer" class="card-link">${textoWeb}</a>` : ''}
                     </div>`;
 
                 // Imagen de cabecera para proyectos NO destacados que tengan `imagen`.
                 // (El destacado ya pinta su propio banner a todo el ancho.)
-                // Si hay demo, la imagen también enlaza a ella.
+                // Si hay demo o web en producción, la imagen también enlaza a ella.
                 const altImagen = `Captura de ${proyecto.titulo}`.replace(/"/g, '&quot;');
                 const imgTarjeta = `<img src="${proyecto.imagen}" alt="${altImagen}" loading="lazy" width="1200" height="630">`;
                 const mediaTarjeta = (!esDestacado && proyecto.imagen)

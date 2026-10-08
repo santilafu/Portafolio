@@ -82,6 +82,9 @@
                poder aplicarles transparencia con rgba() donde el color solido no sirve. */
             --accent-rgb: 124,140,255;
             --fg-rgb: 242,243,247;
+            /* Aviso ámbar para el badge "En desarrollo" (texto + fondo translúcido).
+               #fbbf24 sobre la superficie oscura da ~8.2:1 (WCAG AA holgado). */
+            --warn: #fbbf24; --warn-bg: rgba(251,191,36,.14);
         }
         html, body { background: var(--bg); color: var(--fg); }
         /* ── ESCALA TIPOGRÁFICA GLOBAL ───────────────────────────
@@ -101,7 +104,10 @@
             /* Desactivamos tambien el resto de movimiento no esencial:
                entradas fade-up, flotacion de iconos y el spin del loader. */
             .fade-up { opacity: 1 !important; transform: none !important; transition: none !important; }
-            .float-1, .float-2, .float-3 { animation: none !important; }
+            /* Entrada del tech stack: sin escalado ni rebote, visibles desde el inicio */
+            .tech-enter, .tech-enter.show { opacity: 1 !important; transform: none !important; animation: none !important; transition: none !important; }
+            /* Sin scroll suave al pulsar anclas (la clase scroll-smooth de Tailwind en <html>) */
+            html, html.scroll-smooth { scroll-behavior: auto !important; }
             .loader { animation-duration: 0s !important; }
             .hero-line { opacity: 1 !important; transform: none !important; transition: none !important; }
             /* Los "lifts" al pasar el ratón por tarjetas de proyectos/certificados
@@ -139,19 +145,12 @@
 
         /* ── SKILL CARD ──────────────────────────────────────────*/
         .skill-card { transition: all 0.3s ease; }
-        .skill-card:hover { transform: translateY(-4px) scale(1.1); box-shadow: 0 0 25px rgba(124, 140, 255, 0.18); }
+        /* Hover sutil: solo un pequeño "lift" (se quitó la flotación infinita de los iconos) */
+        .skill-card:hover { transform: translateY(-3px); box-shadow: 0 0 25px rgba(124, 140, 255, 0.18); }
 
         /* ── TECH ENTER ──────────────────────────────────────────*/
         .tech-enter { opacity: 0; transform: scale(0.3) translateY(20px); }
         .tech-enter.show { opacity: 1; transform: scale(1) translateY(0); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
-
-        /* ── FLOATING ────────────────────────────────────────────*/
-        @keyframes float-1 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-        @keyframes float-2 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        @keyframes float-3 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        .float-1 { animation: float-1 3s ease-in-out infinite; }
-        .float-2 { animation: float-2 3.5s ease-in-out infinite; }
-        .float-3 { animation: float-3 4s ease-in-out infinite; }
 
         /* ── PARALLAX ────────────────────────────────────────────*/
         .parallax-container { perspective: 800px; }
@@ -256,8 +255,8 @@
 
         /* Tamaños fluidos con clamp(mín, preferido, máx): el título crece
            con el ancho de la ventana hasta un máximo tipo "keynote". */
-        .hero-eyebrow { font-size: .875rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-top: 1.75rem; }
-        .hero-title { font-size: clamp(2.5rem, 1.4rem + 3.8vw, 4.25rem); font-weight: 700; letter-spacing: -0.035em; margin-top: .6rem; line-height: 1.02; }
+        /* El título hereda el margen superior que antes tenía la etiqueta "Portfolio · 2026" (eliminada) */
+        .hero-title { font-size: clamp(2.5rem, 1.4rem + 3.8vw, 4.25rem); font-weight: 700; letter-spacing: -0.035em; margin-top: 1.75rem; line-height: 1.02; }
         .hero-subtitle { font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem); color: var(--muted); margin-top: .75rem; font-weight: 500; letter-spacing: -0.01em; }
         .hero-bio { max-width: 44rem; margin: 1.25rem auto 0; color: var(--fg); opacity: .9; font-size: clamp(1.0625rem, 1rem + .3vw, 1.25rem); line-height: 1.6; }
         .hero-ctas { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; margin-top: 2.25rem; }
@@ -324,12 +323,17 @@
            el elemento raiz y las variables heredan a todo el arbol del DOM. */
         [data-theme="light"] {
             --bg: #f7f7fb; --surface: #ffffff; --fg: #14161f;
-            --accent: #5865f2; --accent-hi: #4550c9; --muted: #5b6178; --line: rgba(88,101,242,0.22);
+            /* Contraste WCAG AA (texto ≥4.5:1) frente a --bg #f7f7fb / blanco:
+               --accent #4a56e0 → 5.31 / 5.68 · --err #c4321f → 5.14 / 5.49 · --ok #1f7a3a → 5.03 / 5.38 */
+            --accent: #4a56e0; --accent-hi: #3a45c0; --muted: #5b6178; --line: rgba(74,86,224,0.22);
+            --err: #c4321f; --ok: #1f7a3a;
+            /* Ámbar oscuro sobre crema: #92400e / #fef3c7 → 6.37:1 */
+            --warn: #92400e; --warn-bg: #fef3c7;
             --hero-gradient: radial-gradient(120% 100% at 50% -10%, #eef0ff 0%, #f7f7fb 60%, #ffffff 100%);
             /* Componentes RGB de --accent / --fg del modo claro. Sin redefinirlos
                aqui heredarian los del modo oscuro (texto casi blanco) y, por
                ejemplo, el borde de .hero-btn-ghost quedaria invisible sobre fondo claro. */
-            --accent-rgb: 88,101,242;
+            --accent-rgb: 74,86,224;
             --fg-rgb: 20,22,31;
         }
         /* Sin glow en modo claro: el efecto de brillo no aporta sobre fondo claro */
@@ -348,8 +352,9 @@
            y color de texto vía variables CSS). */
         .form-input {
             width: 100%; padding: .9rem 1.1rem; font-size: 1.0625rem;
-            background: var(--bg);
-            border: 1px solid var(--line); border-radius: 12px;
+            background: var(--surface);
+            /* Borde con el color de texto al 30%: se distingue bien del fondo en ambos temas */
+            border: 1px solid rgba(var(--fg-rgb), .3); border-radius: 12px;
             color: var(--fg); outline: none;
             font-family: inherit;
             transition: border-color .2s;
@@ -358,9 +363,17 @@
         .form-input::placeholder { color: var(--muted); }
         /* Focus: borde + sombra con el color de acento del tema */
         .form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-        /* Modo paper: .form-input ya usa var(--bg)/var(--line)/var(--fg),
-           que toman los valores crema/marron al redefinir las variables en
-           [data-theme="light"]. No hace falta regla por-componente. */
+        /* Anillo de foco claro con el acento al navegar con teclado */
+        .form-input:focus-visible { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), .45); }
+        /* Etiqueta visible encima de cada campo: pequeña y atenuada */
+        .form-label { display: block; margin-bottom: .45rem; font-size: .95rem; font-weight: 500; color: var(--muted); }
+        /* Modo claro: .form-input usa var(--surface)/var(--fg-rgb)/var(--fg),
+           que se redefinen en [data-theme="light"]. No hace falta regla por-componente. */
+
+        /* ── BOTONES DE ICONO: ÁREA TÁCTIL MÍNIMA ────────────────
+           44×44 px como mínimo (Apple HIG / WCAG 2.5.5) para los botones
+           que solo muestran un icono (tema, menú, cerrar). */
+        .icon-btn { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; }
 
         /* ── ACCESIBILIDAD: FOCUS VISIBLE ────────────────────────
            Anillo con el color de acento al navegar con teclado.
@@ -377,8 +390,9 @@
            Pequeños badges pill-shaped para proyectos, experiencia
            y certificados. Se reutilizan en Tareas 8 y 9. */
         .pill { font-size: .8rem; font-weight: 600; padding: .2rem .7rem; border-radius: 999px; white-space: nowrap; }
-        .pill-dev { background: rgba(255,95,86,.12); color: var(--err); }
-        .pill-featured { background: rgba(124,140,255,.14); color: var(--accent); }
+        /* "En desarrollo" en ámbar (aviso), no en rojo (error) */
+        .pill-dev { background: var(--warn-bg); color: var(--warn); }
+        .pill-featured { background: rgba(var(--accent-rgb),.14); color: var(--accent); }
 
         /* ── CARD LINKS ───────────────────────────────────────────
            Enlaces con icono y hover, reutilizados en tarjetas de
@@ -420,9 +434,10 @@
      style="background: var(--surface); border: 1px solid var(--line);">
     <div class="flex items-center justify-between mb-3">
         <span class="text-xs uppercase tracking-widest accent-text font-semibold">Estadísticas</span>
-        <button onclick="document.getElementById('stats-panel').classList.add('hidden')"
-                class="text-lg leading-none transition-colors"
-                style="color: var(--muted)">×</button>
+        <button type="button" onclick="document.getElementById('stats-panel').classList.add('hidden')"
+                aria-label="Cerrar estadísticas"
+                class="icon-btn -mr-3 -my-3 text-lg leading-none transition-colors"
+                style="color: var(--muted)"><span aria-hidden="true">×</span></button>
     </div>
     <div class="space-y-2 text-sm">
         <div class="flex items-center justify-between gap-6">
@@ -446,7 +461,7 @@
             <p class="text-base font-semibold" style="color: var(--fg)">¡Hola! Bienvenido a mi portafolio</p>
             <p class="text-sm mt-0.5" style="color: var(--muted)">Gracias por pasarte, echa un vistazo con calma.</p>
         </div>
-        <button type="button" onclick="cerrarToast()" aria-label="Cerrar aviso" class="ml-1 hover:opacity-70 text-2xl leading-none px-1" style="color: var(--muted)">×</button>
+        <button type="button" onclick="cerrarToast()" aria-label="Cerrar aviso" class="icon-btn -my-2 hover:opacity-70 text-2xl leading-none" style="color: var(--muted)"><span aria-hidden="true">×</span></button>
     </div>
 </div>
 
@@ -468,16 +483,17 @@
             <a href="#certificados" class="nav-link transition-colors" data-section="certificados">Certificados</a>
             <a href="#contacto" class="btn-contact px-5 py-2 border rounded-full text-base transition-colors" style="border-color: var(--line); color: var(--accent);">Contacto</a>
             <!-- Toggle modo claro/oscuro -->
-            <button id="theme-toggle" title="Cambiar tema" class="nav-icon transition-colors text-xl">
+            <button id="theme-toggle" type="button" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro" class="icon-btn nav-icon transition-colors text-xl">
                 <i class="fa-solid fa-moon"></i>
             </button>
         </div>
 
-        <div class="flex items-center gap-3 md:hidden">
-            <button id="theme-toggle-mobile" class="nav-icon text-xl p-1" aria-label="Cambiar tema">
+        <div class="flex items-center gap-1 md:hidden">
+            <button id="theme-toggle-mobile" type="button" class="icon-btn nav-icon text-xl" aria-label="Cambiar tema claro/oscuro">
                 <i class="fa-solid fa-moon"></i>
             </button>
-            <button id="menu-toggle" class="nav-icon text-2xl p-1" aria-label="Abrir menú">
+            <!-- aria-expanded se actualiza en app.js (iniciarNavbar) al abrir/cerrar -->
+            <button id="menu-toggle" type="button" class="icon-btn nav-icon text-2xl -mr-2" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu">
                 <i class="fa-solid fa-bars"></i>
             </button>
         </div>
@@ -515,9 +531,10 @@
             <div class="hero-photo-glow"></div>
             <img id="foto_perfil" src="/img/perfil.jpg" alt="Santiago Lafuente" class="hero-photo">
         </div>
-        <p class="hero-line hero-eyebrow">Portfolio &middot; 2026</p>
-        <h1 id="nombre" class="hero-line hero-title"></h1>
-        <p id="titular" class="hero-line hero-subtitle"></p>
+        <!-- Texto de respaldo: si /api/perfil falla, el hero nunca queda vacío
+             (cargarPerfil() lo sobrescribe con los datos de la BD) -->
+        <h1 id="nombre" class="hero-line hero-title">Santiago Lafuente Hernández</h1>
+        <p id="titular" class="hero-line hero-subtitle">Desarrollador Multiplataforma</p>
         <p id="sobre_mi" class="hero-line hero-bio"></p>
         <div class="hero-line hero-ctas">
             <a id="btn-cv" href="/cv/cv-santiago-lafuente.pdf" download class="hero-btn hero-btn-primary">Descargar CV</a>
@@ -621,13 +638,23 @@
 
         <!-- Formulario de contacto -->
         <form id="form-contacto" class="max-w-2xl mx-auto space-y-5 mb-16">
-            <input  type="text"  id="contacto-nombre"  placeholder="Tu nombre"   class="form-input" required>
-            <input  type="email" id="contacto-email"   placeholder="Tu email"    class="form-input" required>
-            <textarea            id="contacto-mensaje" placeholder="Tu mensaje"  class="form-input resize-none" rows="4" required></textarea>
+            <!-- Cada campo con su <label> visible (el placeholder solo no basta para accesibilidad) -->
+            <div>
+                <label for="contacto-nombre" class="form-label">Nombre</label>
+                <input  type="text"  id="contacto-nombre"  name="nombre"  autocomplete="name"  placeholder="Tu nombre"  class="form-input" required>
+            </div>
+            <div>
+                <label for="contacto-email" class="form-label">Email</label>
+                <input  type="email" id="contacto-email"   name="email"   autocomplete="email" placeholder="Tu email"   class="form-input" required>
+            </div>
+            <div>
+                <label for="contacto-mensaje" class="form-label">Mensaje</label>
+                <textarea            id="contacto-mensaje" name="mensaje" placeholder="Tu mensaje" class="form-input resize-none" rows="4" required></textarea>
+            </div>
             <!-- Botón con borde y hover sutil, sin gradiente -->
             <button id="btn-enviar" type="submit" class="btn-contact px-7 py-3.5 border rounded-full accent-text text-lg font-semibold transition-colors" style="border-color: var(--accent)">Enviar mensaje</button>
-            <!-- Feedback del envío: éxito o error -->
-            <p id="form-feedback" class="text-center text-base hidden"></p>
+            <!-- Feedback del envío: éxito o error (aria-live para que lo anuncien los lectores de pantalla) -->
+            <p id="form-feedback" class="text-center text-base hidden" role="status" aria-live="polite"></p>
         </form>
 
         <div class="text-center space-y-6">

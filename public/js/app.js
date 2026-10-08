@@ -30,8 +30,6 @@ const SKILL_ICONS = {
     'linux': 'devicon-linux-plain',
 };
 
-const FLOAT_CLASSES = ['float-1', 'float-2', 'float-3'];
-
 // Carga el tech stack desde la API y renderiza las tarjetas.
 // Los datos ya no están hardcodeados — vienen de la tabla tech_stack en Aiven.
 async function renderTechStack() {
@@ -58,7 +56,6 @@ async function renderTechStack() {
 }
 
 function crearTechCard(tech, iconSize, index) {
-    const floatClass = FLOAT_CLASSES[index % 3];
     // La API devuelve icon_color (snake_case); el campo antiguo hardcodeado era iconColor (camelCase)
     const colorClass = tech.icon_color || tech.iconColor || '';
     const card = document.createElement('div');
@@ -69,7 +66,7 @@ function crearTechCard(tech, iconSize, index) {
     card.style.background  = 'var(--surface)';
     card.dataset.index = index;
     card.innerHTML = `
-        <div class="${floatClass}"><i class="${tech.icono} ${iconSize} ${colorClass}"></i></div>
+        <div><i class="${tech.icono} ${iconSize} ${colorClass}" aria-hidden="true"></i></div>
         <span class="text-sm md:text-base font-medium text-center" style="color: var(--fg)">${tech.nombre}</span>
     `;
     return card;
@@ -90,6 +87,8 @@ function animarTechEntrada() {
 }
 
 function iniciarParallax() {
+    // Con "reducir movimiento" activado no inclinamos el bloque al mover el ratón
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const container = document.getElementById('tech-parallax');
     if (!container) return;
     const layer = container.querySelector('.parallax-layer');
@@ -198,7 +197,7 @@ function iniciarActiveNav() {
 // ============================================================
 // GITHUB STATS
 // Usamos la API pública de GitHub (sin auth, límite 60 req/h).
-// Mostramos: repos, seguidores, top lenguaje del repo con más stars.
+// Mostramos: repos públicos y lenguaje más usado en los repos.
 // ============================================================
 
 async function cargarGithubStats() {
@@ -230,12 +229,6 @@ async function cargarGithubStats() {
                 <span class="accent-text font-semibold">${user.public_repos}</span>
                 <span style="color: var(--muted)">repos públicos</span>
             </a>
-            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
-                 style="background: var(--surface); border: 1px solid var(--line);">
-                <i class="fa-solid fa-users" style="color: var(--accent)"></i>
-                <span class="accent-text font-semibold">${user.followers}</span>
-                <span style="color: var(--muted)">seguidores</span>
-            </div>
             ${topLang ? `
             <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full"
                  style="background: var(--surface); border: 1px solid var(--line);">
@@ -286,15 +279,27 @@ function aplicarTema(tema) {
 // PERFIL
 // ============================================================
 
+// Revela el hero (fundido escalonado de .hero-line). Se llama al cargar el
+// perfil, si la API falla y como red de seguridad por tiempo: así la foto,
+// el nombre y los botones nunca se quedan invisibles (opacity: 0).
+function revelarHero() {
+    const hero = document.getElementById('hero-content');
+    if (hero) hero.classList.add('hero-ready');
+}
+// Red de seguridad: si /api/perfil tarda o no responde, mostramos el hero
+// igualmente con el texto de respaldo del HTML.
+setTimeout(revelarHero, 1500);
+
 async function cargarPerfil() {
     try {
         const respuesta = await fetch(`${API_URL}/perfil`);
         const perfiles  = await respuesta.json();
         if (perfiles.length > 0) {
             const p = perfiles[0];
-            document.getElementById('nombre').textContent   = p.nombre;
-            document.getElementById('sobre_mi').textContent = p.sobre_mi;
-            document.getElementById('titular').textContent  = p.titular;
+            // Solo sobrescribimos si hay valor: si no, se queda el texto de respaldo del HTML
+            if (p.nombre)   document.getElementById('nombre').textContent   = p.nombre;
+            if (p.sobre_mi) document.getElementById('sobre_mi').textContent = p.sobre_mi;
+            if (p.titular)  document.getElementById('titular').textContent  = p.titular;
 
             if (p.foto_perfil) {
                 const img  = document.getElementById('foto_perfil');
@@ -308,11 +313,12 @@ async function cargarPerfil() {
             const emailText = document.getElementById('email-text');
             if (emailText && p.email) emailText.textContent = p.email;
 
-            // Revela el hero con fundido escalonado una vez los datos estan listos
-            document.getElementById('hero-content').classList.add('hero-ready');
         }
     } catch (error) {
         console.error('Error al cargar perfil:', error);
+    } finally {
+        // Haya datos o no, el hero se muestra (con los de la BD o el texto de respaldo)
+        revelarHero();
     }
 }
 
@@ -419,7 +425,7 @@ async function cargarProyectos() {
                     ${mediaTarjeta}
                     <div class="p-6 md:p-8 flex-1 flex flex-col">
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-1">
-                            <h4 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${proyecto.titulo}</h4>
+                            <h3 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${proyecto.titulo}</h3>
                             ${badge}
                         </div>
                         <p class="mt-3 text-base leading-relaxed" style="color: var(--fg)">${proyecto.descripcion}</p>
@@ -519,7 +525,7 @@ async function cargarExperiencia() {
                 <div class="timeline-dot"></div>
                 <div class="timeline-body">
                     <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <h4 class="accent-text font-semibold text-xl md:text-2xl tracking-tight">${exp.puesto}</h4>${activo}
+                        <h3 class="accent-text font-semibold text-xl md:text-2xl tracking-tight">${exp.puesto}</h3>${activo}
                     </div>
                     <p class="mt-1 text-base" style="color: var(--muted)">${exp.empresa} &middot; ${ini} &ndash; ${fin}</p>
                     ${exp.descripcion ? `<p class="mt-3 text-base leading-relaxed" style="color: var(--fg)">${exp.descripcion}</p>` : ''}
@@ -568,7 +574,7 @@ async function cargarCertificados() {
 
             tarjeta.innerHTML = `
                 <div class="p-6 md:p-8">
-                    <h4 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${cert.titulo}</h4>
+                    <h3 class="accent-text font-bold text-xl md:text-2xl tracking-tight">${cert.titulo}</h3>
                     <p class="text-base mt-2" style="color: var(--muted)">
                         ${cert.emisor} &middot; ${formatearFecha(cert.fecha)}
                     </p>
@@ -645,10 +651,12 @@ function iniciarFormContacto() {
  * para que respete el sistema de diseño del sitio.
  */
 function mostrarFeedback(el, texto, color) {
-    el.textContent = texto;
+    // Primero lo hacemos visible y luego ponemos el texto: así la región
+    // aria-live ya está en el árbol de accesibilidad y el cambio se anuncia.
+    el.classList.remove('hidden');
     // Aplicamos color directo via style; className solo conserva las bases
     el.style.color = color || 'var(--ok)';
-    el.classList.remove('hidden');
+    el.textContent = texto;
     setTimeout(() => el.classList.add('hidden'), 4000);
 }
 
@@ -739,9 +747,16 @@ function iniciarNavbar() {
 
     const toggle = document.getElementById('menu-toggle');
     const menu   = document.getElementById('mobile-menu');
-    toggle.addEventListener('click', () => menu.classList.toggle('hidden'));
+    // Abre/cierra el menú móvil y sincroniza aria-expanded / aria-label
+    // para que los lectores de pantalla sepan si está desplegado.
+    const setMenuAbierto = (abierto) => {
+        menu.classList.toggle('hidden', !abierto);
+        toggle.setAttribute('aria-expanded', String(abierto));
+        toggle.setAttribute('aria-label', abierto ? 'Cerrar menú' : 'Abrir menú');
+    };
+    toggle.addEventListener('click', () => setMenuAbierto(menu.classList.contains('hidden')));
     menu.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', () => menu.classList.add('hidden'));
+        link.addEventListener('click', () => setMenuAbierto(false));
     });
 }
 

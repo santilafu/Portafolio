@@ -403,7 +403,23 @@ function iniciarCopiarEmail() {
 // Se sirven con <picture>: WebP para navegadores que lo soportan y el
 // PNG/JPG original como respaldo. Solo se listan las que EXISTEN: un
 // <source> con un WebP inexistente no hace "fallback" al <img>.
-const IMAGENES_WEBP = new Set(['/img/suscriptwallet-banner.png', '/img/domelecduke.jpg']);
+const IMAGENES_WEBP = new Set([
+    '/img/suscriptwallet-banner.png', '/img/suscriptwallet-logo.png', '/img/domelecduke.jpg',
+]);
+
+// Logo (icono de app) de algunos proyectos, que se pinta junto al título.
+// Clave: comienzo del título en la BD (así no hace falta columna nueva).
+const LOGOS_PROYECTO = {
+    'SuscriptWallet': { src: '/img/suscriptwallet-logo.png', alt: 'Logo de SuscriptWallet' },
+};
+
+function logoProyecto(titulo) {
+    const clave = Object.keys(LOGOS_PROYECTO).find(k => (titulo || '').startsWith(k));
+    if (!clave) return '';
+    const { src, alt } = LOGOS_PROYECTO[clave];
+    // El contenedor no encoge (flex-shrink: 0): si no, en móvil el <picture> se estrecha y el icono se deforma
+    return `<span class="proyecto-logo-box">${imagenResponsive(src, `class="proyecto-logo" alt="${alt}" width="56" height="56" loading="lazy"`)}</span>`;
+}
 
 // Devuelve <picture> con fuente WebP (si la hay) o un <img> simple.
 function imagenResponsive(src, atributos) {
@@ -490,15 +506,18 @@ async function cargarProyectos() {
                 tarjeta.style.background  = 'var(--surface)';
                 tarjeta.innerHTML = `
                     ${esDestacado && proyecto.imagen ? `
-                    <div class="banner-destacado h-56 md:h-72">
+                    <div class="banner-destacado">
                         <div class="banner-fondo" aria-hidden="true">${imagenResponsive(proyecto.imagen, 'alt=""')}</div>
                         ${imagenResponsive(proyecto.imagen, `class="banner-img" alt="${altImagen}" width="1024" height="500"`)}
                     </div>` : ''}
                     ${mediaTarjeta}
                     <div class="proyecto-body p-6 md:p-8 flex-1 flex flex-col">
-                        <div class="flex flex-wrap items-center gap-x-3 gap-y-2 mb-1">
-                            <h3 class="card-title font-bold text-xl md:text-2xl tracking-tight">${proyecto.titulo}</h3>
-                            ${badge}
+                        <div class="flex items-center gap-4 mb-1">
+                            ${logoProyecto(proyecto.titulo)}
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-2 min-w-0">
+                                <h3 class="card-title font-bold text-xl md:text-2xl tracking-tight">${proyecto.titulo}</h3>
+                                ${badge}
+                            </div>
                         </div>
                         <p class="mt-3 text-base leading-relaxed" style="color: var(--fg)">${proyecto.descripcion}</p>
                         ${enlaces}

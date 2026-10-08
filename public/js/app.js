@@ -19,16 +19,8 @@ const API_URL = '/api';
 // TECH STACK
 // ============================================================
 
-const SKILL_ICONS = {
-    'java': 'devicon-java-plain colored', 'mysql': 'devicon-mysql-plain colored',
-    'kotlin': 'devicon-kotlin-plain colored', 'python': 'devicon-python-plain colored',
-    'javascript': 'devicon-javascript-plain colored', 'node': 'devicon-nodejs-plain colored',
-    'node.js': 'devicon-nodejs-plain colored', 'html': 'devicon-html5-plain colored',
-    'css': 'devicon-css3-plain colored', 'git': 'devicon-git-plain colored',
-    'spring': 'devicon-spring-plain colored', 'c#': 'devicon-csharp-plain colored',
-    'c++': 'devicon-cplusplus-plain colored', 'unity': 'devicon-unity-plain',
-    'linux': 'devicon-linux-plain',
-};
+// Los iconos de cada tecnología se pintan con iconoTech() (public/js/icons.js,
+// cargado antes que este archivo): SVG inline en lugar de la fuente devicon.
 
 const FLOAT_CLASSES = ['float-1', 'float-2', 'float-3'];
 
@@ -69,7 +61,7 @@ function crearTechCard(tech, iconSize, index) {
     card.style.background  = 'var(--surface)';
     card.dataset.index = index;
     card.innerHTML = `
-        <div class="${floatClass}"><i class="${tech.icono} ${iconSize} ${colorClass}" aria-hidden="true"></i></div>
+        <div class="${floatClass}">${iconoTech(tech.icono, `${iconSize} ${colorClass}`)}</div>
         <span class="text-sm md:text-base font-medium text-center" style="color: var(--fg)">${tech.nombre}</span>
     `;
     return card;

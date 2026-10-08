@@ -80,7 +80,6 @@
     }
     </script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/devicon.min.css">
 
@@ -485,6 +484,11 @@
         .hero-social-btn:hover { color: var(--fg); border-color: rgba(var(--fg-rgb),.4); }
         .hero-social-btn i { font-size: 1.15rem; }
     </style>
+    <!-- Tailwind CSS compilado (npm run build:css → public/css/tailwind.css).
+         Va DESPUÉS del <style> propio para mantener el mismo orden de cascada
+         que tenía el Play CDN (que inyectaba sus estilos al final del <head>).
+         Si se añaden clases nuevas en index.html o app.js, hay que recompilar. -->
+    <link rel="stylesheet" href="/css/tailwind.css">
 </head>
 
 <body style="background: var(--bg); color: var(--fg);">

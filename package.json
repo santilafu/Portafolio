@@ -5,7 +5,8 @@
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
-    "dev": "node --watch server/index.js"
+    "dev": "node --watch server/index.js",
+    "build:css": "tailwindcss -i ./src/tailwind.css -o ./public/css/tailwind.css --minify"
   },
   "keywords": [
     "portfolio",
@@ -24,5 +25,8 @@
     "helmet": "^8.1.0",
     "mysql2": "^3.18.2",
     "resend": "^6.9.3"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
   }
 }

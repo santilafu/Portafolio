@@ -70,7 +70,7 @@ app.use('/api/', rateLimit({
     max: 100,                  // máximo de peticiones por IP en esa ventana
     standardHeaders: true,     // incluye info del límite en las cabeceras de respuesta
     legacyHeaders: false,      // desactiva cabeceras antiguas (X-RateLimit-*)
-    message: { error: 'Demasiadas peticiones, intenta de nuevo mas tarde.' }
+    message: { error: 'Demasiadas peticiones, inténtalo de nuevo más tarde.' }
 }));
 
 /**
@@ -250,13 +250,13 @@ app.post('/api/proyectos', adminAuth, async (req, res) => {
         const { perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden, estado } = req.body;
 
         if (!perfil_id || !titulo) {
-            return res.status(400).json({ error: 'Los campos perfil_id y titulo son obligatorios' });
+            return res.status(400).json({ error: 'Los campos perfil_id y título son obligatorios' });
         }
 
         const sql = 'INSERT INTO proyectos (perfil_id, titulo, descripcion, url_repo, url_demo, imagen, destacado, orden, estado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)';
         const [resultado] = await db.query(sql, [perfil_id, titulo, descripcion, url_repo, url_demo, imagen || null, destacado ? 1 : 0, orden || 0, estado || 'completado']);
 
-        res.status(201).json({ mensaje: 'Proyecto anadido correctamente', id_proyecto: resultado.insertId });
+        res.status(201).json({ mensaje: 'Proyecto añadido correctamente', id_proyecto: resultado.insertId });
     } catch (error) {
         console.error('Error al insertar el proyecto:', error);
         res.status(500).json({ error: 'Error al guardar el proyecto' });
@@ -273,7 +273,7 @@ app.put('/api/proyectos/:id', adminAuth, async (req, res) => {
         const { titulo, descripcion, url_repo, url_demo, imagen, destacado, orden, estado } = req.body;
 
         if (!titulo) {
-            return res.status(400).json({ error: 'El campo titulo es obligatorio' });
+            return res.status(400).json({ error: 'El campo título es obligatorio' });
         }
 
         const sql = 'UPDATE proyectos SET titulo = ?, descripcion = ?, url_repo = ?, url_demo = ?, imagen = ?, destacado = ?, orden = ?, estado = ? WHERE id = ?';
@@ -347,7 +347,7 @@ app.post('/api/habilidades', adminAuth, async (req, res) => {
         const sql = 'INSERT INTO habilidades (perfil_id, nombre, nivel) VALUES (?, ?, ?)';
         const [resultado] = await db.query(sql, [perfil_id, nombre, nivel]);
 
-        res.status(201).json({ mensaje: 'Habilidad anadida correctamente', id_habilidad: resultado.insertId });
+        res.status(201).json({ mensaje: 'Habilidad añadida correctamente', id_habilidad: resultado.insertId });
     } catch (error) {
         console.error('Error al insertar habilidad:', error);
         res.status(500).json({ error: 'Error al guardar la habilidad' });
@@ -439,7 +439,7 @@ app.post('/api/experiencia', adminAuth, async (req, res) => {
         const sql = 'INSERT INTO experiencia (perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion, logo) VALUES (?, ?, ?, ?, ?, ?, ?)';
         const [resultado] = await db.query(sql, [perfil_id, empresa, puesto, fecha_inicio, fecha_fin, descripcion, logo || null]);
 
-        res.status(201).json({ mensaje: 'Experiencia anadida correctamente', id_experiencia: resultado.insertId });
+        res.status(201).json({ mensaje: 'Experiencia añadida correctamente', id_experiencia: resultado.insertId });
     } catch (error) {
         console.error('Error al insertar experiencia:', error);
         res.status(500).json({ error: 'Error al guardar la experiencia' });
@@ -695,7 +695,7 @@ app.post('/api/certificados', adminAuth, async (req, res) => {
     try {
         const { titulo, emisor, fecha, descripcion, url_archivo, url_externa, icono, color, border, icon_color, orden } = req.body;
         if (!titulo || !emisor || !fecha) {
-            return res.status(400).json({ error: 'Los campos titulo, emisor y fecha son obligatorios' });
+            return res.status(400).json({ error: 'Los campos título, emisor y fecha son obligatorios' });
         }
         const [r] = await db.query(
             `INSERT INTO certificados (titulo, emisor, fecha, descripcion, url_archivo, url_externa, icono, color, border, icon_color, orden)
@@ -703,7 +703,7 @@ app.post('/api/certificados', adminAuth, async (req, res) => {
             [titulo, emisor, fecha, descripcion || '', url_archivo || '', url_externa || '',
              icono || 'fa-solid fa-certificate', color || '', border || '', icon_color || '', orden || 0]
         );
-        res.status(201).json({ mensaje: 'Certificado anadido correctamente', id: r.insertId });
+        res.status(201).json({ mensaje: 'Certificado añadido correctamente', id: r.insertId });
     } catch (error) {
         console.error('Error al insertar certificado:', error);
         res.status(500).json({ error: 'Error al guardar el certificado' });
@@ -714,7 +714,7 @@ app.put('/api/certificados/:id', adminAuth, async (req, res) => {
     try {
         const { titulo, emisor, fecha, descripcion, url_archivo, url_externa, icono, color, border, icon_color, orden } = req.body;
         if (!titulo || !emisor || !fecha) {
-            return res.status(400).json({ error: 'Los campos titulo, emisor y fecha son obligatorios' });
+            return res.status(400).json({ error: 'Los campos título, emisor y fecha son obligatorios' });
         }
         const [resultado] = await db.query(
             `UPDATE certificados SET titulo = ?, emisor = ?, fecha = ?, descripcion = ?, url_archivo = ?, url_externa = ?,

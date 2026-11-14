@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Forja de Prompts</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="cabecera">
+    <div>
+        <h1>⚒️ Forja de Prompts</h1>
+        <p class="subtitulo">Cuéntame qué quieres hacer y te preparo un prompt detallado para Claude Code.</p>
+    </div>
+    <button id="btn-nueva" class="btn btn-secundario" type="button">Nueva conversación</button>
+</header>
+
+<main class="layout">
+    <!-- ===== Columna izquierda: chat ===== -->
+    <section class="panel chat" aria-label="Conversación">
+        <details class="opciones" open>
+            <summary>Opciones del prompt</summary>
+            <div class="opciones-grid">
+                <label>Bucles (loops)
+                    <select id="opt-bucle">
+                        <option value="auto">Automático (decide la IA)</option>
+                        <option value="verificacion">Verificación: repetir hasta que pase</option>
+                        <option value="recurrente">Recurrente con /loop</option>
+                        <option value="ninguno">Sin bucles</option>
+                    </select>
+                </label>
+                <label>Máx. iteraciones
+                    <input id="opt-iter" type="number" min="1" max="50" value="5">
+                </label>
+                <label>Idioma del prompt
+                    <select id="opt-idioma">
+                        <option value="es">Español</option>
+                        <option value="en">Inglés</option>
+                    </select>
+                </label>
+                <label>Detalle
+                    <select id="opt-detalle">
+                        <option value="maximo">Máximo</option>
+                        <option value="normal">Normal</option>
+                    </select>
+                </label>
+            </div>
+        </details>
+
+        <div id="mensajes" class="mensajes" aria-live="polite">
+            <div class="bienvenida" id="bienvenida">
+                <p>Háblame como hablarías con un compañero. Por ejemplo:</p>
+                <div class="sugerencias">
+                    <button type="button" class="chip">Quiero añadir login con usuario y contraseña a mi app de Express</button>
+                    <button type="button" class="chip">Mi app Android en Kotlin se cierra al girar la pantalla, ayúdame a arreglarlo</button>
+                    <button type="button" class="chip">Quiero que Claude vigile mi deploy cada 10 minutos y me avise si falla</button>
+                </div>
+            </div>
+        </div>
+
+        <form id="formulario" class="formulario">
+            <textarea id="entrada" rows="3" placeholder="Escribe aquí… (Enter envía, Mayús+Enter nueva línea)" required></textarea>
+            <div class="acciones-form">
+                <button id="btn-generar" class="btn btn-secundario" type="button" title="Pide el prompt ya, con lo que sepa">Genéralo ya</button>
+                <button id="btn-enviar" class="btn" type="submit">Enviar</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- ===== Columna derecha: prompt final ===== -->
+    <section class="panel resultado" aria-label="Prompt generado">
+        <div class="resultado-cabecera">
+            <h2>Prompt para Claude Code</h2>
+            <div class="acciones-resultado">
+                <button id="btn-copiar" class="btn btn-secundario" type="button" disabled>Copiar</button>
+                <button id="btn-descargar" class="btn btn-secundario" type="button" disabled>Descargar .md</button>
+            </div>
+        </div>
+        <pre id="prompt-final" class="prompt-final vacio">Aquí aparecerá tu prompt cuando esté listo.</pre>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -84,6 +84,14 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 
+// ============================================================
+// FORJA DE PROMPTS (/forja)
+// Mini-app privada protegida con Cloudflare Access (ver server/forja/).
+// Va ANTES de express.json() porque necesita su propio límite de tamaño
+// (las conversaciones pueden ocupar más de los 100 KB por defecto).
+// ============================================================
+app.use('/forja', require('./forja'));
+
 // Permite que Express entienda el cuerpo de las peticiones en formato JSON
 app.use(express.json());
 

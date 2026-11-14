@@ -25,6 +25,7 @@ Portafolio personal desarrollado como proyecto de fin de ciclo DAM. Incluye:
 - **Dominio propio** `santiagolafuente.com` desplegado en **Render** (plan Starter)
 - **Email real** via Resend (HTTP API, sin dependencia de SMTP)
 - **Contador de visitas** persistente en Aiven con easter egg secreto
+- **Forja de Prompts** en `/forja`: app privada (Cloudflare Access + JWT) que genera prompts detallados para Claude Code con la API de Claude en streaming. Guia: [`docs/forja-cloudflare.md`](docs/forja-cloudflare.md)
 
 ---
 
@@ -46,6 +47,11 @@ mi-portafolio/
 ├── server/                  # Backend
 │   ├── index.js             # Servidor Express + todas las rutas API REST
 │   ├── db.js                # Pool de conexiones MySQL (Aiven, SSL)
+│   ├── forja/               # Forja de Prompts (/forja), privada con Cloudflare Access
+│   │   ├── index.js         # Router: chat con Claude en streaming (SSE)
+│   │   ├── auth-cloudflare.js  # Verifica el JWT de Cloudflare Access
+│   │   ├── prompt-sistema.js   # Instrucciones del asistente
+│   │   └── public/          # Interfaz (fuera de /public: solo con login)
 │   ├── init-db.js           # Script: crea las 7 tablas en la BD
 │   ├── seed.js              # Script: inserta los datos del portafolio
 │   ├── migrate-add-gdes-cert.js          # Migracion: GDES + certificados

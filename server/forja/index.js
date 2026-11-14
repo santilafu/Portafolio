@@ -1,37 +1,64 @@
 /**
- * server.js
- * ---------
- * Servidor Express de Forja de Prompts.
+ * forja/index.js
+ * --------------
+ * Forja de Prompts como "mini-aplicación" dentro del portafolio.
+ * Exporta un Router de Express que se monta en /forja desde server/index.js.
+ *
+ * Rutas (todas protegidas por Cloudflare Access):
+ *   GET  /forja/          → la interfaz (HTML, CSS, JS)
+ *   POST /forja/api/chat  → habla con Claude y devuelve la respuesta en streaming
  *
  * Flujo de una petición:
- *   navegador ──POST /api/chat──▶ este servidor ──▶ API de Claude
- *   navegador ◀── texto en trozos (streaming SSE) ◀── Claude va escribiendo
- *
- * ¿Por qué un servidor y no llamar a Claude desde el navegador?
- * Porque la API key es secreta: si la pusiéramos en el JavaScript del
- * navegador, cualquiera podría verla y gastar tu dinero. Aquí se queda en .env.
+ *   navegador ──▶ Cloudflare (¿email permitido?) ──▶ Render ──▶ este router
+ *        ──▶ autenticacionCloudflare (¿firma válida?) ──▶ API de Claude
  */
-
-require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const rateLimit = require('express-rate-limit');
 const Anthropic = require('@anthropic-ai/sdk');
 const { INSTRUCCIONES_BASE, instruccionesOpciones } = require('./prompt-sistema');
+const { autenticacionCloudflare } = require('./auth-cloudflare');
 
-const app = express();
-const PORT = process.env.PORT || 3100;
-const MODO_DEMO = process.env.MODO_DEMO === '1';
+const router = express.Router();
+const MODO_DEMO = process.env.FORJA_MODO_DEMO === '1';
 
 // Límites para que nadie mande conversaciones gigantes (y caras)
 const MAX_MENSAJES = 40;
 const MAX_CARACTERES_MENSAJE = 20000;
 
-// new Anthropic() lee la clave de la variable de entorno ANTHROPIC_API_KEY
-const client = MODO_DEMO ? null : new Anthropic();
+// El cliente se crea la primera vez que se usa (así el portafolio arranca
+// aunque todavía no hayas puesto ANTHROPIC_API_KEY).
+let client = null;
+function obtenerCliente() {
+    if (!client) client = new Anthropic(); // lee ANTHROPIC_API_KEY del entorno
+    return client;
+}
 
-app.use(express.json({ limit: '1mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+// 1º SIEMPRE el portero: nada de /forja se sirve sin pasar por aquí
+router.use(autenticacionCloudflare);
+
+// /forja → /forja/ (con barra final), para que las rutas relativas del
+// HTML ("styles.css", "api/chat") apunten dentro de /forja/
+router.get('/', (req, res, next) => {
+    const ruta = req.originalUrl.split('?')[0];
+    if (ruta.endsWith('/')) return next();
+    res.redirect(301, ruta + '/');
+});
+
+// La interfaz (está fuera de /public para que no se pueda ver sin login)
+router.use(express.static(path.join(__dirname, 'public')));
+
+// Límite por usuario: 40 mensajes por hora. Protege tu factura de la API
+// aunque alguien con acceso se pase de la raya.
+const limiteChat = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 40,
+    keyGenerator: req => req.usuarioForja,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Has llegado al límite de mensajes por hora. Vuelve a intentarlo más tarde.' }
+});
 
 /**
  * Comprueba que el historial que llega del navegador tiene la forma correcta.
@@ -52,12 +79,20 @@ function validarMensajes(mensajes) {
     return null;
 }
 
-/** Envía un evento SSE ("Server-Sent Events") al navegador. */
+/**
+ * Envía un evento SSE ("Server-Sent Events") al navegador.
+ * res.flush() lo añade el middleware "compression" del portafolio: sin él,
+ * la compresión guardaría los trozos y el texto no saldría en tiempo real.
+ */
+function enviar(res, texto) {
+    res.write(texto);
+    if (typeof res.flush === 'function') res.flush();
+}
 function enviarEvento(res, datos) {
-    res.write(`data: ${JSON.stringify(datos)}\n\n`);
+    enviar(res, `data: ${JSON.stringify(datos)}\n\n`);
 }
 
-app.post('/api/chat', async (req, res) => {
+router.post('/api/chat', limiteChat, express.json({ limit: '1mb' }), async (req, res) => {
     const { mensajes, opciones } = req.body || {};
 
     const error = validarMensajes(mensajes);
@@ -67,38 +102,44 @@ app.post('/api/chat', async (req, res) => {
     // escribiendo trozos a medida que Claude genera texto.
     res.set({
         'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'no-cache, no-transform',
         Connection: 'keep-alive'
     });
     res.flushHeaders();
+
+    // Mientras Claude "piensa" puede pasar un rato sin enviar nada. Mandamos un
+    // comentario SSE cada 15 s para que Cloudflare/Render no corten la conexión.
+    const latido = setInterval(() => enviar(res, ': ping\n\n'), 15000);
+    res.on('close', () => clearInterval(latido));
 
     if (MODO_DEMO) return responderDemo(res, mensajes);
 
     // Nos quedamos solo con role y content (ignoramos cualquier otro campo)
     const historial = mensajes.map(m => ({ role: m.role, content: m.content }));
 
-    const stream = client.beta.messages.stream({
-        model: 'claude-opus-5-5',
-        max_tokens: 32000,
-        // Dos bloques de system: el fijo (se puede cachear y abarata
-        // peticiones repetidas) y el variable con las opciones elegidas.
-        system: [
-            { type: 'text', text: INSTRUCCIONES_BASE, cache_control: { type: 'ephemeral' } },
-            { type: 'text', text: instruccionesOpciones(opciones) }
-        ],
-        thinking: { type: 'adaptive' },          // Claude decide cuánto "pensar"
-        output_config: { effort: 'high' },       // más esfuerzo = prompts más cuidados
-        // Si el modelo rechazara la petición por un filtro de seguridad,
-        // la API la reintenta automáticamente con un modelo de respaldo.
-        betas: ['server-side-fallback-2026-07-01'],
-        fallbacks: 'default',
-        messages: historial
-    });
-
-    // Si el usuario cierra la pestaña, cancelamos para no pagar tokens de más
-    res.on('close', () => stream.abort());
-
+    let stream;
     try {
+        stream = obtenerCliente().beta.messages.stream({
+            model: 'claude-opus-5-5',
+            max_tokens: 32000,
+            // Dos bloques de system: el fijo (se puede cachear y abarata
+            // peticiones repetidas) y el variable con las opciones elegidas.
+            system: [
+                { type: 'text', text: INSTRUCCIONES_BASE, cache_control: { type: 'ephemeral' } },
+                { type: 'text', text: instruccionesOpciones(opciones) }
+            ],
+            thinking: { type: 'adaptive' },          // Claude decide cuánto "pensar"
+            output_config: { effort: 'high' },       // más esfuerzo = prompts más cuidados
+            // Si el modelo rechazara la petición por un filtro de seguridad,
+            // la API la reintenta automáticamente con un modelo de respaldo.
+            betas: ['server-side-fallback-2026-07-01'],
+            fallbacks: 'default',
+            messages: historial
+        });
+
+        // Si el usuario cierra la pestaña, cancelamos para no pagar tokens de más
+        res.on('close', () => stream.abort());
+
         for await (const evento of stream) {
             if (evento.type === 'content_block_delta' && evento.delta.type === 'text_delta') {
                 enviarEvento(res, { tipo: 'texto', texto: evento.delta.text });
@@ -114,6 +155,7 @@ app.post('/api/chat', async (req, res) => {
     } catch (err) {
         if (!res.writableEnded) enviarEvento(res, { tipo: 'error', mensaje: describirError(err) });
     } finally {
+        clearInterval(latido);
         res.end();
     }
 });
@@ -121,21 +163,21 @@ app.post('/api/chat', async (req, res) => {
 /** Traduce los errores de la API a mensajes entendibles. */
 function describirError(err) {
     if (err instanceof Anthropic.APIUserAbortError) return 'Petición cancelada.';
-    if (err instanceof Anthropic.AuthenticationError) return 'API key no válida. Revisa ANTHROPIC_API_KEY en el archivo .env.';
+    if (err instanceof Anthropic.AuthenticationError) return 'API key no válida. Revisa ANTHROPIC_API_KEY en las variables de entorno.';
     if (err instanceof Anthropic.RateLimitError) return 'Demasiadas peticiones seguidas. Espera un momento y vuelve a probar.';
     if (err instanceof Anthropic.BadRequestError) return `Petición no válida: ${err.message}`;
-    if (err instanceof Anthropic.APIConnectionError) return 'No se pudo conectar con la API de Claude. Revisa tu conexión.';
+    if (err instanceof Anthropic.APIConnectionError) return 'No se pudo conectar con la API de Claude.';
     if (err instanceof Anthropic.APIError) return `Error de la API (${err.status}): ${err.message}`;
     if (/authentication/i.test(String(err?.message))) {
-        return 'Falta la API key. Copia .env.example a .env, pon tu ANTHROPIC_API_KEY y reinicia el servidor (o prueba con: npm run demo).';
+        return 'Falta la API key: añade ANTHROPIC_API_KEY a las variables de entorno y reinicia el servidor.';
     }
-    console.error(err);
+    console.error('[forja]', err);
     return 'Error inesperado en el servidor.';
 }
 
 /**
- * MODO DEMO: devuelve respuestas de ejemplo sin llamar a la API.
- * Sirve para probar la interfaz gratis (npm run demo).
+ * MODO DEMO (FORJA_MODO_DEMO=1): respuestas de ejemplo sin llamar a la API.
+ * Sirve para probar la interfaz gratis.
  */
 async function responderDemo(res, mensajes) {
     const esPrimerTurno = mensajes.length === 1;
@@ -153,11 +195,4 @@ async function responderDemo(res, mensajes) {
     res.end();
 }
 
-// Escuchamos solo en 127.0.0.1 (tu ordenador): así nadie de tu red puede
-// usar tu API key a través de este servidor.
-app.listen(PORT, '127.0.0.1', () => {
-    console.log(`Forja de Prompts en http://localhost:${PORT}${MODO_DEMO ? '  (MODO DEMO)' : ''}`);
-    if (!MODO_DEMO && !process.env.ANTHROPIC_API_KEY) {
-        console.warn('⚠️  No hay ANTHROPIC_API_KEY en .env. Copia .env.example a .env y añádela, o usa: npm run demo');
-    }
-});
+module.exports = router;

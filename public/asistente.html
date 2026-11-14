@@ -74,9 +74,60 @@
             font-size: 0.8rem; letter-spacing: 0.12em; color: var(--tenue);
             position: relative; z-index: 1;
         }
-        header a { color: var(--tenue); text-decoration: none; }
-        header a:hover { color: var(--acento); }
+        header { flex-wrap: wrap; gap: 10px; }
+        header a, .enlace {
+            color: var(--tenue); text-decoration: none;
+            background: none; border: none; cursor: pointer;
+            font: inherit; letter-spacing: inherit;
+        }
+        header a:hover, .enlace:hover { color: var(--acento); }
         .marca { color: var(--acento); font-weight: 700; letter-spacing: 0.3em; }
+        .controles { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+        /* Selector de "cerebro" (Haiku / Opus) */
+        .selector { display: inline-flex; border: 1px solid var(--linea); border-radius: 999px; padding: 2px; }
+        .selector button {
+            background: none; border: none; cursor: pointer;
+            color: var(--tenue); font: inherit; font-size: 0.75rem; letter-spacing: 0.08em;
+            padding: 5px 12px; border-radius: 999px;
+        }
+        .selector button[aria-checked="true"] { background: rgba(79, 209, 255, 0.15); color: var(--acento); }
+        .selector button:disabled { cursor: not-allowed; opacity: 0.45; }
+        .selector button:focus-visible, .enlace:focus-visible { outline: 2px solid var(--acento); outline-offset: 2px; }
+
+        /* Ventanas (login y memoria) */
+        dialog {
+            margin: auto;
+            width: min(520px, calc(100vw - 32px));
+            max-height: 80vh;
+            background: #071422; color: var(--texto);
+            border: 1px solid var(--linea); border-radius: 12px;
+            padding: 20px;
+        }
+        dialog::backdrop { background: rgba(0, 0, 0, 0.7); }
+        dialog h2 { font-family: var(--mono); font-size: 0.9rem; letter-spacing: 0.2em; color: var(--acento); margin-bottom: 12px; }
+        dialog p { color: var(--tenue); font-size: 0.9rem; margin-bottom: 12px; line-height: 1.5; }
+        dialog input[type="password"] {
+            width: 100%; padding: 10px 12px; margin-bottom: 12px;
+            background: var(--panel-2); color: var(--texto);
+            border: 1px solid var(--linea); border-radius: 8px; font-size: 1rem;
+        }
+        dialog input:focus { outline: none; border-color: var(--acento); }
+        .fila-botones { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+        .fila-botones .boton { height: 40px; }
+        .mensaje-error { color: var(--error); font-size: 0.85rem; min-height: 1.2em; margin-bottom: 8px; }
+        #lista-recuerdos { list-style: none; max-height: 50vh; overflow-y: auto; margin-bottom: 14px; }
+        #lista-recuerdos li {
+            display: flex; gap: 10px; align-items: flex-start;
+            padding: 8px 0; border-bottom: 1px solid var(--linea); font-size: 0.9rem; line-height: 1.4;
+        }
+        #lista-recuerdos li > div { flex: 1; overflow-wrap: anywhere; }
+        #lista-recuerdos small { color: var(--tenue); font-family: var(--mono); font-size: 0.7rem; display: block; }
+        #lista-recuerdos button { background: none; border: none; color: var(--tenue); cursor: pointer; font-size: 1rem; }
+        #lista-recuerdos button:hover { color: var(--error); }
+
+        /* Notas dentro de la respuesta: "💾 Recordado: ..." */
+        .nota { font-size: 0.8rem; color: var(--acento-2); margin-bottom: 6px; }
 
         main {
             flex: 1;
@@ -241,7 +292,16 @@
 <body>
     <header>
         <span class="marca">N·O·V·A</span>
-        <a href="/">← Volver al portafolio</a>
+        <div class="controles">
+            <!-- Elige el "cerebro": Haiku (rápido y barato) u Opus (razonamiento profundo) -->
+            <div class="selector" role="radiogroup" aria-label="Modelo de IA">
+                <button type="button" role="radio" data-modelo="haiku" aria-checked="true" title="Rápido y económico">⚡ HAIKU</button>
+                <button type="button" role="radio" data-modelo="opus" aria-checked="false" title="Razonamiento profundo (solo con sesión)">🧠 OPUS</button>
+            </div>
+            <button type="button" class="enlace" id="btn-memoria" hidden>MEMORIA</button>
+            <button type="button" class="enlace" id="btn-sesion">ENTRAR</button>
+            <a href="/">PORTAFOLIO</a>
+        </div>
     </header>
 
     <main>
@@ -273,6 +333,31 @@
             <button class="boton secundario" type="button" id="silencio" aria-pressed="false" title="Activar o silenciar la voz" aria-label="Silenciar voz">🔊</button>
         </form>
     </main>
+
+    <!-- Ventana de inicio de sesión -->
+    <dialog id="dlg-login" aria-labelledby="titulo-login">
+        <form id="form-login">
+            <h2 id="titulo-login">ACCESO</h2>
+            <p>Inicia sesión para usar la memoria, Opus, la búsqueda web y los archivos.</p>
+            <input type="password" id="password" autocomplete="current-password" placeholder="Contraseña" aria-label="Contraseña" required>
+            <div class="mensaje-error" id="error-login" role="alert"></div>
+            <div class="fila-botones">
+                <button type="button" class="boton secundario" data-cerrar>Cancelar</button>
+                <button type="submit" class="boton">Entrar</button>
+            </div>
+        </form>
+    </dialog>
+
+    <!-- Ventana de memoria -->
+    <dialog id="dlg-memoria" aria-labelledby="titulo-memoria">
+        <h2 id="titulo-memoria">MEMORIA DE NOVA</h2>
+        <p>Lo que NOVA recuerda de ti. Puedes borrar cualquier recuerdo o exportarlos a tu bóveda de Obsidian.</p>
+        <ul id="lista-recuerdos"></ul>
+        <div class="fila-botones">
+            <button type="button" class="boton secundario" id="exportar-obsidian">⬇ Exportar a Obsidian (.md)</button>
+            <button type="button" class="boton" data-cerrar>Cerrar</button>
+        </div>
+    </dialog>
 
     <script src="/vendor/marked.js"></script>
     <script src="/vendor/purify.js"></script>

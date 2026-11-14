@@ -193,6 +193,30 @@ Permite gestionar el contenido sin tocar codigo:
 
 ---
 
+## NOVA — Asistente de IA
+
+Asistente por voz con interfaz HUD en `/asistente`, construido con la API de Claude.
+
+- **Dos cerebros a elegir:** ⚡ Haiku 5.5 (rápido y económico) o 🧠 Opus 5.5 (razonamiento profundo)
+- **Voz:** dictado y respuesta hablada con la Web Speech API (Chrome/Edge)
+- **Análisis:** imágenes, PDFs, código, CSV; búsqueda web con fuentes citadas
+- **Memoria persistente** en MySQL (Aiven), tabla `nova_recuerdos`, exportable a Obsidian (.md)
+- **Seguridad:** acceso privado con contraseña, sesión firmada con HMAC en cookie `HttpOnly` + `SameSite=Strict`,
+  límite de intentos de login, protección CSRF por origen, CSP estricta, consultas SQL parametrizadas
+  y límites de uso por hora
+
+Variables necesarias (ver `.env.example`): `ANTHROPIC_API_KEY`, `NOVA_PASSWORD`, `NOVA_SECRET` y,
+opcionalmente, `NOVA_PUBLICO=true` para abrir una demo limitada a visitantes (Haiku, sin memoria ni internet).
+
+| Archivo | Función |
+|---|---|
+| `server/asistente.js` | Ruta `POST /api/asistente`, bucle de agente y streaming NDJSON |
+| `server/nova-seguridad.js` | Login, sesiones firmadas y protecciones |
+| `server/nova-memoria.js` | Tabla de recuerdos y herramientas de memoria para Claude |
+| `public/js/asistente.js` | Voz, adjuntos, Markdown, máquina de estados y núcleo animado |
+
+---
+
 ## API Endpoints
 
 | Metodo | Ruta | Descripcion |

@@ -113,6 +113,21 @@ app.get('/', (req, res) => {
 // Asistente de IA por voz (NOVA): la página y su ruta de la API
 // viven en server/asistente.js para no llenar este archivo.
 app.get('/asistente', (req, res) => {
+    // Content-Security-Policy: lista blanca de lo que el navegador puede cargar
+    // en esta página. Aunque alguien lograra colar HTML en una respuesta,
+    // el navegador se negaría a ejecutar scripts que no vengan de nuestro servidor.
+    res.setHeader('Content-Security-Policy', [
+        "default-src 'self'",
+        "script-src 'self'",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' data: blob:",
+        "connect-src 'self'",
+        "object-src 'none'",
+        "base-uri 'none'",
+        "form-action 'self'",
+        "frame-ancestors 'none'"   // nadie puede meter NOVA en un iframe
+    ].join('; '));
+    res.setHeader('Referrer-Policy', 'no-referrer');
     res.sendFile(path.join(__dirname, '..', 'public', 'asistente.html'));
 });
 // Librerías del navegador instaladas con npm (Markdown → HTML y su limpieza).

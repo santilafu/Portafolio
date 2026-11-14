@@ -22,6 +22,7 @@
  *   3. Reconocimiento de voz      8. Pintar mensajes (Markdown)
  *   4. Síntesis de voz            9. Formulario y teclado
  *   5. Archivos adjuntos         10. Núcleo animado (Canvas)
+ *                                11. Sesión, modelo y memoria
  */
 
 // ════════════════════════════════════════════════════════════════
@@ -38,6 +39,11 @@ const botonSilencio = document.getElementById('silencio');
 const botonAdjuntar = document.getElementById('adjuntar');
 const inputArchivo  = document.getElementById('archivo');
 const pendientesEl  = document.getElementById('pendientes');
+const botonesModelo = document.querySelectorAll('.selector button');
+const botonMemoria  = document.getElementById('btn-memoria');
+const botonSesion   = document.getElementById('btn-sesion');
+const dlgLogin      = document.getElementById('dlg-login');
+const dlgMemoria    = document.getElementById('dlg-memoria');
 
 // ════════════════════════════════════════════════════════════════
 // 2. ESTADO DE LA APLICACIÓN
@@ -54,6 +60,9 @@ let historial = [];          // [{ role: 'user'|'assistant', content: '...', adj
 let adjuntosPendientes = []; // archivos elegidos que aún no se han enviado
 let vozActivada = true;
 let peticionEnCurso = null;  // AbortController para poder cancelar
+// Lo que nos dice el servidor al cargar (ver sección 11)
+let sesion = { propietario: false, publico: false, loginDisponible: false };
+let modelo = 'haiku';        // 'haiku' | 'opus'
 
 /**
  * Cambia de estado. Opcionalmente con un texto distinto al del estado
@@ -334,6 +343,10 @@ async function prepararAdjunto(archivo) {
 }
 
 async function anadirArchivos(lista) {
+    if (!sesion.propietario) {
+        mostrarError('Inicia sesión para adjuntar archivos.');
+        return;
+    }
     for (const archivo of lista) {
         if (adjuntosPendientes.length >= MAX_ADJUNTOS) {
             mostrarError(`Máximo ${MAX_ADJUNTOS} archivos por mensaje.`);
@@ -473,11 +486,13 @@ async function procesarMensaje(texto) {
         const respuesta = await fetch('/api/asistente', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ historial }),
+            body: JSON.stringify({ modelo, historial }),
             signal: peticionEnCurso.signal
         });
 
         if (!respuesta.ok) {
+            // 401 = la sesión caducó: actualizamos la interfaz
+            if (respuesta.status === 401) cargarSesion();
             const datos = await respuesta.json().catch(() => ({}));
             throw new Error(datos.error || (respuesta.status === 413
                 ? 'Los archivos son demasiado grandes.'
@@ -498,6 +513,9 @@ async function procesarMensaje(texto) {
                     break;
                 case 'herramienta':
                     cambiarEstado(ESTADOS.PENSANDO, evento.texto);
+                    break;
+                case 'memoria':
+                    burbuja.anadirNota(evento.texto);
                     break;
                 case 'texto':
                     if (!textoCompleto) cambiarEstado(ESTADOS.PENSANDO, 'Respondiendo…');
@@ -625,6 +643,13 @@ function crearBurbujaNova() {
     };
 
     return {
+        anadirNota(texto) {
+            const nota = document.createElement('div');
+            nota.className = 'nota';
+            nota.textContent = texto;
+            div.insertBefore(nota, cuerpo);
+            bajarAlFinal();
+        },
         anadirPensamiento(trozo) {
             if (!detalles) {
                 detalles = document.createElement('details');
@@ -816,3 +841,170 @@ function dibujar(tiempo) {
     requestAnimationFrame(dibujar);
 }
 requestAnimationFrame(dibujar);
+
+// ════════════════════════════════════════════════════════════════
+// 11. SESIÓN, MODELO Y MEMORIA
+// ════════════════════════════════════════════════════════════════
+
+/** Pregunta al servidor si hay sesión y adapta la interfaz */
+async function cargarSesion() {
+    try {
+        const r = await fetch('/api/asistente/sesion');
+        sesion = await r.json();
+    } catch (e) {
+        sesion = { propietario: false, publico: false, loginDisponible: false };
+    }
+    aplicarSesion();
+}
+
+function aplicarSesion() {
+    const p = sesion.propietario;
+    const puedeUsar = p || sesion.publico;
+
+    botonSesion.textContent = p ? 'SALIR' : 'ENTRAR';
+    botonSesion.hidden = !p && !sesion.loginDisponible;
+    botonMemoria.hidden = !p;
+    botonAdjuntar.hidden = !p;
+
+    // Sin sesión solo se puede usar Haiku (si la demo está activa)
+    if (!p) elegirModelo('haiku', false);
+    botonesModelo.forEach(b => { b.disabled = !p && b.dataset.modelo === 'opus'; });
+
+    entrada.disabled = !puedeUsar;
+    entrada.placeholder = puedeUsar
+        ? 'Escribe o dicta una tarea… (Mayús+Intro = nueva línea)'
+        : 'NOVA es privada: inicia sesión para usarla';
+
+    const vacio = conversacion.querySelector('.vacio');
+    if (vacio && !puedeUsar) {
+        vacio.textContent = 'NOVA es una asistente privada. Pulsa ENTRAR (arriba) para iniciar sesión.';
+    } else if (vacio && !p) {
+        vacio.textContent = 'Modo demo: NOVA con Haiku, sin memoria ni internet. Pregúntale lo que quieras.';
+    }
+    ayudaEl.hidden = !puedeUsar;
+}
+
+// ── Selector de modelo ─────────────────────────────────────────
+function elegirModelo(nuevo, guardar = true) {
+    modelo = nuevo;
+    botonesModelo.forEach(b => b.setAttribute('aria-checked', String(b.dataset.modelo === nuevo)));
+    // localStorage recuerda tu elección (try/catch: puede estar bloqueado)
+    if (guardar) { try { localStorage.setItem('nova-modelo', nuevo); } catch (e) { /* sin acceso */ } }
+}
+botonesModelo.forEach(b => b.addEventListener('click', () => elegirModelo(b.dataset.modelo)));
+try {
+    const guardado = localStorage.getItem('nova-modelo');
+    if (guardado === 'haiku' || guardado === 'opus') elegirModelo(guardado, false);
+} catch (e) { /* sin acceso a localStorage */ }
+
+// ── Ventanas: cualquier botón con data-cerrar cierra su ventana ─
+document.querySelectorAll('dialog [data-cerrar]').forEach(b =>
+    b.addEventListener('click', () => b.closest('dialog').close())
+);
+
+// ── Login / logout ─────────────────────────────────────────────
+botonSesion.addEventListener('click', async () => {
+    if (sesion.propietario) {
+        await fetch('/api/asistente/logout', { method: 'POST' });
+        historial = [];              // por seguridad, olvidamos la conversación en pantalla
+        conversacion.replaceChildren();
+        await cargarSesion();
+        cambiarEstado(ESTADOS.ESPERA, 'Sesión cerrada');
+        return;
+    }
+    document.getElementById('error-login').textContent = '';
+    dlgLogin.showModal();
+    document.getElementById('password').focus();
+});
+
+document.getElementById('form-login').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const campo = document.getElementById('password');
+    const errorEl = document.getElementById('error-login');
+    errorEl.textContent = '';
+    try {
+        const r = await fetch('/api/asistente/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: campo.value })
+        });
+        const datos = await r.json().catch(() => ({}));
+        if (!r.ok) { errorEl.textContent = datos.error || 'No se pudo iniciar sesión.'; return; }
+        campo.value = '';            // no dejamos la contraseña en la página
+        dlgLogin.close();
+        await cargarSesion();
+        cambiarEstado(ESTADOS.ESPERA, 'Bienvenido');
+        decir('Bienvenido de nuevo.');
+    } catch (err) {
+        errorEl.textContent = 'Error de conexión.';
+    }
+});
+
+// ── Panel de memoria ───────────────────────────────────────────
+let recuerdos = [];
+
+async function abrirMemoria() {
+    const lista = document.getElementById('lista-recuerdos');
+    lista.replaceChildren();
+    dlgMemoria.showModal();
+    try {
+        const r = await fetch('/api/asistente/recuerdos');
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || 'Error ' + r.status);
+        recuerdos = await r.json();
+    } catch (error) {
+        recuerdos = [];
+        const li = document.createElement('li');
+        li.textContent = 'No se pudo cargar la memoria: ' + error.message;
+        lista.appendChild(li);
+        return;
+    }
+    if (!recuerdos.length) {
+        const li = document.createElement('li');
+        li.textContent = 'NOVA todavía no recuerda nada. Cuéntale cosas sobre ti o pídele que recuerde algo.';
+        lista.appendChild(li);
+    }
+    for (const rec of recuerdos) {
+        const li = document.createElement('li');
+        const texto = document.createElement('div');
+        const meta = document.createElement('small');
+        meta.textContent = `#${rec.id} · ${rec.categoria} · ${rec.fecha}`;
+        texto.append(meta, document.createTextNode(rec.contenido)); // texto plano, sin HTML
+        const borrar = document.createElement('button');
+        borrar.type = 'button';
+        borrar.textContent = '🗑';
+        borrar.setAttribute('aria-label', 'Borrar recuerdo ' + rec.id);
+        borrar.addEventListener('click', async () => {
+            const r = await fetch('/api/asistente/recuerdos/' + rec.id, { method: 'DELETE' });
+            if (r.ok) { li.remove(); recuerdos = recuerdos.filter(x => x.id !== rec.id); }
+        });
+        li.append(texto, borrar);
+        lista.appendChild(li);
+    }
+}
+botonMemoria.addEventListener('click', abrirMemoria);
+
+/**
+ * Exporta los recuerdos como una nota Markdown lista para Obsidian:
+ * un "frontmatter" YAML arriba (Obsidian lo muestra como propiedades)
+ * y un apartado por categoría.
+ */
+document.getElementById('exportar-obsidian').addEventListener('click', () => {
+    const hoy = new Date().toISOString().slice(0, 10);
+    const porCategoria = {};
+    for (const r of recuerdos) (porCategoria[r.categoria] ??= []).push(r);
+
+    let md = `---\ntipo: memoria-nova\nexportado: ${hoy}\ntotal: ${recuerdos.length}\ntags: [nova, memoria]\n---\n\n# Memoria de NOVA\n`;
+    for (const [categoria, lista] of Object.entries(porCategoria)) {
+        md += `\n## ${categoria[0].toUpperCase() + categoria.slice(1)}\n\n`;
+        md += lista.map(r => `- ${r.contenido} *(#${r.id}, ${r.fecha})*`).join('\n') + '\n';
+    }
+
+    // Creamos un archivo "en memoria" (Blob) y simulamos un clic para descargarlo
+    const enlace = document.createElement('a');
+    enlace.href = URL.createObjectURL(new Blob([md], { type: 'text/markdown' }));
+    enlace.download = `NOVA - Memoria ${hoy}.md`;
+    enlace.click();
+    setTimeout(() => URL.revokeObjectURL(enlace.href), 1000); // tras iniciar la descarga
+});
+
+cargarSesion();

@@ -84,6 +84,11 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 
+// El asistente recibe archivos (imágenes, PDFs) dentro del JSON, así que
+// solo en esa ruta subimos el límite. Va ANTES del express.json() general:
+// cuando una petición ya está leída, el siguiente parser se la salta.
+app.use('/api/asistente', express.json({ limit: '30mb' }));
+
 // Permite que Express entienda el cuerpo de las peticiones en formato JSON
 app.use(express.json());
 
@@ -109,6 +114,15 @@ app.get('/', (req, res) => {
 // viven en server/asistente.js para no llenar este archivo.
 app.get('/asistente', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'asistente.html'));
+});
+// Librerías del navegador instaladas con npm (Markdown → HTML y su limpieza).
+// Las servimos nosotros mismos en vez de depender de un CDN externo.
+const modulos = path.join(__dirname, '..', 'node_modules');
+app.get('/vendor/marked.js', (req, res) => {
+    res.sendFile(path.join(modulos, 'marked', 'lib', 'marked.umd.js'));
+});
+app.get('/vendor/purify.js', (req, res) => {
+    res.sendFile(path.join(modulos, 'dompurify', 'dist', 'purify.min.js'));
 });
 app.use(require('./asistente'));
 

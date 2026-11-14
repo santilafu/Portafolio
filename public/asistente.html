@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<!--
+    asistente.html
+    --------------
+    NOVA: asistente de IA por voz con interfaz tipo HUD (pantalla de
+    ciencia ficción). Toda la lógica está en /js/asistente.js.
+
+    Tecnologías del navegador que usamos (no hace falta instalar nada):
+      - Web Speech API → SpeechRecognition: convierte tu voz en texto
+      - Web Speech API → speechSynthesis:   convierte texto en voz
+      - Canvas 2D:                          dibuja el núcleo animado
+      - fetch + ReadableStream:             recibe la respuesta a trozos
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOVA | Asistente de voz</title>
+    <link rel="icon" href="/img/logo.svg" type="image/svg+xml">
+    <meta name="description" content="NOVA, asistente de inteligencia artificial por voz creado por Santiago Lafuente con Node.js y la API de Claude.">
+    <style>
+        /* ── Variables de color (tokens) ───────────────────────────
+           Cambiando estas 5 líneas cambias el aspecto de toda la página. */
+        :root {
+            --fondo: #03070d;
+            --panel: rgba(8, 24, 38, 0.72);
+            --linea: rgba(79, 209, 255, 0.22);
+            --acento: #4fd1ff;
+            --acento-2: #ffb547;   /* color cuando NOVA está pensando */
+            --texto: #d7f3ff;
+            --tenue: #6f93a8;
+            --error: #ff6b6b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            background:
+                radial-gradient(ellipse at 50% 30%, rgba(79, 209, 255, 0.10), transparent 60%),
+                var(--fondo);
+            color: var(--texto);
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Rejilla de fondo sutil, como una pantalla de laboratorio */
+        body::before {
+            content: "";
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(var(--linea) 1px, transparent 1px),
+                linear-gradient(90deg, var(--linea) 1px, transparent 1px);
+            background-size: 48px 48px;
+            opacity: 0.18;
+            pointer-events: none;
+            mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
+        }
+
+        /* ── Cabecera ─────────────────────────────────────────────── */
+        header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px clamp(16px, 4vw, 40px);
+            font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+            font-size: 0.8rem; letter-spacing: 0.12em; color: var(--tenue);
+            position: relative; z-index: 1;
+        }
+        header a { color: var(--tenue); text-decoration: none; }
+        header a:hover { color: var(--acento); }
+        .marca { color: var(--acento); font-weight: 700; letter-spacing: 0.3em; }
+
+        main {
+            flex: 1;
+            width: 100%; max-width: 900px;
+            margin: 0 auto;
+            padding: 0 16px 16px;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 12px;
+            position: relative; z-index: 1;
+        }
+
+        /* ── Núcleo animado ───────────────────────────────────────── */
+        .nucleo {
+            position: relative;
+            width: min(340px, 80vw);
+            aspect-ratio: 1;
+            border: none; background: none; cursor: pointer;
+            border-radius: 50%;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nucleo canvas { width: 100%; height: 100%; display: block; }
+        .nucleo:focus-visible { outline: 2px solid var(--acento); outline-offset: 6px; }
+
+        #estado {
+            font-family: ui-monospace, Consolas, monospace;
+            font-size: 0.85rem; letter-spacing: 0.25em; text-transform: uppercase;
+            color: var(--acento); min-height: 1.2em; text-align: center;
+        }
+        #estado.pensando { color: var(--acento-2); }
+        #estado.error { color: var(--error); letter-spacing: 0.05em; text-transform: none; }
+
+        .ayuda { color: var(--tenue); font-size: 0.85rem; text-align: center; }
+        kbd {
+            border: 1px solid var(--linea); border-radius: 4px;
+            padding: 1px 6px; font-family: inherit; font-size: 0.8em;
+        }
+
+        /* ── Transcripción de la conversación ─────────────────────── */
+        #conversacion {
+            width: 100%;
+            flex: 1;
+            min-height: 160px; max-height: 38vh;
+            overflow-y: auto;
+            padding: 16px;
+            background: var(--panel);
+            border: 1px solid var(--linea);
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+            display: flex; flex-direction: column; gap: 12px;
+            scroll-behavior: smooth;
+        }
+        .msg { max-width: 85%; line-height: 1.5; font-size: 0.97rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .msg .quien {
+            display: block;
+            font-family: ui-monospace, Consolas, monospace;
+            font-size: 0.7rem; letter-spacing: 0.2em; color: var(--tenue);
+            margin-bottom: 2px;
+        }
+        .msg.user { align-self: flex-end; text-align: right; }
+        .msg.assistant .quien { color: var(--acento); }
+        .vacio { color: var(--tenue); text-align: center; margin: auto; font-size: 0.9rem; }
+
+        /* ── Barra para escribir ──────────────────────────────────── */
+        form {
+            width: 100%;
+            display: flex; gap: 8px;
+        }
+        input[type="text"] {
+            flex: 1; min-width: 0;
+            padding: 12px 14px;
+            background: var(--panel);
+            color: var(--texto);
+            border: 1px solid var(--linea);
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        input[type="text"]:focus { outline: none; border-color: var(--acento); }
+        .boton {
+            padding: 0 16px;
+            background: transparent;
+            color: var(--acento);
+            border: 1px solid var(--acento);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .boton:hover { background: rgba(79, 209, 255, 0.12); }
+        .boton[aria-pressed="true"] { color: var(--tenue); border-color: var(--linea); }
+
+        @media (prefers-reduced-motion: reduce) {
+            #conversacion { scroll-behavior: auto; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <span class="marca">N·O·V·A</span>
+        <a href="/">← Volver al portafolio</a>
+    </header>
+
+    <main>
+        <!-- El núcleo es un botón: así funciona con teclado y lectores de pantalla -->
+        <button class="nucleo" id="nucleo" type="button" aria-label="Pulsa para hablar con NOVA">
+            <canvas id="lienzo"></canvas>
+        </button>
+
+        <p id="estado" role="status" aria-live="polite">En espera</p>
+        <p class="ayuda" id="ayuda">Pulsa el núcleo o la tecla <kbd>Espacio</kbd> y habla</p>
+
+        <section id="conversacion" aria-label="Conversación" aria-live="polite">
+            <p class="vacio">Prueba a decir: «¿Qué hora es?» o «Cuéntame quién es Santiago»</p>
+        </section>
+
+        <form id="formulario" autocomplete="off">
+            <input type="text" id="entrada" placeholder="…o escríbele aquí" maxlength="1000" aria-label="Mensaje para NOVA">
+            <button class="boton" type="submit">Enviar</button>
+            <button class="boton" type="button" id="silencio" aria-pressed="false" title="Activar o silenciar la voz">🔊</button>
+        </form>
+    </main>
+
+    <script src="/js/asistente.js"></script>
+</body>
+</html>

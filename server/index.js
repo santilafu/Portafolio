@@ -105,6 +105,13 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
+// Asistente de IA por voz (NOVA): la página y su ruta de la API
+// viven en server/asistente.js para no llenar este archivo.
+app.get('/asistente', (req, res) => {
+    res.sendFile(path.join(__dirname, '..', 'public', 'asistente.html'));
+});
+app.use(require('./asistente'));
+
 // Panel de administración
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'admin.html'));
